@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ESMS.Data\ESMS.Data.csproj" />
+    <ProjectReference Include="..\ESMS.Utilities\ESMS.Utilities.csproj" />
+    <ProjectReference Include="..\ESMS.ViewModels\ESMS.ViewModels.csproj" />
+  </ItemGroup>
+
+</Project>
