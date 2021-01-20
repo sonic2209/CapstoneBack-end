@@ -1,5 +1,7 @@
 ﻿using ESMS.Data.Configurations;
 using ESMS.Data.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -7,7 +9,7 @@ using System.Text;
 
 namespace ESMS.Data.EF
 {
-    public class ESMSDbContext : DbContext
+    public class ESMSDbContext : IdentityDbContext<Employee,Role,string>
     {
         public ESMSDbContext(DbContextOptions options) : base(options)
         {
@@ -23,6 +25,13 @@ namespace ESMS.Data.EF
             modelBuilder.ApplyConfiguration(new SkillConfiguration());
             modelBuilder.ApplyConfiguration(new EmpPositionInProjectConfiguration());
             modelBuilder.ApplyConfiguration(new EmpCertificationConfiguration());
+            modelBuilder.ApplyConfiguration(new RoleConfiguration());
+
+            modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("AppUserClaims");
+            modelBuilder.Entity<IdentityUserRole<string>>().ToTable("AppUserRoles").HasKey(x => new { x.UserId, x.RoleId });
+            modelBuilder.Entity<IdentityUserLogin<string>>().ToTable("AppEmpLogins").HasKey(x => x.UserId);
+            modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("AppRoleClaims");
+            modelBuilder.Entity<IdentityUserToken<string>>().ToTable("AppEmpTokens").HasKey(x => x.UserId);
         }
 
         public DbSet<Certification> Certifications { get; set; }

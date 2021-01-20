@@ -11,7 +11,7 @@ namespace ESMS.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<EmpPositionInProject> builder)
         {
-            builder.ToTable("EmpPosInProjects");
+            builder.ToTable("EmpPositionInProjects");
             builder.HasKey(x => x.ID);
             builder.Property(x => x.ID).UseIdentityColumn();
 
