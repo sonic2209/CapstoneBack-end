@@ -9,5 +9,4 @@
     <ProjectReference Include="..\ESMS.Utilities\ESMS.Utilities.csproj" />
     <ProjectReference Include="..\ESMS.ViewModels\ESMS.ViewModels.csproj" />
   </ItemGroup>
-
 </Project>

@@ -1,10 +1,10 @@
-﻿using ESMS.ViewModels.Position;
+﻿using ESMS.ViewModels.Services.Position;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ESMS.Application.Positions
+namespace ESMS.Application.Services.Positions
 {
     public interface IPositionService
     {

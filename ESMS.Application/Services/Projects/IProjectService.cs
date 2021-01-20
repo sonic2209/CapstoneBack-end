@@ -1,11 +1,11 @@
 ﻿using ESMS.Data.Entities;
-using ESMS.ViewModels.Project;
+using ESMS.ViewModels.Services.Project;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ESMS.Application.Projects
+namespace ESMS.Application.Services.Projects
 {
     public interface IProjectService
     {

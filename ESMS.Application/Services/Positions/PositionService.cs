@@ -1,13 +1,13 @@
 ﻿using ESMS.Data.EF;
 using ESMS.Data.Entities;
 using ESMS.Utilities.Exceptions;
-using ESMS.ViewModels.Position;
+using ESMS.ViewModels.Services.Position;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ESMS.Application.Positions
+namespace ESMS.Application.Services.Positions
 {
     public class PositionService : IPositionService
     {

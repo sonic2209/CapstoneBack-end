@@ -1,5 +1,5 @@
-﻿using ESMS.Application.Positions;
-using ESMS.ViewModels.Position;
+﻿using ESMS.Application.Services.Positions;
+using ESMS.ViewModels.Services.Position;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;

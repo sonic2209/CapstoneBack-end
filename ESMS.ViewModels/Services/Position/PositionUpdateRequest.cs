@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ESMS.ViewModels.Position
+namespace ESMS.ViewModels.Services.Position
 {
     public class PositionUpdateRequest
     {

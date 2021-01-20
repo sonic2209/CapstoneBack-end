@@ -21,8 +21,8 @@ namespace ESMS.Data.EF
             modelBuilder.ApplyConfiguration(new PositionConfiguration());
             modelBuilder.ApplyConfiguration(new ProjectConfiguration());
             modelBuilder.ApplyConfiguration(new SkillConfiguration());
-            modelBuilder.ApplyConfiguration(new TaskConfiguration());
-            modelBuilder.ApplyConfiguration(new TeamConfiguration());
+            modelBuilder.ApplyConfiguration(new EmpPositionInProjectConfiguration());
+            modelBuilder.ApplyConfiguration(new EmpCertificationConfiguration());
         }
 
         public DbSet<Certification> Certifications { get; set; }
@@ -31,7 +31,7 @@ namespace ESMS.Data.EF
         public DbSet<Position> Positions { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<Skill> Skills { get; set; }
-        public DbSet<Task> Tasks { get; set; }
-        public DbSet<Team> Teams { get; set; }
+        public DbSet<EmpCertification> EmpCertifications { get; set; }
+        public DbSet<EmpPositionInProject> EmpPosInProjects { get; set; }
     }
 }

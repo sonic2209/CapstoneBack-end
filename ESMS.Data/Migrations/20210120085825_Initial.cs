@@ -8,6 +8,21 @@ namespace ESMS.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Certifications",
+                columns: table => new
+                {
+                    CertificationID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CertificationName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Certifications", x => x.CertificationID);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Employees",
                 columns: table => new
                 {
@@ -17,11 +32,10 @@ namespace ESMS.Data.Migrations
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    IdentityNumber = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IdentityNumber = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
-                    DateEnd = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateEnd = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Username = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Password = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false)
                 },
@@ -58,14 +72,42 @@ namespace ESMS.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "EmpCertifications",
+                columns: table => new
+                {
+                    ID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EmpID = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    CertificationID = table.Column<int>(type: "int", nullable: false),
+                    DateTaken = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DateEnd = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EmpCertifications", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK_EmpCertifications_Certifications_CertificationID",
+                        column: x => x.CertificationID,
+                        principalTable: "Certifications",
+                        principalColumn: "CertificationID",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_EmpCertifications_Employees_EmpID",
+                        column: x => x.EmpID,
+                        principalTable: "Employees",
+                        principalColumn: "EmpID",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Projects",
                 columns: table => new
                 {
                     ProjectID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ProjectName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DateEnd = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DateEnd = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Skateholder = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
@@ -109,10 +151,10 @@ namespace ESMS.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Team",
+                name: "EmpPosInProjects",
                 columns: table => new
                 {
-                    TeamID = table.Column<int>(type: "int", nullable: false)
+                    ID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ProjectID = table.Column<int>(type: "int", nullable: false),
                     EmpID = table.Column<string>(type: "nvarchar(450)", nullable: true),
@@ -120,75 +162,51 @@ namespace ESMS.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Team", x => x.TeamID);
+                    table.PrimaryKey("PK_EmpPosInProjects", x => x.ID);
                     table.ForeignKey(
-                        name: "FK_Team_Employees_EmpID",
+                        name: "FK_EmpPosInProjects_Employees_EmpID",
                         column: x => x.EmpID,
                         principalTable: "Employees",
                         principalColumn: "EmpID",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Team_Positions_PosID",
+                        name: "FK_EmpPosInProjects_Positions_PosID",
                         column: x => x.PosID,
                         principalTable: "Positions",
                         principalColumn: "PosID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Team_Projects_ProjectID",
+                        name: "FK_EmpPosInProjects_Projects_ProjectID",
                         column: x => x.ProjectID,
                         principalTable: "Projects",
                         principalColumn: "ProjectID",
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Certifications",
-                columns: table => new
-                {
-                    CertificationID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    EmpSkillID = table.Column<int>(type: "int", nullable: false),
-                    DateTaken = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DateEnd = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Certifications", x => x.CertificationID);
-                    table.ForeignKey(
-                        name: "FK_Certifications_EmpSkills_EmpSkillID",
-                        column: x => x.EmpSkillID,
-                        principalTable: "EmpSkills",
-                        principalColumn: "EmpSkillID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Tasks",
-                columns: table => new
-                {
-                    TaskID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    TeamID = table.Column<int>(type: "int", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DateEnd = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Tasks", x => x.TaskID);
-                    table.ForeignKey(
-                        name: "FK_Tasks_Team_TeamID",
-                        column: x => x.TeamID,
-                        principalTable: "Team",
-                        principalColumn: "TeamID",
-                        onDelete: ReferentialAction.Cascade);
-                });
+            migrationBuilder.CreateIndex(
+                name: "IX_EmpCertifications_CertificationID",
+                table: "EmpCertifications",
+                column: "CertificationID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Certifications_EmpSkillID",
-                table: "Certifications",
-                column: "EmpSkillID");
+                name: "IX_EmpCertifications_EmpID",
+                table: "EmpCertifications",
+                column: "EmpID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmpPosInProjects_EmpID",
+                table: "EmpPosInProjects",
+                column: "EmpID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmpPosInProjects_PosID",
+                table: "EmpPosInProjects",
+                column: "PosID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmpPosInProjects_ProjectID",
+                table: "EmpPosInProjects",
+                column: "ProjectID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_EmpSkills_EmpID",
@@ -204,50 +222,30 @@ namespace ESMS.Data.Migrations
                 name: "IX_Projects_ProjectManagerID",
                 table: "Projects",
                 column: "ProjectManagerID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Tasks_TeamID",
-                table: "Tasks",
-                column: "TeamID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Team_EmpID",
-                table: "Team",
-                column: "EmpID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Team_PosID",
-                table: "Team",
-                column: "PosID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Team_ProjectID",
-                table: "Team",
-                column: "ProjectID");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Certifications");
+                name: "EmpCertifications");
 
             migrationBuilder.DropTable(
-                name: "Tasks");
+                name: "EmpPosInProjects");
 
             migrationBuilder.DropTable(
                 name: "EmpSkills");
 
             migrationBuilder.DropTable(
-                name: "Team");
-
-            migrationBuilder.DropTable(
-                name: "Skills");
+                name: "Certifications");
 
             migrationBuilder.DropTable(
                 name: "Positions");
 
             migrationBuilder.DropTable(
                 name: "Projects");
+
+            migrationBuilder.DropTable(
+                name: "Skills");
 
             migrationBuilder.DropTable(
                 name: "Employees");

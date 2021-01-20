@@ -11,6 +11,5 @@ namespace ESMS.Data.Entities
         public int SkillID { get; set; }
         public Employee Employee { get; set; }
         public Skill Skill { get; set; }
-        public List<Certification> Certifications { get; set; }
     }
 }

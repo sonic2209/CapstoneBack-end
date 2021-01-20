@@ -26,18 +26,13 @@ namespace ESMS.Data.Migrations
                         .HasColumnType("int")
                         .UseIdentityColumn();
 
-                    b.Property<DateTime>("DateEnd")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DateTaken")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("CertificationName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("EmpSkillID")
-                        .HasColumnType("int");
 
                     b.Property<string>("Image")
                         .IsRequired()
@@ -45,9 +40,62 @@ namespace ESMS.Data.Migrations
 
                     b.HasKey("CertificationID");
 
-                    b.HasIndex("EmpSkillID");
-
                     b.ToTable("Certifications");
+                });
+
+            modelBuilder.Entity("ESMS.Data.Entities.EmpCertification", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<int>("CertificationID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DateEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateTaken")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EmpID")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("CertificationID");
+
+                    b.HasIndex("EmpID");
+
+                    b.ToTable("EmpCertifications");
+                });
+
+            modelBuilder.Entity("ESMS.Data.Entities.EmpPosInProject", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<string>("EmpID")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("PosID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProjectID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("EmpID");
+
+                    b.HasIndex("PosID");
+
+                    b.HasIndex("ProjectID");
+
+                    b.ToTable("EmpPosInProjects");
                 });
 
             modelBuilder.Entity("ESMS.Data.Entities.EmpSkill", b =>
@@ -81,10 +129,10 @@ namespace ESMS.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("DateCreated")
+                    b.Property<DateTime?>("DateCreated")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("DateEnd")
+                    b.Property<DateTime?>("DateEnd")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
@@ -92,10 +140,10 @@ namespace ESMS.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<int>("IdentityNumber")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
+                    b.Property<string>("IdentityNumber")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -161,10 +209,10 @@ namespace ESMS.Data.Migrations
                         .HasColumnType("int")
                         .UseIdentityColumn();
 
-                    b.Property<DateTime>("DateCreated")
+                    b.Property<DateTime?>("DateCreated")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("DateEnd")
+                    b.Property<DateTime?>("DateEnd")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -212,65 +260,46 @@ namespace ESMS.Data.Migrations
                     b.ToTable("Skills");
                 });
 
-            modelBuilder.Entity("ESMS.Data.Entities.Task", b =>
+            modelBuilder.Entity("ESMS.Data.Entities.EmpCertification", b =>
                 {
-                    b.Property<int>("TaskID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DateEnd")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("TeamID")
-                        .HasColumnType("int");
-
-                    b.HasKey("TaskID");
-
-                    b.HasIndex("TeamID");
-
-                    b.ToTable("Tasks");
-                });
-
-            modelBuilder.Entity("ESMS.Data.Entities.Team", b =>
-                {
-                    b.Property<int>("TeamID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
-
-                    b.Property<string>("EmpID")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("PosID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProjectID")
-                        .HasColumnType("int");
-
-                    b.HasKey("TeamID");
-
-                    b.HasIndex("EmpID");
-
-                    b.HasIndex("PosID");
-
-                    b.HasIndex("ProjectID");
-
-                    b.ToTable("Team");
-                });
-
-            modelBuilder.Entity("ESMS.Data.Entities.Certification", b =>
-                {
-                    b.HasOne("ESMS.Data.Entities.EmpSkill", "EmpSkill")
-                        .WithMany("Certifications")
-                        .HasForeignKey("EmpSkillID")
+                    b.HasOne("ESMS.Data.Entities.Certification", "Certification")
+                        .WithMany("EmpCertifications")
+                        .HasForeignKey("CertificationID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("EmpSkill");
+                    b.HasOne("ESMS.Data.Entities.Employee", "Employee")
+                        .WithMany("EmpCertifications")
+                        .HasForeignKey("EmpID");
+
+                    b.Navigation("Certification");
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("ESMS.Data.Entities.EmpPosInProject", b =>
+                {
+                    b.HasOne("ESMS.Data.Entities.Employee", "Employee")
+                        .WithMany("EmpPosInProjects")
+                        .HasForeignKey("EmpID");
+
+                    b.HasOne("ESMS.Data.Entities.Position", "Position")
+                        .WithMany("EmpPosInProjects")
+                        .HasForeignKey("PosID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ESMS.Data.Entities.Project", "Project")
+                        .WithMany("EmpPosInProjects")
+                        .HasForeignKey("ProjectID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Position");
+
+                    b.Navigation("Project");
                 });
 
             modelBuilder.Entity("ESMS.Data.Entities.EmpSkill", b =>
@@ -299,74 +328,35 @@ namespace ESMS.Data.Migrations
                     b.Navigation("Employee");
                 });
 
-            modelBuilder.Entity("ESMS.Data.Entities.Task", b =>
+            modelBuilder.Entity("ESMS.Data.Entities.Certification", b =>
                 {
-                    b.HasOne("ESMS.Data.Entities.Team", "Team")
-                        .WithMany("Tasks")
-                        .HasForeignKey("TeamID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Team");
-                });
-
-            modelBuilder.Entity("ESMS.Data.Entities.Team", b =>
-                {
-                    b.HasOne("ESMS.Data.Entities.Employee", "Employee")
-                        .WithMany("Teams")
-                        .HasForeignKey("EmpID");
-
-                    b.HasOne("ESMS.Data.Entities.Position", "Position")
-                        .WithMany("Teams")
-                        .HasForeignKey("PosID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ESMS.Data.Entities.Project", "Project")
-                        .WithMany("Teams")
-                        .HasForeignKey("ProjectID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("Position");
-
-                    b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("ESMS.Data.Entities.EmpSkill", b =>
-                {
-                    b.Navigation("Certifications");
+                    b.Navigation("EmpCertifications");
                 });
 
             modelBuilder.Entity("ESMS.Data.Entities.Employee", b =>
                 {
+                    b.Navigation("EmpCertifications");
+
+                    b.Navigation("EmpPosInProjects");
+
                     b.Navigation("EmpSkills");
 
                     b.Navigation("Projects");
-
-                    b.Navigation("Teams");
                 });
 
             modelBuilder.Entity("ESMS.Data.Entities.Position", b =>
                 {
-                    b.Navigation("Teams");
+                    b.Navigation("EmpPosInProjects");
                 });
 
             modelBuilder.Entity("ESMS.Data.Entities.Project", b =>
                 {
-                    b.Navigation("Teams");
+                    b.Navigation("EmpPosInProjects");
                 });
 
             modelBuilder.Entity("ESMS.Data.Entities.Skill", b =>
                 {
                     b.Navigation("EmpSkills");
-                });
-
-            modelBuilder.Entity("ESMS.Data.Entities.Team", b =>
-                {
-                    b.Navigation("Tasks");
                 });
 #pragma warning restore 612, 618
         }

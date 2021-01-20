@@ -1,5 +1,5 @@
-﻿using ESMS.Application.Projects;
-using ESMS.ViewModels.Project;
+﻿using ESMS.Application.Services.Projects;
+using ESMS.ViewModels.Services.Project;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;

@@ -1,5 +1,5 @@
-using ESMS.Application.Positions;
-using ESMS.Application.Projects;
+using ESMS.Application.Services.Positions;
+using ESMS.Application.Services.Projects;
 using ESMS.Data.EF;
 using ESMS.Utilities.Constants;
 using Microsoft.AspNetCore.Builder;

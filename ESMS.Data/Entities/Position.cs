@@ -9,6 +9,6 @@ namespace ESMS.Data.Entities
         public int PosID { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public List<Team> Teams { get; set; }
+        public List<EmpPositionInProject> EmpPosInProjects { get; set; }
     }
 }

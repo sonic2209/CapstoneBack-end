@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ESMS.ViewModels.Position
+namespace ESMS.ViewModels.Services.Position
 {
-    public class PositionCreateRequest
+    public class PositionViewModel
     {
+        public int PosID { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
     }

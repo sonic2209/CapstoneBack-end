@@ -18,7 +18,7 @@ namespace ESMS.Data.Configurations
             builder.Property(x => x.ProjectName).HasMaxLength(200).IsRequired();
             builder.Property(x => x.Description).IsRequired();
             builder.Property(x => x.Skateholder).IsRequired();
-            builder.Property(x => x.Status).HasDefaultValue(ProjectStatus.OnGoing);
+            builder.Property(x => x.Status).HasDefaultValue(ProjectStatus.Pending);
             builder.HasOne(x => x.Employee).WithMany(x => x.Projects).HasForeignKey(x => x.ProjectManagerID);
         }
     }
