@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ESMS.Data.Enums;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -8,6 +9,8 @@ namespace ESMS.Data.Entities
     {
         public int SkillID { get; set; }
         public string SkillName { get; set; }
+        public SkillType SkillType { get; set; }
         public List<EmpSkill> EmpSkills { get; set; }
+
     }
 }
