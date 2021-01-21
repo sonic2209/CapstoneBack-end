@@ -6,7 +6,8 @@ namespace ESMS.Data.Enums
 {
     public enum SkillType
     {
-        SoftSkill,
-        HardSkill
+        HardSkill,
+        SoftSkill
+        
     }
 }
