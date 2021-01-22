@@ -9,7 +9,7 @@ using System.Text;
 
 namespace ESMS.Data.EF
 {
-    public class ESMSDbContext : IdentityDbContext<Employee,Role,string>
+    public class ESMSDbContext : IdentityDbContext<Employee, Role, string>
     {
         public ESMSDbContext(DbContextOptions options) : base(options)
         {
@@ -41,6 +41,6 @@ namespace ESMS.Data.EF
         public DbSet<Project> Projects { get; set; }
         public DbSet<Skill> Skills { get; set; }
         public DbSet<EmpCertification> EmpCertifications { get; set; }
-        public DbSet<EmpPositionInProject> EmpPosInProjects { get; set; }
+        public DbSet<EmpPositionInProject> EmpPositionInProjects { get; set; }
     }
 }

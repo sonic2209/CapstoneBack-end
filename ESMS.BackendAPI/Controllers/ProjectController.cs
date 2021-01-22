@@ -29,6 +29,15 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(project);
         }
 
+        [HttpGet("{projectID}")]
+        public async Task<IActionResult> GetEmpinProjectPaging(int projectID, [FromQuery] GetEmpInProjectPaging request)
+        {
+            var employees = await _projectService.GetEmpInProjectPaging(projectID, request);
+            if (employees == null)
+                return BadRequest("There are no employee");
+            return Ok(employees);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] ProjectCreateRequest request, string empID)
         {

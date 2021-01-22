@@ -1,4 +1,5 @@
 ﻿using ESMS.Data.Entities;
+using ESMS.ViewModels.Common;
 using ESMS.ViewModels.Services.Project;
 using System;
 using System.Collections.Generic;
@@ -13,8 +14,14 @@ namespace ESMS.Application.Services.Projects
 
         Task<int> Update(ProjectUpdateRequest request);
 
+        Task<bool> UpdateStatus(int projectID, int status);
+
         Task<int> Delete(int projectID);
 
         Task<ProjectViewModel> GetByID(int projectID);
+
+        Task<PagedResult<ProjectViewModel>> GetProjectPaging(GetProjectPagingRequest request);
+
+        Task<PagedResult<EmpInProjectViewModel>> GetEmpInProjectPaging(int projectID, GetEmpInProjectPaging request);
     }
 }

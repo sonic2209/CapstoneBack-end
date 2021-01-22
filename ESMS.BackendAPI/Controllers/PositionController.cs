@@ -20,6 +20,30 @@ namespace ESMS.BackendAPI.Controllers
             _positionService = positionService;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetPositionPaging([FromQuery] GetPositionPagingRequest request)
+        {
+            var positions = await _positionService.GetPositionPaging(request);
+            if (positions == null)
+            {
+                return BadRequest();
+            }
+
+            return Ok(positions);
+        }
+
+        [HttpGet("{empID}")]
+        public async Task<IActionResult> GetEmpPositionPaging(string empID, [FromQuery] GetPositionPagingRequest request)
+        {
+            var positions = await _positionService.GetEmpPositionPaging(empID, request);
+            if (positions == null)
+            {
+                return BadRequest();
+            }
+
+            return Ok(positions);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] PositionCreateRequest request)
         {
