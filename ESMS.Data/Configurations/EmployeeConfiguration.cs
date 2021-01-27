@@ -17,6 +17,7 @@ namespace ESMS.Data.Configurations
             builder.Property(x => x.Address).IsRequired();
             builder.Property(x => x.IdentityNumber).HasMaxLength(200).IsRequired();
             builder.Property(x => x.Status).HasDefaultValue(EmployeeStatus.OnGoing);
+            builder.Property(x => x.Id).ValueGeneratedOnAdd();
         }
     }
 }
