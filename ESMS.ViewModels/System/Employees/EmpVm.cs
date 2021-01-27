@@ -10,10 +10,7 @@ namespace ESMS.ViewModels.System.Employees
         public string Id { get; set; }
 
         [Display(Name = "Tên")]
-        public string FirstName { get; set; }
-
-        [Display(Name = "Họ")]
-        public string LastName { get; set; }
+        public string Name { get; set; }
 
         [Display(Name = "Số điện thoại")]
         public string PhoneNumber { get; set; }
@@ -24,8 +21,8 @@ namespace ESMS.ViewModels.System.Employees
         [Display(Name = "Email")]
         public string Email { get; set; }
 
-        [Display(Name = "Ngày sinh")]
-        public DateTime Dob { get; set; }
+        [Display(Name = "Ngày tạo")]
+        public DateTime DateCreated { get; set; }
         public IList<string> Roles { get; set; }
     }
 }

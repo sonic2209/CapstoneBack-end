@@ -8,14 +8,15 @@ namespace ESMS.ViewModels.System.Employees
     public class EmpCreateRequest
     {
         [Display(Name = "Tên")]
-        public string FirstName { get; set; }
-
-        [Display(Name = "Họ")]
-        public string LastName { get; set; }
+        public string Name { get; set; }
 
         [Display(Name = "Ngày sinh")]
         [DataType(DataType.Date)]
         public DateTime DoB { get; set; }
+        [Display(Name = "CMND")]
+        public string IdentityNumber { get; set; }
+        [Display(Name = "Địa chỉ")]
+        public string Address { get; set; }
 
         public string Email { get; set; }
 

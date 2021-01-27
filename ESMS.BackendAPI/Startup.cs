@@ -1,10 +1,13 @@
 using ESMS.Application.Services.Positions;
 using ESMS.Application.Services.Projects;
+using ESMS.Application.System;
 using ESMS.Data.EF;
+using ESMS.Data.Entities;
 using ESMS.Utilities.Constants;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,8 +34,19 @@ namespace ESMS.BackendAPI
         {
             services.AddDbContext<ESMSDbContext>(option =>
                 option.UseSqlServer(Configuration.GetConnectionString(SystemConstants.MainConnectionString)));
+
+            //Use Identity
+            services.AddIdentity<Employee, Role>()
+                .AddEntityFrameworkStores<ESMSDbContext>()
+                .AddDefaultTokenProviders();
+
+            //Declare DI
             services.AddTransient<IProjectService, ProjectService>();
             services.AddTransient<IPositionService, PositionService>();
+            services.AddTransient<IEmployeeService, EmployeeService>();
+            services.AddTransient<UserManager<Employee>,UserManager<Employee>>();
+            services.AddTransient<SignInManager<Employee>, SignInManager<Employee>>();
+            services.AddTransient<RoleManager<Role>, RoleManager<Role>>();
 
             services.AddControllersWithViews();
 
@@ -58,6 +72,7 @@ namespace ESMS.BackendAPI
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
+            app.UseAuthentication();
             app.UseRouting();
 
             app.UseAuthorization();

@@ -10,14 +10,11 @@ namespace ESMS.ViewModels.System.Employees
         public string Id { get; set; }
 
         [Display(Name = "Tên")]
-        public string FirstName { get; set; }
+        public string Name { get; set; }
 
-        [Display(Name = "Họ")]
-        public string LastName { get; set; }
-
-        [Display(Name = "Ngày sinh")]
+        [Display(Name = "Ngày tạo")]
         [DataType(DataType.Date)]
-        public DateTime DoB { get; set; }
+        public DateTime DateCreated { get; set; }
 
         public string Email { get; set; }
 
