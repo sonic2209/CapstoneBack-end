@@ -1,5 +1,7 @@
+using ESMS.Application.Certifications;
 using ESMS.Application.Services.Positions;
 using ESMS.Application.Services.Projects;
+using ESMS.Application.Skills;
 using ESMS.Data.EF;
 using ESMS.Utilities.Constants;
 using Microsoft.AspNetCore.Builder;
@@ -33,7 +35,8 @@ namespace ESMS.BackendAPI
                 option.UseSqlServer(Configuration.GetConnectionString(SystemConstants.MainConnectionString)));
             services.AddTransient<IProjectService, ProjectService>();
             services.AddTransient<IPositionService, PositionService>();
-
+            services.AddTransient<ISkillService, SkillService>();
+            services.AddTransient<ICertificationService, CertificationService>();
             services.AddControllersWithViews();
 
             services.AddSwaggerGen(c =>
