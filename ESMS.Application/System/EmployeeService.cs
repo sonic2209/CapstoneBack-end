@@ -167,7 +167,6 @@ namespace ESMS.Application.System
                 return new ApiErrorResult<bool>("Email đã tồn tại");
             }
             var user = await _userManager.FindByIdAsync(id.ToString());
-            user.DateCreated = request.DateCreated;
             user.Email = request.Email;
             user.Name = request.Name;
             user.PhoneNumber = request.PhoneNumber;
