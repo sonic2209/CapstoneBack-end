@@ -1,5 +1,6 @@
 ﻿using ESMS.Data.Configurations;
 using ESMS.Data.Entities;
+using ESMS.Data.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,8 @@ namespace ESMS.Data.EF
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            //configure fluent API
+            modelBuilder.ApplyConfiguration(new AppConfigConfiguration());
             modelBuilder.ApplyConfiguration(new CertificationConfiguration());
             modelBuilder.ApplyConfiguration(new EmployeeConfiguration());
             modelBuilder.ApplyConfiguration(new EmpSkillConfiguration());
@@ -32,6 +35,9 @@ namespace ESMS.Data.EF
             modelBuilder.Entity<IdentityUserLogin<string>>().ToTable("AppEmpLogins").HasKey(x => x.UserId);
             modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("AppRoleClaims");
             modelBuilder.Entity<IdentityUserToken<string>>().ToTable("AppEmpTokens").HasKey(x => x.UserId);
+
+            //Data seeding
+            modelBuilder.Seed();
         }
 
         public DbSet<Certification> Certifications { get; set; }
