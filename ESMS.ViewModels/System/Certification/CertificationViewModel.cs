@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ESMS.ViewModels.Certification
+namespace ESMS.ViewModels.System.Certification
 {
     public class CertificationViewModel
     {

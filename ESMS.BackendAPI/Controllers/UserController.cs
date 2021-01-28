@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ESMS.Application.System;
+using ESMS.Application.System.Employees;
 using ESMS.ViewModels.System.Employees;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -34,6 +34,7 @@ namespace ESMS.BackendAPI.Controllers
             }
             return Ok(result);
         }
+
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] EmpCreateRequest request)
@@ -62,7 +63,7 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(result);
         }
 
-        //http://localhost/api/users/paging?pageIndex=1&pageSize=10&keyword=
+        //http://localhost/api/user/paging?pageIndex=1&pageSize=10&keyword=
         [HttpGet("paging")]
         public async Task<IActionResult> GetAllPaging([FromQuery] GetEmpPagingRequest request)
         {
@@ -76,6 +77,7 @@ namespace ESMS.BackendAPI.Controllers
             var user = await _userService.GetById(id);
             return Ok(user);
         }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
@@ -84,4 +86,3 @@ namespace ESMS.BackendAPI.Controllers
         }
     }
 }
-

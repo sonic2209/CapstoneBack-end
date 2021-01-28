@@ -7,7 +7,6 @@ namespace ESMS.ViewModels.Services.Project
 {
     public class GetEmpInProjectPaging : PagingRequestBase
     {
-        public string Name { get; set; }
-        public string PosName { get; set; }
+        public string Keyword { get; set; }
     }
 }

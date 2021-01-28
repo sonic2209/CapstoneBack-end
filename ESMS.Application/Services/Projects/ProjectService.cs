@@ -1,7 +1,6 @@
 ﻿using ESMS.Data.EF;
 using ESMS.Data.Entities;
 using ESMS.Data.Enums;
-using ESMS.Utilities.Exceptions;
 using ESMS.ViewModels.Common;
 using ESMS.ViewModels.Services.Project;
 using System;
@@ -22,7 +21,7 @@ namespace ESMS.Application.Services.Projects
             _context = context;
         }
 
-        public async Task<int> Create(ProjectCreateRequest request, string empID)
+        public async Task<ApiResult<bool>> Create(ProjectCreateRequest request)
         {
             var project = new Project()
             {
@@ -31,26 +30,35 @@ namespace ESMS.Application.Services.Projects
                 Skateholder = request.Skateholder,
                 DateCreated = DateTime.Now,
                 Status = ProjectStatus.Pending,
-                ProjectManagerID = empID
+                ProjectManagerID = request.EmpID
             };
             _context.Projects.Add(project);
-            await _context.SaveChangesAsync();
-            return project.ProjectID;
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                return new ApiErrorResult<bool>("Create project failed");
+            }
+            return new ApiSuccessResult<bool>();
         }
 
-        public async Task<int> Delete(int projectID)
+        public async Task<ApiResult<bool>> Delete(int projectID)
         {
             var project = await _context.Projects.FindAsync(projectID);
-            if (project == null) throw new ESMSException($"Cannot find a projectID: {projectID}");
+            if (project == null) return new ApiErrorResult<bool>("Project does not exist");
 
-            _context.Projects.Remove(project);
-            return await _context.SaveChangesAsync();
+            project.DateEnd = DateTime.Now;
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                return new ApiErrorResult<bool>("Delete project failed");
+            }
+            return new ApiSuccessResult<bool>();
         }
 
-        public async Task<ProjectViewModel> GetByID(int projectID)
+        public async Task<ApiResult<ProjectViewModel>> GetByID(int projectID)
         {
             var project = await _context.Projects.FindAsync(projectID);
-            if (project == null) throw new ESMSException($"Cannot find a projectID: {projectID}");
+            if (project == null) return new ApiErrorResult<ProjectViewModel>("Project does not exist");
 
             var projectViewModel = new ProjectViewModel()
             {
@@ -58,26 +66,24 @@ namespace ESMS.Application.Services.Projects
                 ProjectName = project.ProjectName,
                 Description = project.Description,
                 Skateholder = project.Skateholder,
+                DateCreated = project.DateCreated,
+                DateEnd = project.DateEnd,
                 Status = project.Status
             };
 
-            return projectViewModel;
+            return new ApiSuccessResult<ProjectViewModel>(projectViewModel);
         }
 
-        public async Task<PagedResult<EmpInProjectViewModel>> GetEmpInProjectPaging(int projectID, GetEmpInProjectPaging request)
+        public async Task<ApiResult<PagedResult<EmpInProjectViewModel>>> GetEmpInProjectPaging(int projectID, GetEmpInProjectPaging request)
         {
             var query = from e in _context.Employees
                         join ep in _context.EmpPositionInProjects on e.Id equals ep.EmpID
                         join po in _context.Positions on ep.PosID equals po.PosID
                         select new { e, ep, po };
             query = query.Where(x => x.ep.ProjectID == projectID);
-            if (!string.IsNullOrEmpty(request.Name))
+            if (!string.IsNullOrEmpty(request.Keyword))
             {
-                query = query.Where(x => x.e.Name.Contains(request.Name));
-            }
-            if (!string.IsNullOrEmpty(request.PosName))
-            {
-                query = query.Where(x => x.po.Name.Contains(request.PosName));
+                query = query.Where(x => x.e.Name.Contains(request.Keyword) || x.po.Name.Contains(request.Keyword));
             }
             int totalRow = await query.CountAsync();
 
@@ -85,6 +91,7 @@ namespace ESMS.Application.Services.Projects
                 .Take(request.PageSize)
                 .Select(x => new EmpInProjectViewModel()
                 {
+                    EmployeeID = x.e.Id,
                     Name = x.e.Name,
                     PosName = x.po.Name,
                     Description = x.po.Description,
@@ -93,14 +100,16 @@ namespace ESMS.Application.Services.Projects
 
             var pagedResult = new PagedResult<EmpInProjectViewModel>()
             {
-                TotalRecord = totalRow,
+                TotalRecords = totalRow,
+                PageIndex = request.PageIndex,
+                PageSize = request.PageSize,
                 Items = data
             };
 
-            return pagedResult;
+            return new ApiSuccessResult<PagedResult<EmpInProjectViewModel>>(pagedResult);
         }
 
-        public async Task<PagedResult<ProjectViewModel>> GetProjectPaging(GetProjectPagingRequest request)
+        public async Task<ApiResult<PagedResult<ProjectViewModel>>> GetProjectPaging(GetProjectPagingRequest request)
         {
             var query = from p in _context.Projects
                         select new { p };
@@ -108,6 +117,8 @@ namespace ESMS.Application.Services.Projects
             {
                 query = query.Where(x => x.p.ProjectName.Contains(request.Keyword));
             }
+
+            //Paging
             int totalRow = await query.CountAsync();
 
             var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
@@ -118,38 +129,53 @@ namespace ESMS.Application.Services.Projects
                     ProjectName = x.p.ProjectName,
                     Description = x.p.Description,
                     Skateholder = x.p.Skateholder,
+                    DateCreated = x.p.DateCreated,
+                    DateEnd = x.p.DateEnd,
                     Status = x.p.Status
                 }).ToListAsync();
 
+            //Select and projection
             var pagedResult = new PagedResult<ProjectViewModel>()
             {
-                TotalRecord = totalRow,
+                TotalRecords = totalRow,
+                PageIndex = request.PageIndex,
+                PageSize = request.PageSize,
                 Items = data
             };
 
-            return pagedResult;
+            return new ApiSuccessResult<PagedResult<ProjectViewModel>>(pagedResult);
         }
 
-        public async Task<int> Update(ProjectUpdateRequest request)
+        public async Task<ApiResult<bool>> Update(int projectID, ProjectUpdateRequest request)
         {
-            var project = await _context.Projects.FindAsync(request.ProjectID);
-            if (project == null) throw new ESMSException($"Cannot find a projectID: {request.ProjectID}");
+            var project = await _context.Projects.FindAsync(projectID);
+            if (project == null) return new ApiErrorResult<bool>("Project does not exist");
 
             project.ProjectName = request.ProjectName;
             project.Description = request.Description;
             project.Skateholder = request.Skateholder;
 
-            return await _context.SaveChangesAsync();
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                return new ApiErrorResult<bool>("Update project failed");
+            }
+            return new ApiSuccessResult<bool>();
         }
 
-        public async Task<bool> UpdateStatus(int projectID, int status)
+        public async Task<ApiResult<bool>> UpdateStatus(int projectID, int status)
         {
             var project = await _context.Projects.FindAsync(projectID);
-            if (project == null) throw new ESMSException($"Cannot find a projectID: {projectID}");
+            if (project == null) return new ApiErrorResult<bool>("Project does not exist");
 
             project.Status = (ProjectStatus)status;
 
-            return await _context.SaveChangesAsync() > 0;
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                return new ApiErrorResult<bool>("Update project failed");
+            }
+            return new ApiSuccessResult<bool>();
         }
     }
 }

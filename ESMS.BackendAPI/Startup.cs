@@ -1,6 +1,8 @@
 using ESMS.Application.Services.Positions;
 using ESMS.Application.Services.Projects;
-using ESMS.Application.System;
+using ESMS.Application.System.Certifications;
+using ESMS.Application.System.Employees;
+using ESMS.Application.System.Skills;
 using ESMS.Data.EF;
 using ESMS.Data.Entities;
 using ESMS.Utilities.Constants;
@@ -44,7 +46,9 @@ namespace ESMS.BackendAPI
             services.AddTransient<IProjectService, ProjectService>();
             services.AddTransient<IPositionService, PositionService>();
             services.AddTransient<IEmployeeService, EmployeeService>();
-            services.AddTransient<UserManager<Employee>,UserManager<Employee>>();
+            services.AddTransient<ICertificationService, CertificationService>();
+            services.AddTransient<ISkillService, SkillService>();
+            services.AddTransient<UserManager<Employee>, UserManager<Employee>>();
             services.AddTransient<SignInManager<Employee>, SignInManager<Employee>>();
             services.AddTransient<RoleManager<Role>, RoleManager<Role>>();
 

@@ -7,7 +7,6 @@ namespace ESMS.ViewModels.Services.Project
 {
     public class ProjectUpdateRequest
     {
-        public int ProjectID { get; set; }
         public string ProjectName { get; set; }
         public string Description { get; set; }
         public string Skateholder { get; set; }

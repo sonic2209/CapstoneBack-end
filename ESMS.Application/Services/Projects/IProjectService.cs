@@ -10,18 +10,18 @@ namespace ESMS.Application.Services.Projects
 {
     public interface IProjectService
     {
-        Task<int> Create(ProjectCreateRequest request, string empID);
+        Task<ApiResult<bool>> Create(ProjectCreateRequest request);
 
-        Task<int> Update(ProjectUpdateRequest request);
+        Task<ApiResult<bool>> Update(int projectID, ProjectUpdateRequest request);
 
-        Task<bool> UpdateStatus(int projectID, int status);
+        Task<ApiResult<bool>> UpdateStatus(int projectID, int status);
 
-        Task<int> Delete(int projectID);
+        Task<ApiResult<bool>> Delete(int projectID);
 
-        Task<ProjectViewModel> GetByID(int projectID);
+        Task<ApiResult<ProjectViewModel>> GetByID(int projectID);
 
-        Task<PagedResult<ProjectViewModel>> GetProjectPaging(GetProjectPagingRequest request);
+        Task<ApiResult<PagedResult<ProjectViewModel>>> GetProjectPaging(GetProjectPagingRequest request);
 
-        Task<PagedResult<EmpInProjectViewModel>> GetEmpInProjectPaging(int projectID, GetEmpInProjectPaging request);
+        Task<ApiResult<PagedResult<EmpInProjectViewModel>>> GetEmpInProjectPaging(int projectID, GetEmpInProjectPaging request);
     }
 }

@@ -1,6 +1,5 @@
 ﻿using ESMS.Data.EF;
 using ESMS.Data.Entities;
-using ESMS.Utilities.Exceptions;
 using ESMS.ViewModels.Common;
 using ESMS.ViewModels.Services.Position;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +19,7 @@ namespace ESMS.Application.Services.Positions
             _context = context;
         }
 
-        public async Task<int> Create(PositionCreateRequest request)
+        public async Task<ApiResult<bool>> Create(PositionCreateRequest request)
         {
             var position = new Position()
             {
@@ -28,49 +27,15 @@ namespace ESMS.Application.Services.Positions
                 Description = request.Description,
             };
             _context.Positions.Add(position);
-            await _context.SaveChangesAsync();
-            return position.PosID;
-        }
-
-        public async Task<int> Delete(int positionID)
-        {
-            var position = await _context.Positions.FindAsync(positionID);
-            if (position == null) throw new ESMSException($"Cannot find a projectID: {positionID}");
-
-            _context.Positions.Remove(position);
-            return await _context.SaveChangesAsync();
-        }
-
-        public async Task<PagedResult<PositionViewModel>> GetEmpPositionPaging(string EmpID, GetPositionPagingRequest request)
-        {
-            var query = from p in _context.Positions
-                        join ep in _context.EmpPositionInProjects on p.PosID equals ep.PosID
-                        select new { p, ep };
-            query = query.Where(x => x.ep.EmpID.Equals(EmpID));
-            if (!string.IsNullOrEmpty(request.Keyword))
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
             {
-                query = query.Where(x => x.p.Name.Contains(request.Keyword));
+                return new ApiErrorResult<bool>("Create position failed");
             }
-            int totalRow = await query.CountAsync();
-            var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .Select(x => new PositionViewModel()
-                {
-                    PosID = x.p.PosID,
-                    Name = x.p.Name,
-                    Description = x.p.Description
-                }).ToListAsync();
-
-            var pagedResult = new PagedResult<PositionViewModel>()
-            {
-                TotalRecord = totalRow,
-                Items = data
-            };
-
-            return pagedResult;
+            return new ApiSuccessResult<bool>();
         }
 
-        public async Task<PagedResult<PositionViewModel>> GetPositionPaging(GetPositionPagingRequest request)
+        public async Task<ApiResult<PagedResult<PositionViewModel>>> GetPositionPaging(GetPositionPagingRequest request)
         {
             var query = from p in _context.Positions
                         select new { p };
@@ -79,7 +44,6 @@ namespace ESMS.Application.Services.Positions
                 query = query.Where(x => x.p.Name.Contains(request.Keyword));
             }
             int totalRow = await query.CountAsync();
-
             var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .Select(x => new PositionViewModel()
@@ -91,22 +55,29 @@ namespace ESMS.Application.Services.Positions
 
             var pagedResult = new PagedResult<PositionViewModel>()
             {
-                TotalRecord = totalRow,
+                TotalRecords = totalRow,
+                PageIndex = request.PageIndex,
+                PageSize = request.PageSize,
                 Items = data
             };
 
-            return pagedResult;
+            return new ApiSuccessResult<PagedResult<PositionViewModel>>(pagedResult);
         }
 
-        public async Task<int> Update(PositionUpdateRequest request)
+        public async Task<ApiResult<bool>> Update(int positionID, PositionUpdateRequest request)
         {
-            var position = await _context.Positions.FindAsync(request.PosID);
-            if (position == null) throw new ESMSException($"Cannot find a projectID: {request.PosID}");
+            var position = await _context.Positions.FindAsync(positionID);
+            if (position == null) new ApiErrorResult<bool>("Position does not exist");
 
             position.Name = request.Name;
             position.Description = request.Description;
 
-            return await _context.SaveChangesAsync();
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                return new ApiErrorResult<bool>("Update position failed");
+            }
+            return new ApiSuccessResult<bool>();
         }
     }
 }

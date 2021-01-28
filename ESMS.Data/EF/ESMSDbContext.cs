@@ -29,6 +29,9 @@ namespace ESMS.Data.EF
             modelBuilder.ApplyConfiguration(new EmpPositionInProjectConfiguration());
             modelBuilder.ApplyConfiguration(new EmpCertificationConfiguration());
             modelBuilder.ApplyConfiguration(new RoleConfiguration());
+            modelBuilder.ApplyConfiguration(new PositionRequirementConfiguration());
+            modelBuilder.ApplyConfiguration(new SkillInPositionConfiguration());
+            modelBuilder.ApplyConfiguration(new SkillRequirementConfiguration());
 
             modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("AppUserClaims");
             modelBuilder.Entity<IdentityUserRole<string>>().ToTable("AppUserRoles").HasKey(x => new { x.UserId, x.RoleId });
@@ -48,5 +51,8 @@ namespace ESMS.Data.EF
         public DbSet<Skill> Skills { get; set; }
         public DbSet<EmpCertification> EmpCertifications { get; set; }
         public DbSet<EmpPositionInProject> EmpPositionInProjects { get; set; }
+        public DbSet<PositionRequirement> PositionRequirements { get; set; }
+        public DbSet<SkillInPosition> SkillInPositions { get; set; }
+        public DbSet<SkillRequirement> SkillRequirements { get; set; }
     }
 }

@@ -7,6 +7,7 @@ namespace ESMS.ViewModels.Services.Project
 {
     public class EmpInProjectViewModel
     {
+        public string EmployeeID { get; set; }
         public string Name { get; set; }
         public string PosName { get; set; }
         public string Description { get; set; }

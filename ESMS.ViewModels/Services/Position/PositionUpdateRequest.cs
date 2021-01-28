@@ -6,7 +6,6 @@ namespace ESMS.ViewModels.Services.Position
 {
     public class PositionUpdateRequest
     {
-        public int PosID { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
     }

@@ -9,14 +9,10 @@ namespace ESMS.Application.Services.Positions
 {
     public interface IPositionService
     {
-        Task<int> Create(PositionCreateRequest request);
+        Task<ApiResult<bool>> Create(PositionCreateRequest request);
 
-        Task<int> Update(PositionUpdateRequest request);
+        Task<ApiResult<bool>> Update(int positionID, PositionUpdateRequest request);
 
-        Task<int> Delete(int positionID);
-
-        Task<PagedResult<PositionViewModel>> GetPositionPaging(GetPositionPagingRequest request);
-
-        Task<PagedResult<PositionViewModel>> GetEmpPositionPaging(string EmpID, GetPositionPagingRequest request);
+        Task<ApiResult<PagedResult<PositionViewModel>>> GetPositionPaging(GetPositionPagingRequest request);
     }
 }

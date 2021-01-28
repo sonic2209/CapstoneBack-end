@@ -10,5 +10,7 @@ namespace ESMS.Data.Entities
         public string Name { get; set; }
         public string Description { get; set; }
         public List<EmpPositionInProject> EmpPosInProjects { get; set; }
+        public List<PositionRequirement> PositionRequirements { get; set; }
+        public List<SkillInPosition> SkillInPositions { get; set; }
     }
 }

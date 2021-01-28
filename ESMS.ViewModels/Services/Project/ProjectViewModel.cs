@@ -11,6 +11,8 @@ namespace ESMS.ViewModels.Services.Project
         public string ProjectName { get; set; }
         public string Description { get; set; }
         public string Skateholder { get; set; }
+        public DateTime? DateCreated { get; set; }
+        public DateTime? DateEnd { get; set; }
         public ProjectStatus Status { get; set; }
     }
 }

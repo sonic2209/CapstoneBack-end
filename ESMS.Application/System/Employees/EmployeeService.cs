@@ -13,7 +13,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ESMS.Application.System
+namespace ESMS.Application.System.Employees
 {
     public class EmployeeService : IEmployeeService
     {
@@ -30,15 +30,16 @@ namespace ESMS.Application.System
             _roleManager = roleManager;
             _config = config;
         }
+
         public async Task<ApiResult<string>> Authenticate(LoginRequest request)
         {
             var user = await _userManager.FindByNameAsync(request.UserName);
-            if (user == null) return new ApiErrorResult<string>("Tài khoản không tồn tại");
+            if (user == null) return new ApiErrorResult<string>("Account does not exist");
 
             var result = await _signInManager.PasswordSignInAsync(user, request.Password, request.RememberMe, true);
             if (!result.Succeeded)
             {
-                return new ApiErrorResult<string>("Thông tin đăng nhập không đúng");
+                return new ApiErrorResult<string>("Username or password is not correct");
             }
             var roles = await _userManager.GetRolesAsync(user);
             var claims = new[]
@@ -65,11 +66,11 @@ namespace ESMS.Application.System
             var user = await _userManager.FindByNameAsync(request.UserName);
             if (user != null)
             {
-                return new ApiErrorResult<bool>("Tài khoản đã tồn tại");
+                return new ApiErrorResult<bool>("Account existed");
             }
             if (await _userManager.FindByEmailAsync(request.Email) != null)
             {
-                return new ApiErrorResult<bool>("Email đã tồn tại");
+                return new ApiErrorResult<bool>("Email existed");
             }
             user = new Employee()
             {
@@ -86,7 +87,7 @@ namespace ESMS.Application.System
             {
                 return new ApiSuccessResult<bool>();
             }
-            return new ApiErrorResult<bool>("Đăng ký không thành công");
+            return new ApiErrorResult<bool>("Register failed");
         }
 
         public async Task<ApiResult<bool>> Delete(string id)
@@ -94,7 +95,7 @@ namespace ESMS.Application.System
             var user = await _userManager.FindByIdAsync(id.ToString());
             if (user == null)
             {
-                return new ApiErrorResult<bool>("User không tồn tại");
+                return new ApiErrorResult<bool>("User does not exist");
             }
             user.DateEnd = DateTime.Now;
             var result = await _userManager.UpdateAsync(user);
@@ -102,7 +103,7 @@ namespace ESMS.Application.System
             {
                 return new ApiSuccessResult<bool>();
             }
-            return new ApiErrorResult<bool>("Xóa không thành công");
+            return new ApiErrorResult<bool>("Delete user failed");
         }
 
         public async Task<ApiResult<EmpVm>> GetById(string id)
@@ -110,7 +111,7 @@ namespace ESMS.Application.System
             var user = await _userManager.FindByIdAsync(id.ToString());
             if (user == null)
             {
-                return new ApiErrorResult<EmpVm>("User không tồn tại");
+                return new ApiErrorResult<EmpVm>("User does not exist");
             }
             var roles = await _userManager.GetRolesAsync(user);
             var empVm = new EmpVm()
@@ -151,7 +152,7 @@ namespace ESMS.Application.System
                 //4.Select and projection
                 var pagedResult = new PagedResult<EmpVm>()
                 {
-                    TotalRecord = totalRow,
+                    TotalRecords = totalRow,
                     PageIndex = request.PageIndex,
                     PageSize = request.PageSize,
                     Items = data
@@ -164,7 +165,7 @@ namespace ESMS.Application.System
         {
             if (await _userManager.Users.AnyAsync(x => x.Email.Equals(request.Email) && x.Id != id))
             {
-                return new ApiErrorResult<bool>("Email đã tồn tại");
+                return new ApiErrorResult<bool>("Email existed");
             }
             var user = await _userManager.FindByIdAsync(id.ToString());
             user.DateCreated = request.DateCreated;
@@ -176,7 +177,7 @@ namespace ESMS.Application.System
             {
                 return new ApiSuccessResult<bool>();
             }
-            return new ApiErrorResult<bool>("Cập nhật không thành công");
+            return new ApiErrorResult<bool>("Update user failed");
         }
     }
 }

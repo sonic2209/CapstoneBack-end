@@ -17,5 +17,6 @@ namespace ESMS.Data.Entities
         public string ProjectManagerID { get; set; }
         public Employee Employee { get; set; }
         public List<EmpPositionInProject> EmpPosInProjects { get; set; }
+        public List<PositionRequirement> PositionRequirements { get; set; }
     }
 }

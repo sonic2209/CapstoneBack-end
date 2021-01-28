@@ -1,5 +1,5 @@
-﻿using ESMS.Application.Certifications;
-using ESMS.ViewModels.Certification;
+﻿using ESMS.Application.System.Certifications;
+using ESMS.ViewModels.System.Certification;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -21,48 +21,55 @@ namespace ESMS.BackendAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm] CertificationCreateRequest request)
+        public async Task<IActionResult> Create([FromBody] CertificationCreateRequest request)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
-            }
-            var affectedResult = await _certificationService.Create(request);
-            if (affectedResult == 0)
                 return BadRequest();
-            return Ok();
+            }
+            var result = await _certificationService.Create(request);
+
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
 
-        [HttpPut]
-        public async Task<IActionResult> Update([FromForm] CertificationUpdateRequest request)
+        //PUT: http://localhost/api/certification/id
+        [HttpPut("{certificationID}")]
+        public async Task<IActionResult> Update(int certificationID, [FromBody] CertificationUpdateRequest request)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest();
             }
-            var affectedResult = await _certificationService.Update(request);
-            if (affectedResult == 0)
-                return BadRequest();
-            return Ok();
+            var result = await _certificationService.Update(certificationID, request);
+
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
 
-        [HttpDelete("{certificationId}")]
-        public async Task<IActionResult> Delete(int certificationId)
+        //Delete: http://localhost/api/certification/id
+        [HttpDelete("{certificationID}")]
+        public async Task<IActionResult> Delete(int certificationID)
         {
-            var affectedResult = await _certificationService.Delete(certificationId);
-            if (affectedResult == 0)
-                return BadRequest();
-            return Ok();
+            var result = await _certificationService.Delete(certificationID);
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
 
-        [HttpGet]
+        //Get: http://localhost/api/certification/getCertifications
+        [HttpGet("getCertifications")]
         public async Task<IActionResult> GetCertifications()
         {
             var certifications = await _certificationService.GetCertifications();
-            if (certifications == null)
-            {
-                return BadRequest();
-            }
             return Ok(certifications);
         }
     }

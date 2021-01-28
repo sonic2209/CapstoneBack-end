@@ -20,65 +20,45 @@ namespace ESMS.BackendAPI.Controllers
             _positionService = positionService;
         }
 
-        [HttpGet]
+        //http://localhost/api/position/paging?pageIndex=1&pageSize=10&keyword=
+        [HttpGet("paging")]
         public async Task<IActionResult> GetPositionPaging([FromQuery] GetPositionPagingRequest request)
         {
             var positions = await _positionService.GetPositionPaging(request);
-            if (positions == null)
-            {
-                return BadRequest();
-            }
-
-            return Ok(positions);
-        }
-
-        [HttpGet("{empID}")]
-        public async Task<IActionResult> GetEmpPositionPaging(string empID, [FromQuery] GetPositionPagingRequest request)
-        {
-            var positions = await _positionService.GetEmpPositionPaging(empID, request);
-            if (positions == null)
-            {
-                return BadRequest();
-            }
-
             return Ok(positions);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm] PositionCreateRequest request)
+        public async Task<IActionResult> Create([FromBody] PositionCreateRequest request)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
-            }
-            var positionId = await _positionService.Create(request);
-
-            if (positionId == 0)
                 return BadRequest();
+            }
+            var result = await _positionService.Create(request);
 
-            return Ok();
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
 
-        [HttpPut]
-        public async Task<IActionResult> Update([FromForm] PositionUpdateRequest request)
+        //http://localhost/api/position/id
+        [HttpPut("{positionID}")]
+        public async Task<IActionResult> Update(int positionID, [FromBody] PositionUpdateRequest request)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest();
             }
-            var affectedResult = await _positionService.Update(request);
-            if (affectedResult == 0)
-                return BadRequest();
-            return Ok();
-        }
+            var result = await _positionService.Update(positionID, request);
 
-        [HttpDelete("{positionId}")]
-        public async Task<IActionResult> Delete(int positionId)
-        {
-            var affectedResult = await _positionService.Delete(positionId);
-            if (affectedResult == 0)
-                return BadRequest();
-            return Ok();
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
     }
 }

@@ -20,61 +20,64 @@ namespace ESMS.BackendAPI.Controllers
             _projectService = projectService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetByID(int projectId)
+        //Get:http://localhost/api/project/id
+        [HttpGet("{projectID}")]
+        public async Task<IActionResult> GetByID(int projectID)
         {
-            var project = await _projectService.GetByID(projectId);
-            if (project == null)
-                return BadRequest("Cannot find project");
+            var project = await _projectService.GetByID(projectID);
             return Ok(project);
         }
 
-        [HttpGet("{projectID}")]
-        public async Task<IActionResult> GetEmpinProjectPaging(int projectID, [FromQuery] GetEmpInProjectPaging request)
+        //http://localhost/api/project/paging?pageIndex=1&pageSize=10&keyword=
+        [HttpGet("paging")]
+        public async Task<IActionResult> GetProjectPaging([FromQuery] GetProjectPagingRequest request)
         {
-            var employees = await _projectService.GetEmpInProjectPaging(projectID, request);
-            if (employees == null)
-                return BadRequest("There are no employee");
-            return Ok(employees);
+            var project = await _projectService.GetProjectPaging(request);
+            return Ok(project);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm] ProjectCreateRequest request, string empID)
+        public async Task<IActionResult> Create([FromBody] ProjectCreateRequest request)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
-            }
-            var projectId = await _projectService.Create(request, empID);
-
-            if (projectId == 0)
                 return BadRequest();
+            }
+            var result = await _projectService.Create(request);
 
-            var project = await _projectService.GetByID(projectId);
-
-            return CreatedAtAction(nameof(GetByID), new { id = projectId }, project);
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
 
-        [HttpPut]
-        public async Task<IActionResult> Update([FromForm] ProjectUpdateRequest request)
+        //Put:http://localhost/api/project/id
+        [HttpPut("projectID")]
+        public async Task<IActionResult> Update(int projectID, [FromBody] ProjectUpdateRequest request)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
-            }
-            var affectedResult = await _projectService.Update(request);
-            if (affectedResult == 0)
                 return BadRequest();
-            return Ok();
+            }
+            var result = await _projectService.Update(projectID, request);
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
 
+        //Delete:http://localhost/api/project/id
         [HttpDelete("{projectId}")]
         public async Task<IActionResult> Delete(int projectId)
         {
-            var affectedResult = await _projectService.Delete(projectId);
-            if (affectedResult == 0)
-                return BadRequest();
-            return Ok();
+            var result = await _projectService.Delete(projectId);
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
     }
 }

@@ -4,14 +4,16 @@ using ESMS.Data.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ESMS.Data.Migrations
 {
     [DbContext(typeof(ESMSDbContext))]
-    partial class ESMSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210128083042_addRequirement")]
+    partial class addRequirement
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -234,8 +236,8 @@ namespace ESMS.Data.Migrations
                             Id = "69BD714F-9576-45BA-B5B7-F00649BE00DE",
                             AccessFailedCount = 0,
                             Address = "580 Quang Trung P10",
-                            ConcurrencyStamp = "861655ae-77e7-4b4d-b71a-96c56b57961b",
-                            DateCreated = new DateTime(2021, 1, 28, 20, 22, 58, 930, DateTimeKind.Local).AddTicks(2610),
+                            ConcurrencyStamp = "5907b6e1-c035-4bf8-9919-5e14f9dd1cda",
+                            DateCreated = new DateTime(2021, 1, 28, 15, 30, 41, 512, DateTimeKind.Local).AddTicks(3717),
                             Email = "resker123@gmail.com",
                             EmailConfirmed = true,
                             IdentityNumber = "0123456789",
@@ -243,7 +245,7 @@ namespace ESMS.Data.Migrations
                             Name = "Pham Tuan",
                             NormalizedEmail = "resker123@gmail.com",
                             NormalizedUserName = "admin",
-                            PasswordHash = "AQAAAAEAACcQAAAAEPDYQgaszF9KsZEMfQyftpLSK7VdKM29A/Bgx4WqvU1Y8YKCFBbQvFo0908v0eWK5w==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEIR66WvHHaDcj4uilGrkoirRoG/AOY+G8P1ayJxme3EL97IR+44MZukoXPEMbmximw==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
                             Status = 0,
@@ -293,7 +295,7 @@ namespace ESMS.Data.Migrations
 
                     b.HasIndex("ProjectID");
 
-                    b.ToTable("RequiredPositions");
+                    b.ToTable("PositionRequirements");
                 });
 
             modelBuilder.Entity("ESMS.Data.Entities.Project", b =>
@@ -364,7 +366,7 @@ namespace ESMS.Data.Migrations
                         new
                         {
                             Id = "8D04DCE2-969A-435D-BBA4-DF3F325983DC",
-                            ConcurrencyStamp = "78bb4861-26ba-40d9-90a5-c6d0cbb9bed9",
+                            ConcurrencyStamp = "e614403e-6de5-448a-8671-a2e9c70d3d98",
                             Description = "Administrator role",
                             Name = "admin",
                             NormalizedName = "admin"
@@ -432,7 +434,7 @@ namespace ESMS.Data.Migrations
 
                     b.HasIndex("SkillID");
 
-                    b.ToTable("RequiredSkills");
+                    b.ToTable("SkillRequirements");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>

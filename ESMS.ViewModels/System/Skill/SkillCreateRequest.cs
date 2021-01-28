@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ESMS.ViewModels.Skill
+namespace ESMS.ViewModels.System.Skill
 {
     public class SkillCreateRequest
     {

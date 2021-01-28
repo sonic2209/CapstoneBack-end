@@ -3,11 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ESMS.ViewModels.Skill
+namespace ESMS.ViewModels.System.Skill
 {
-    public class SkillViewModel
+    public class SkillUpdateRequest
     {
-        public int SkillID { get; set; }
         public string SkillName { get; set; }
+        public int SkillType { get; set; }
     }
 }

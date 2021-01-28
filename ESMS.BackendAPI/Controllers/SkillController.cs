@@ -1,5 +1,5 @@
-﻿using ESMS.Application.Skills;
-using ESMS.ViewModels.Skill;
+﻿using ESMS.Application.System.Skills;
+using ESMS.ViewModels.System.Skill;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -21,48 +21,54 @@ namespace ESMS.BackendAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm] SkillCreateRequest request)
+        public async Task<IActionResult> Create([FromBody] SkillCreateRequest request)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
-            }
-            var affectedResult = await _skillService.Create(request);
-            if (affectedResult == 0)
                 return BadRequest();
-            return Ok();
+            }
+            var result = await _skillService.Create(request);
+
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
 
+        //Put:http://localhost/api/skill/id
         [HttpPut]
-        public async Task<IActionResult> Update([FromForm] SkillUpdateRequest request)
+        public async Task<IActionResult> Update(int skillID, [FromBody] SkillUpdateRequest request)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest();
             }
-            var affectedResult = await _skillService.Update(request);
-            if (affectedResult == 0)
-                return BadRequest();
-            return Ok();
+            var result = await _skillService.Update(skillID, request);
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
 
-        [HttpDelete("{skillId}")]
-        public async Task<IActionResult> Delete(int skillId)
+        //Delete:http://localhost/api/skill/id
+        [HttpDelete("{skillID}")]
+        public async Task<IActionResult> Delete(int skillID)
         {
-            var affectedResult = await _skillService.Delete(skillId);
-            if (affectedResult == 0)
-                return BadRequest();
-            return Ok();
+            var result = await _skillService.Delete(skillID);
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
 
+        //Get:http://localhost/api/skill/HardSkill
         [HttpGet("{skillType}")]
         public async Task<IActionResult> GetSkill(string skillType)
         {
             var skills = await _skillService.GetSkill(skillType);
-            if (skills == null)
-            {
-                return BadRequest();
-            }
             return Ok(skills);
         }
     }
