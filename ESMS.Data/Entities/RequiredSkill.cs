@@ -4,12 +4,12 @@ using System.Text;
 
 namespace ESMS.Data.Entities
 {
-    public class SkillRequirement
+    public class RequiredSkill
     {
         public int ID { get; set; }
         public int SkillID { get; set; }
-        public int PositionRequirementID { get; set; }
+        public int RequiredPositionID { get; set; }
         public Skill Skill { get; set; }
-        public PositionRequirement PositionRequirement { get; set; }
+        public RequiredPosition RequiredPosition { get; set; }
     }
 }
