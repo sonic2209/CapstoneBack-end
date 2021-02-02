@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 
 namespace ESMS.BackendAPI.Controllers
 {
-    [Route("api/[controller]")]
     [EnableCors("MyPolicy")]
+    [Route("api/[controller]")]
     [ApiController]
     public class SkillController : ControllerBase
     {

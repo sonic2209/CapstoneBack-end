@@ -8,6 +8,7 @@ using ESMS.Data.Entities;
 using ESMS.Utilities.Constants;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -86,6 +87,8 @@ namespace ESMS.BackendAPI
             app.UseAuthentication();
             app.UseRouting();
 
+            app.UseCors("MyPolicy");
+
             app.UseAuthorization();
 
             app.UseSwagger();
@@ -95,13 +98,18 @@ namespace ESMS.BackendAPI
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Swagger CapstoneProject V1");
             });
 
-            app.UseCors("MyPolicy");
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+                endpoints.MapGet("/echo",
+                context => context.Response.WriteAsync("echo"))
+                .RequireCors("MyPolicy");
+
+                endpoints.MapControllers()
+                         .RequireCors("MyPolicy");
             });
         }
     }

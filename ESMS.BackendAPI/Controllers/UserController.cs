@@ -11,8 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ESMS.BackendAPI.Controllers
 {
-    [Route("api/[controller]")]
     [EnableCors("MyPolicy")]
+    [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {
