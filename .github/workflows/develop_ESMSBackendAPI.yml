@@ -32,5 +32,5 @@ jobs:
       with:
         app-name: 'ESMSBackendAPI'
         slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_fe4f6694c9de4075872facc86c11db1d }}
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_4591b48f2020410bb46648f303ac5a1f }}
         package: ${{env.DOTNET_ROOT}}/myapp 
