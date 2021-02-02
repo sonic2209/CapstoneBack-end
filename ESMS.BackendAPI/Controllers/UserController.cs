@@ -5,12 +5,14 @@ using System.Threading.Tasks;
 using ESMS.Application.System.Employees;
 using ESMS.ViewModels.System.Employees;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ESMS.BackendAPI.Controllers
 {
     [Route("api/[controller]")]
+    [EnableCors("MyPolicy")]
     [ApiController]
     public class UserController : ControllerBase
     {
