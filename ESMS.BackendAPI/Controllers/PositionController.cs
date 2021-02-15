@@ -30,6 +30,14 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(positions);
         }
 
+        //http://localhost/api/position/getPositions
+        [HttpGet("getPositions")]
+        public async Task<IActionResult> GetPositions()
+        {
+            var positions = await _positionService.GetPositions();
+            return Ok(positions);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] PositionCreateRequest request)
         {

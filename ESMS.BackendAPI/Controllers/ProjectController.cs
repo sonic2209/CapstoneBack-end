@@ -38,20 +38,17 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(project);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ProjectCreateRequest request)
+        //http://localhost/api/project/empID
+        [HttpPost("{empID}")]
+        public async Task<IActionResult> Create(string empID, [FromBody] ProjectCreateRequest request)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            var result = await _projectService.Create(request);
+            var projectID = await _projectService.Create(empID, request);
 
-            if (!result.IsSuccessed)
-            {
-                return BadRequest(result);
-            }
-            return Ok(result);
+            return Ok(projectID);
         }
 
         //Put:http://localhost/api/project/id

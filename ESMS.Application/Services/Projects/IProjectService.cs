@@ -10,7 +10,7 @@ namespace ESMS.Application.Services.Projects
 {
     public interface IProjectService
     {
-        Task<ApiResult<bool>> Create(ProjectCreateRequest request);
+        Task<ApiResult<int>> Create(string EmpID, ProjectCreateRequest request);
 
         Task<ApiResult<bool>> Update(int projectID, ProjectUpdateRequest request);
 
