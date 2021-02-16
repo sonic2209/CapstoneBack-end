@@ -21,7 +21,7 @@ namespace ESMS.Application.Services.Projects
             _context = context;
         }
 
-        public async Task<ApiResult<bool>> Create(ProjectCreateRequest request)
+        public async Task<ApiResult<int>> Create(string EmpID, ProjectCreateRequest request)
         {
             var project = new Project()
             {
@@ -29,16 +29,18 @@ namespace ESMS.Application.Services.Projects
                 Description = request.Description,
                 Skateholder = request.Skateholder,
                 DateCreated = DateTime.Now,
+                DateBegin = request.DateBegin,
+                DateEstimatedEnd = request.DateEstimatedEnd,
                 Status = ProjectStatus.Pending,
-                ProjectManagerID = request.EmpID
+                ProjectManagerID = EmpID
             };
             _context.Projects.Add(project);
             var result = await _context.SaveChangesAsync();
             if (result == 0)
             {
-                return new ApiErrorResult<bool>("Create project failed");
+                return new ApiErrorResult<int>("Create project failed");
             }
-            return new ApiSuccessResult<bool>();
+            return new ApiSuccessResult<int>(project.ProjectID);
         }
 
         public async Task<ApiResult<bool>> Delete(int projectID)
@@ -66,8 +68,8 @@ namespace ESMS.Application.Services.Projects
                 ProjectName = project.ProjectName,
                 Description = project.Description,
                 Skateholder = project.Skateholder,
-                DateCreated = project.DateCreated,
-                DateEnd = project.DateEnd,
+                DateBegin = project.DateBegin,
+                DateEstimatedEnd = project.DateEstimatedEnd,
                 Status = project.Status
             };
 
@@ -129,8 +131,8 @@ namespace ESMS.Application.Services.Projects
                     ProjectName = x.p.ProjectName,
                     Description = x.p.Description,
                     Skateholder = x.p.Skateholder,
-                    DateCreated = x.p.DateCreated,
-                    DateEnd = x.p.DateEnd,
+                    DateBegin = x.p.DateBegin,
+                    DateEstimatedEnd = x.p.DateEstimatedEnd,
                     Status = x.p.Status
                 }).ToListAsync();
 

@@ -1,4 +1,5 @@
-﻿using ESMS.ViewModels.Common;
+﻿using ESMS.Data.Entities;
+using ESMS.ViewModels.Common;
 using ESMS.ViewModels.Services.Position;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,8 @@ namespace ESMS.Application.Services.Positions
 
         Task<ApiResult<bool>> Update(int positionID, PositionUpdateRequest request);
 
-        Task<ApiResult<PagedResult<PositionViewModel>>> GetPositionPaging(GetPositionPagingRequest request);
+        Task<ApiResult<List<PositionViewModel>>> GetPositions();
+
+        Task<ApiResult<PagedResult<GetPositionPagingViewModel>>> GetPositionPaging(GetPositionPagingRequest request);
     }
 }

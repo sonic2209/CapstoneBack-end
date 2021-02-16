@@ -35,7 +35,7 @@ namespace ESMS.Application.Services.Positions
             return new ApiSuccessResult<bool>();
         }
 
-        public async Task<ApiResult<PagedResult<PositionViewModel>>> GetPositionPaging(GetPositionPagingRequest request)
+        public async Task<ApiResult<PagedResult<GetPositionPagingViewModel>>> GetPositionPaging(GetPositionPagingRequest request)
         {
             var query = from p in _context.Positions
                         select new { p };
@@ -46,14 +46,14 @@ namespace ESMS.Application.Services.Positions
             int totalRow = await query.CountAsync();
             var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .Select(x => new PositionViewModel()
+                .Select(x => new GetPositionPagingViewModel()
                 {
                     PosID = x.p.PosID,
                     Name = x.p.Name,
                     Description = x.p.Description
                 }).ToListAsync();
 
-            var pagedResult = new PagedResult<PositionViewModel>()
+            var pagedResult = new PagedResult<GetPositionPagingViewModel>()
             {
                 TotalRecords = totalRow,
                 PageIndex = request.PageIndex,
@@ -61,7 +61,20 @@ namespace ESMS.Application.Services.Positions
                 Items = data
             };
 
-            return new ApiSuccessResult<PagedResult<PositionViewModel>>(pagedResult);
+            return new ApiSuccessResult<PagedResult<GetPositionPagingViewModel>>(pagedResult);
+        }
+
+        public async Task<ApiResult<List<PositionViewModel>>> GetPositions()
+        {
+            var query = from p in _context.Positions
+                        select new { p };
+            var data = await query.Select(x => new PositionViewModel()
+            {
+                PosID = x.p.PosID,
+                Name = x.p.Name,
+            }).ToListAsync();
+
+            return new ApiSuccessResult<List<PositionViewModel>>(data);
         }
 
         public async Task<ApiResult<bool>> Update(int positionID, PositionUpdateRequest request)
