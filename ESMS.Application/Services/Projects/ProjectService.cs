@@ -23,22 +23,39 @@ namespace ESMS.Application.Services.Projects
 
         public async Task<ApiResult<int>> Create(string EmpID, ProjectCreateRequest request)
         {
-            var project = new Project()
+            var project = _context.Projects.Find(request.ProjectID);
+            if (project != null)
             {
-                ProjectName = request.ProjectName,
-                Description = request.Description,
-                Skateholder = request.Skateholder,
-                DateCreated = DateTime.Now,
-                DateBegin = request.DateBegin,
-                DateEstimatedEnd = request.DateEstimatedEnd,
-                Status = ProjectStatus.Pending,
-                ProjectManagerID = EmpID
-            };
-            _context.Projects.Add(project);
-            var result = await _context.SaveChangesAsync();
-            if (result == 0)
+                project.ProjectName = request.ProjectName;
+                project.Description = request.Description;
+                project.Skateholder = request.Skateholder;
+                project.DateBegin = request.DateBegin;
+                project.DateEstimatedEnd = request.DateEstimatedEnd;
+                _context.Projects.Update(project);
+                var result = await _context.SaveChangesAsync();
+                if (result == 0)
+                {
+                    return new ApiErrorResult<int>("Update project failed");
+                }
+            }
+            else
             {
-                return new ApiErrorResult<int>("Create project failed");
+                project = new Project()
+                {
+                    ProjectName = request.ProjectName,
+                    Description = request.Description,
+                    Skateholder = request.Skateholder,
+                    DateCreated = DateTime.Now,
+                    DateBegin = request.DateBegin,
+                    DateEstimatedEnd = request.DateEstimatedEnd,
+                    Status = ProjectStatus.Pending
+                };
+                _context.Projects.Add(project);
+                var result = await _context.SaveChangesAsync();
+                if (result == 0)
+                {
+                    return new ApiErrorResult<int>("Create project failed");
+                }
             }
             return new ApiSuccessResult<int>(project.ProjectID);
         }
