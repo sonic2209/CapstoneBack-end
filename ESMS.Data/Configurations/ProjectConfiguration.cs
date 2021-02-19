@@ -19,6 +19,8 @@ namespace ESMS.Data.Configurations
             builder.Property(x => x.Description).IsRequired();
             builder.Property(x => x.Skateholder).IsRequired();
             builder.Property(x => x.Status).HasDefaultValue(ProjectStatus.Pending);
+            builder.Property(x => x.DateBegin).HasColumnType("date");
+            builder.Property(x => x.DateEstimatedEnd).HasColumnType("date");
             builder.HasOne(x => x.Employee).WithMany(x => x.Projects).HasForeignKey(x => x.ProjectManagerID);
         }
     }

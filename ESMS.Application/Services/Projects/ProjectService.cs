@@ -85,8 +85,8 @@ namespace ESMS.Application.Services.Projects
                 ProjectName = project.ProjectName,
                 Description = project.Description,
                 Skateholder = project.Skateholder,
-                DateBegin = project.DateBegin,
-                DateEstimatedEnd = project.DateEstimatedEnd,
+                DateBegin = project.DateBegin.ToString("dd/MM/yyyy"),
+                DateEstimatedEnd = project.DateEstimatedEnd.ToString("dd/MM/yyyy"),
                 Status = project.Status
             };
 
@@ -148,8 +148,8 @@ namespace ESMS.Application.Services.Projects
                     ProjectName = x.p.ProjectName,
                     Description = x.p.Description,
                     Skateholder = x.p.Skateholder,
-                    DateBegin = x.p.DateBegin,
-                    DateEstimatedEnd = x.p.DateEstimatedEnd,
+                    DateBegin = x.p.DateBegin.ToString("dd/MM/yyyy"),
+                    DateEstimatedEnd = x.p.DateEstimatedEnd.ToString("dd/MM/yyyy"),
                     Status = x.p.Status
                 }).ToListAsync();
 
