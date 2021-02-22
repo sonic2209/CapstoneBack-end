@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Startup.cs~RF8e58c10.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ESMS.Application\ESMS.Application.csproj" />
+    <ProjectReference Include="..\ESMS.Data\ESMS.Data.csproj" />
+    <ProjectReference Include="..\ESMS.Utilities\ESMS.Utilities.csproj" />
+    <ProjectReference Include="..\ESMS.ViewModels\ESMS.ViewModels.csproj" />
+  </ItemGroup>
+</Project>
