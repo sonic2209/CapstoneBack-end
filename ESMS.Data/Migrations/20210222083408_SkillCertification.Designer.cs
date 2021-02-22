@@ -4,14 +4,16 @@ using ESMS.Data.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ESMS.Data.Migrations
 {
     [DbContext(typeof(ESMSDbContext))]
-    partial class ESMSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210222083408_SkillCertification")]
+    partial class SkillCertification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -105,37 +107,6 @@ namespace ESMS.Data.Migrations
                     b.HasIndex("EmpID");
 
                     b.ToTable("EmpCertifications");
-                });
-
-            modelBuilder.Entity("ESMS.Data.Entities.EmpPosition", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
-
-                    b.Property<DateTime>("DateIn")
-                        .HasColumnType("date");
-
-                    b.Property<DateTime>("DateOut")
-                        .HasColumnType("date");
-
-                    b.Property<string>("EmpID")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("NameExp")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PosID")
-                        .HasColumnType("int");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("EmpID");
-
-                    b.HasIndex("PosID");
-
-                    b.ToTable("EmpPositions");
                 });
 
             modelBuilder.Entity("ESMS.Data.Entities.EmpPositionInProject", b =>
@@ -270,8 +241,8 @@ namespace ESMS.Data.Migrations
                             Id = "69BD714F-9576-45BA-B5B7-F00649BE00DE",
                             AccessFailedCount = 0,
                             Address = "580 Quang Trung P10",
-                            ConcurrencyStamp = "db2bdc7f-7e68-4dfa-b579-aa20607d7889",
-                            DateCreated = new DateTime(2021, 2, 22, 16, 11, 31, 819, DateTimeKind.Local).AddTicks(4457),
+                            ConcurrencyStamp = "2a0b02cd-5e8b-4f3e-992b-259406b1df5c",
+                            DateCreated = new DateTime(2021, 2, 22, 15, 34, 7, 535, DateTimeKind.Local).AddTicks(3438),
                             Email = "resker123@gmail.com",
                             EmailConfirmed = true,
                             IdentityNumber = "0123456789",
@@ -279,7 +250,7 @@ namespace ESMS.Data.Migrations
                             Name = "Pham Tuan",
                             NormalizedEmail = "resker123@gmail.com",
                             NormalizedUserName = "admin",
-                            PasswordHash = "AQAAAAEAACcQAAAAEAlFjJSvUITZNMv0pqOh0JivHdj1R/lswlhIK8VmCHIQqmcl2DSNl/mLmXqX1KJ5Rw==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEMp62uzxlgqhvIRdEESIvZMxnjMlgrR5xtYIrQCw77lBoZBFGgZFAu9QSAwr3Q5jhw==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
                             Status = 0,
@@ -428,7 +399,7 @@ namespace ESMS.Data.Migrations
                         new
                         {
                             Id = "8D04DCE2-969A-435D-BBA4-DF3F325983DC",
-                            ConcurrencyStamp = "eacdaa7b-6aaa-40d9-8958-1f9c5cba947d",
+                            ConcurrencyStamp = "fb4c73f6-a0df-4c8e-b10b-a9c9db7fcd7a",
                             Description = "Administrator role",
                             Name = "admin",
                             NormalizedName = "admin"
@@ -647,23 +618,6 @@ namespace ESMS.Data.Migrations
                     b.Navigation("Employee");
                 });
 
-            modelBuilder.Entity("ESMS.Data.Entities.EmpPosition", b =>
-                {
-                    b.HasOne("ESMS.Data.Entities.Employee", "Employee")
-                        .WithMany("EmpPositions")
-                        .HasForeignKey("EmpID");
-
-                    b.HasOne("ESMS.Data.Entities.Position", "Position")
-                        .WithMany("EmpPositions")
-                        .HasForeignKey("PosID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("Position");
-                });
-
             modelBuilder.Entity("ESMS.Data.Entities.EmpPositionInProject", b =>
                 {
                     b.HasOne("ESMS.Data.Entities.Employee", "Employee")
@@ -783,8 +737,6 @@ namespace ESMS.Data.Migrations
 
                     b.Navigation("EmpPosInProjects");
 
-                    b.Navigation("EmpPositions");
-
                     b.Navigation("EmpSkills");
 
                     b.Navigation("Projects");
@@ -793,8 +745,6 @@ namespace ESMS.Data.Migrations
             modelBuilder.Entity("ESMS.Data.Entities.Position", b =>
                 {
                     b.Navigation("EmpPosInProjects");
-
-                    b.Navigation("EmpPositions");
 
                     b.Navigation("RequiredPositions");
 

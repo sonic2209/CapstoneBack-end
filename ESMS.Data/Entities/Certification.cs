@@ -10,6 +10,8 @@ namespace ESMS.Data.Entities
         public string CertificationName { get; set; }
         public string Description { get; set; }
         public string Image { get; set; }
+        public int SkillID { get; set; }
+        public Skill Skill { get; set; }
         public List<EmpCertification> EmpCertifications { get; set; }
     }
 }

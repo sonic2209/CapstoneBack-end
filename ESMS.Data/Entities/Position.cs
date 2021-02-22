@@ -12,5 +12,6 @@ namespace ESMS.Data.Entities
         public List<EmpPositionInProject> EmpPosInProjects { get; set; }
         public List<RequiredPosition> RequiredPositions { get; set; }
         public List<SkillInPosition> SkillInPositions { get; set; }
+        public List<EmpPosition> EmpPositions { get; set; }
     }
 }
