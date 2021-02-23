@@ -65,6 +65,34 @@ namespace ESMS.Application.System.Certifications
             return new ApiSuccessResult<CertificationViewModel>(certificationVm);
         }
 
+        public async Task<ApiResult<PagedResult<ListCertificationViewModel>>> GetCertificationPaging(GetCertificationPagingRequest request)
+        {
+            var query = from c in _context.Certifications
+                        select new { c };
+            if (!string.IsNullOrEmpty(request.Keyword))
+            {
+                query = query.Where(x => x.c.CertificationName.Contains(request.Keyword));
+            }
+            int totalRow = await query.CountAsync();
+            var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .Select(x => new ListCertificationViewModel()
+                {
+                    CertificationID = x.c.CertificationID,
+                    CertificationName = x.c.CertificationName
+                }).ToListAsync();
+
+            var pagedResult = new PagedResult<ListCertificationViewModel>()
+            {
+                TotalRecords = totalRow,
+                PageIndex = request.PageIndex,
+                PageSize = request.PageSize,
+                Items = data
+            };
+
+            return new ApiSuccessResult<PagedResult<ListCertificationViewModel>>(pagedResult);
+        }
+
         public async Task<ApiResult<List<ListCertificationViewModel>>> GetCertifications()
         {
             var query = from c in _context.Certifications

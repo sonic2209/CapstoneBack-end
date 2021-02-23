@@ -16,7 +16,7 @@ namespace ESMS.Application.Services.Positions
 
         Task<ApiResult<List<ListPositionViewModel>>> GetPositions();
 
-        Task<ApiResult<PagedResult<GetPositionPagingViewModel>>> GetPositionPaging(GetPositionPagingRequest request);
+        Task<ApiResult<PagedResult<PositionViewModel>>> GetPositionPaging(GetPositionPagingRequest request);
 
         Task<ApiResult<bool>> AddRequiredPosition(int projectID, AddRequiredPositionRequest request);
 

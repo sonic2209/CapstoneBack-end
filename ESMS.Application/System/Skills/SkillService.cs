@@ -80,6 +80,34 @@ namespace ESMS.Application.System.Skills
             return new ApiSuccessResult<List<ListSkillViewModel>>(data);
         }
 
+        public async Task<ApiResult<PagedResult<ListSkillViewModel>>> GetSkillPaging(GetSkillPagingRequest request)
+        {
+            var query = from s in _context.Skills
+                        select new { s };
+            if (!string.IsNullOrEmpty(request.Keyword))
+            {
+                query = query.Where(x => x.s.SkillName.Contains(request.Keyword));
+            }
+            int totalRow = await query.CountAsync();
+            var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .Select(x => new ListSkillViewModel()
+                {
+                    SkillID = x.s.SkillID,
+                    SkillName = x.s.SkillName
+                }).ToListAsync();
+
+            var pagedResult = new PagedResult<ListSkillViewModel>()
+            {
+                TotalRecords = totalRow,
+                PageIndex = request.PageIndex,
+                PageSize = request.PageSize,
+                Items = data
+            };
+
+            return new ApiSuccessResult<PagedResult<ListSkillViewModel>>(pagedResult);
+        }
+
         public async Task<ApiResult<bool>> Update(int skillID, SkillUpdateRequest request)
         {
             var skill = _context.Skills.Find(skillID);
