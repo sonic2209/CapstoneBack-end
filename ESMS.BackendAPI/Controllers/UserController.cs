@@ -14,6 +14,7 @@ namespace ESMS.BackendAPI.Controllers
     [EnableCors("MyPolicy")]
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IEmployeeService _userService;
