@@ -15,6 +15,8 @@ namespace ESMS.Application.System.Certifications
 
         public Task<ApiResult<bool>> Delete(int certificationID);
 
-        public Task<ApiResult<List<CertificationViewModel>>> GetCertifications();
+        public Task<ApiResult<List<ListCertificationViewModel>>> GetCertifications();
+
+        public Task<ApiResult<CertificationViewModel>> GetByID(int certificationID);
     }
 }

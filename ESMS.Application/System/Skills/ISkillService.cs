@@ -15,6 +15,8 @@ namespace ESMS.Application.System.Skills
 
         public Task<ApiResult<bool>> Delete(int skillID);
 
-        public Task<ApiResult<List<SkillViewModel>>> GetSkill(string skillType);
+        public Task<ApiResult<List<ListSkillViewModel>>> GetSkill(string skillType);
+
+        public Task<ApiResult<SkillViewModel>> GetByID(int skillID);
     }
 }

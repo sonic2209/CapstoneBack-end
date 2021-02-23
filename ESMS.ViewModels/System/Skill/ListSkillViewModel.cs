@@ -5,10 +5,9 @@ using System.Text;
 
 namespace ESMS.ViewModels.System.Skill
 {
-    public class SkillViewModel
+    public class ListSkillViewModel
     {
         public int SkillID { get; set; }
         public string SkillName { get; set; }
-        public SkillType SkillType { get; set; }
     }
 }

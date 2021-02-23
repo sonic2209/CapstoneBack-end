@@ -4,10 +4,9 @@ using System.Text;
 
 namespace ESMS.ViewModels.Services.Position
 {
-    public class PositionViewModel
+    public class ListPositionViewModel
     {
         public int PosID { get; set; }
         public string Name { get; set; }
-        public string Description { get; set; }
     }
 }

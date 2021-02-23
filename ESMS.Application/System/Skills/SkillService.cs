@@ -50,19 +50,34 @@ namespace ESMS.Application.System.Skills
             return new ApiSuccessResult<bool>();
         }
 
-        public async Task<ApiResult<List<SkillViewModel>>> GetSkill(string skillType)
+        public async Task<ApiResult<SkillViewModel>> GetByID(int skillID)
+        {
+            var skill = await _context.Skills.FindAsync(skillID);
+            if (skill == null) return new ApiErrorResult<SkillViewModel>("Skill does not exist");
+
+            var skillViewModel = new SkillViewModel()
+            {
+                SkillID = skillID,
+                SkillName = skill.SkillName,
+                SkillType = skill.SkillType
+            };
+
+            return new ApiSuccessResult<SkillViewModel>(skillViewModel);
+        }
+
+        public async Task<ApiResult<List<ListSkillViewModel>>> GetSkill(string skillType)
         {
             SkillType st = (SkillType)Enum.Parse(typeof(SkillType), skillType);
             var query = from s in _context.Skills
                         select new { s };
             query = query.Where(x => x.s.SkillType == st);
-            var data = await query.Select(x => new SkillViewModel()
+            var data = await query.Select(x => new ListSkillViewModel()
             {
                 SkillID = x.s.SkillID,
                 SkillName = x.s.SkillName
             }).ToListAsync();
 
-            return new ApiSuccessResult<List<SkillViewModel>>(data);
+            return new ApiSuccessResult<List<ListSkillViewModel>>(data);
         }
 
         public async Task<ApiResult<bool>> Update(int skillID, SkillUpdateRequest request)

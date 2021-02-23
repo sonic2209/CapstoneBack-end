@@ -14,8 +14,12 @@ namespace ESMS.Application.Services.Positions
 
         Task<ApiResult<bool>> Update(int positionID, PositionUpdateRequest request);
 
-        Task<ApiResult<List<PositionViewModel>>> GetPositions();
+        Task<ApiResult<List<ListPositionViewModel>>> GetPositions();
 
         Task<ApiResult<PagedResult<GetPositionPagingViewModel>>> GetPositionPaging(GetPositionPagingRequest request);
+
+        Task<ApiResult<bool>> AddRequiredPosition(int projectID, AddRequiredPositionRequest request);
+
+        Task<ApiResult<PositionViewModel>> GetByID(int positionID);
     }
 }
