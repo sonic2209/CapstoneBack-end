@@ -30,6 +30,14 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(project);
         }
 
+        //Get:http://localhost/api/project/getProjects/id
+        [HttpGet("getProjects/{empID}")]
+        public async Task<IActionResult> GetProjectByEmpID(string empID, [FromQuery] GetProjectPagingRequest request)
+        {
+            var project = await _projectService.GetProjectByEmpID(empID, request);
+            return Ok(project);
+        }
+
         //http://localhost/api/project/paging?pageIndex=1&pageSize=10&keyword=
         [HttpGet("paging")]
         public async Task<IActionResult> GetProjectPaging([FromQuery] GetProjectPagingRequest request)
