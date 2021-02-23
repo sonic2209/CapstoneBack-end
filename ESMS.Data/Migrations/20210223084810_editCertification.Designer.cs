@@ -4,14 +4,16 @@ using ESMS.Data.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ESMS.Data.Migrations
 {
     [DbContext(typeof(ESMSDbContext))]
-    partial class ESMSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210223084810_editCertification")]
+    partial class editCertification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

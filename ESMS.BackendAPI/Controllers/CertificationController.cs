@@ -22,6 +22,13 @@ namespace ESMS.BackendAPI.Controllers
             _certificationService = certificationService;
         }
 
+        [HttpGet("{certificationID}")]
+        public async Task<IActionResult> GetByID(int certificationID)
+        {
+            var certification = await _certificationService.GetByID(certificationID);
+            return Ok(certification);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CertificationCreateRequest request)
         {

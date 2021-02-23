@@ -8,6 +8,6 @@ namespace ESMS.ViewModels.System.Certification
     {
         public string CertificationName { get; set; }
         public string Description { get; set; }
-        public string Image { get; set; }
+        public int SkillID { get; set; }
     }
 }

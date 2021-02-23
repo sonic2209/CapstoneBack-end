@@ -38,6 +38,13 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(positions);
         }
 
+        [HttpGet("{positionID}")]
+        public async Task<IActionResult> GetByID(int positionID)
+        {
+            var position = await _positionService.GetByID(positionID);
+            return Ok(position);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] PositionCreateRequest request)
         {
@@ -64,6 +71,17 @@ namespace ESMS.BackendAPI.Controllers
             }
             var result = await _positionService.Update(positionID, request);
 
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+
+        [HttpPost("{projectID}")]
+        public async Task<IActionResult> AddRequiredPosition(int projectID, [FromBody] AddRequiredPositionRequest request)
+        {
+            var result = await _positionService.AddRequiredPosition(projectID, request);
             if (!result.IsSuccessed)
             {
                 return BadRequest(result);

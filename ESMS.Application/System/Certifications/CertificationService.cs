@@ -26,7 +26,7 @@ namespace ESMS.Application.System.Certifications
             {
                 CertificationName = request.CertificationName,
                 Description = request.Description,
-                Image = request.Image
+                SkillID = request.SkillID
             };
             _context.Certifications.Add(certification);
             var result = await _context.SaveChangesAsync();
@@ -50,17 +50,32 @@ namespace ESMS.Application.System.Certifications
             return new ApiSuccessResult<bool>();
         }
 
-        public async Task<ApiResult<List<CertificationViewModel>>> GetCertifications()
+        public async Task<ApiResult<CertificationViewModel>> GetByID(int certificationID)
+        {
+            var certification = await _context.Certifications.FindAsync(certificationID);
+            if (certification == null) return new ApiErrorResult<CertificationViewModel>("Certification does not exist");
+            var certificationVm = new CertificationViewModel()
+            {
+                CertificationID = certificationID,
+                CertificationName = certification.CertificationName,
+                Description = certification.Description,
+                SkillID = certification.SkillID
+            };
+
+            return new ApiSuccessResult<CertificationViewModel>(certificationVm);
+        }
+
+        public async Task<ApiResult<List<ListCertificationViewModel>>> GetCertifications()
         {
             var query = from c in _context.Certifications
                         select new { c };
-            var data = await query.Select(x => new CertificationViewModel()
+            var data = await query.Select(x => new ListCertificationViewModel()
             {
                 CertificationID = x.c.CertificationID,
                 CertificationName = x.c.CertificationName
             }).ToListAsync();
 
-            return new ApiSuccessResult<List<CertificationViewModel>>(data);
+            return new ApiSuccessResult<List<ListCertificationViewModel>>(data);
         }
 
         public async Task<ApiResult<bool>> Update(int certificationID, CertificationUpdateRequest request)
@@ -68,8 +83,8 @@ namespace ESMS.Application.System.Certifications
             var certification = _context.Certifications.Find(certificationID);
             if (certification == null) return new ApiErrorResult<bool>("Certification does not exist");
             certification.CertificationName = request.CertificationName;
-            certification.Description = request.Image;
-            certification.Image = request.Image;
+            certification.Description = request.Description;
+            certification.SkillID = request.SkillID;
             var result = await _context.SaveChangesAsync();
             if (result == 0)
             {
