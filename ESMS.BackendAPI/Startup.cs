@@ -6,6 +6,8 @@ using ESMS.Application.System.Skills;
 using ESMS.Data.EF;
 using ESMS.Data.Entities;
 using ESMS.Utilities.Constants;
+using ESMS.ViewModels.System.Employees;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -63,6 +65,9 @@ namespace ESMS.BackendAPI
             services.AddTransient<RoleManager<Role>, RoleManager<Role>>();
 
             services.AddControllersWithViews();
+
+            //Fluent Validator
+            services.AddControllers().AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<EmpCreateRequestValidator>());
 
             services.AddSwaggerGen(c =>
             {
