@@ -97,7 +97,7 @@ namespace ESMS.Application.Services.Positions
             return new ApiSuccessResult<PositionViewModel>(positionViewModel);
         }
 
-        public async Task<ApiResult<PagedResult<GetPositionPagingViewModel>>> GetPositionPaging(GetPositionPagingRequest request)
+        public async Task<ApiResult<PagedResult<PositionViewModel>>> GetPositionPaging(GetPositionPagingRequest request)
         {
             var query = from p in _context.Positions
                         select new { p };
@@ -108,14 +108,14 @@ namespace ESMS.Application.Services.Positions
             int totalRow = await query.CountAsync();
             var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .Select(x => new GetPositionPagingViewModel()
+                .Select(x => new PositionViewModel()
                 {
                     PosID = x.p.PosID,
                     Name = x.p.Name,
                     Description = x.p.Description
                 }).ToListAsync();
 
-            var pagedResult = new PagedResult<GetPositionPagingViewModel>()
+            var pagedResult = new PagedResult<PositionViewModel>()
             {
                 TotalRecords = totalRow,
                 PageIndex = request.PageIndex,
@@ -123,7 +123,7 @@ namespace ESMS.Application.Services.Positions
                 Items = data
             };
 
-            return new ApiSuccessResult<PagedResult<GetPositionPagingViewModel>>(pagedResult);
+            return new ApiSuccessResult<PagedResult<PositionViewModel>>(pagedResult);
         }
 
         public async Task<ApiResult<List<ListPositionViewModel>>> GetPositions()

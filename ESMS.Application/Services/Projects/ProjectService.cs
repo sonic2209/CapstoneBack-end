@@ -48,7 +48,8 @@ namespace ESMS.Application.Services.Projects
                     DateCreated = DateTime.Now,
                     DateBegin = request.DateBegin,
                     DateEstimatedEnd = request.DateEstimatedEnd,
-                    Status = ProjectStatus.Pending
+                    Status = ProjectStatus.Pending,
+                    ProjectManagerID = EmpID
                 };
                 _context.Projects.Add(project);
                 var result = await _context.SaveChangesAsync();
@@ -126,6 +127,44 @@ namespace ESMS.Application.Services.Projects
             };
 
             return new ApiSuccessResult<PagedResult<EmpInProjectViewModel>>(pagedResult);
+        }
+
+        public async Task<ApiResult<PagedResult<ProjectViewModel>>> GetProjectByEmpID(string EmpID, GetProjectPagingRequest request)
+        {
+            var query = from p in _context.Projects
+                        select new { p };
+            query = query.Where(x => x.p.ProjectManagerID.Equals(EmpID));
+            if (!string.IsNullOrEmpty(request.Keyword))
+            {
+                query = query.Where(x => x.p.ProjectName.Contains(request.Keyword));
+            }
+
+            //Paging
+            int totalRow = await query.CountAsync();
+
+            var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .Select(x => new ProjectViewModel()
+                {
+                    ProjectID = x.p.ProjectID,
+                    ProjectName = x.p.ProjectName,
+                    Description = x.p.Description,
+                    Skateholder = x.p.Skateholder,
+                    DateBegin = x.p.DateBegin.ToString("dd/MM/yyyy"),
+                    DateEstimatedEnd = x.p.DateEstimatedEnd.ToString("dd/MM/yyyy"),
+                    Status = x.p.Status
+                }).ToListAsync();
+
+            //Select and projection
+            var pagedResult = new PagedResult<ProjectViewModel>()
+            {
+                TotalRecords = totalRow,
+                PageIndex = request.PageIndex,
+                PageSize = request.PageSize,
+                Items = data
+            };
+
+            return new ApiSuccessResult<PagedResult<ProjectViewModel>>(pagedResult);
         }
 
         public async Task<ApiResult<PagedResult<ProjectViewModel>>> GetProjectPaging(GetProjectPagingRequest request)

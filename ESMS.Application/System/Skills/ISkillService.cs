@@ -17,6 +17,8 @@ namespace ESMS.Application.System.Skills
 
         public Task<ApiResult<List<ListSkillViewModel>>> GetSkill(string skillType);
 
+        public Task<ApiResult<PagedResult<ListSkillViewModel>>> GetSkillPaging(GetSkillPagingRequest request);
+
         public Task<ApiResult<SkillViewModel>> GetByID(int skillID);
     }
 }

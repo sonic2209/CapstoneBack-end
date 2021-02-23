@@ -17,6 +17,8 @@ namespace ESMS.Application.System.Certifications
 
         public Task<ApiResult<List<ListCertificationViewModel>>> GetCertifications();
 
+        public Task<ApiResult<PagedResult<ListCertificationViewModel>>> GetCertificationPaging(GetCertificationPagingRequest request);
+
         public Task<ApiResult<CertificationViewModel>> GetByID(int certificationID);
     }
 }
