@@ -1,5 +1,6 @@
 ﻿using ESMS.Application.System.Certifications;
 using ESMS.ViewModels.System.Certification;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +14,7 @@ namespace ESMS.BackendAPI.Controllers
     [EnableCors("MyPolicy")]
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class CertificationController : ControllerBase
     {
         private readonly ICertificationService _certificationService;

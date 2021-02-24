@@ -53,7 +53,8 @@ namespace ESMS.Application.Services.Positions
                         RequiredPositionID = requiredPosition.ID,
                         SkillID = hardSkill.HardSkillID,
                         Priority = hardSkill.Priority,
-                        SkillLevel = (SkillLevel)hardSkill.SkillLevel
+                        Exp = hardSkill.Exp,
+                        CertificationID = hardSkill.CertificationID
                     };
                     _context.RequiredSkills.Add(requiredSkill);
                 }

@@ -30,6 +30,10 @@ namespace ESMS.Application.Services.Projects
                 project.Description = request.Description;
                 project.Skateholder = request.Skateholder;
                 project.DateBegin = request.DateBegin;
+                if (DateTime.Compare(request.DateBegin, request.DateEstimatedEnd) > 0)
+                {
+                    return new ApiErrorResult<int>("Date estimated end is earlier than date begin");
+                }
                 project.DateEstimatedEnd = request.DateEstimatedEnd;
                 _context.Projects.Update(project);
                 var result = await _context.SaveChangesAsync();
@@ -40,6 +44,10 @@ namespace ESMS.Application.Services.Projects
             }
             else
             {
+                if (DateTime.Compare(request.DateBegin, request.DateEstimatedEnd) > 0)
+                {
+                    return new ApiErrorResult<int>("Date estimated end is earlier than date begin");
+                }
                 project = new Project()
                 {
                     ProjectName = request.ProjectName,
