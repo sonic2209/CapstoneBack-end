@@ -1,4 +1,6 @@
-﻿using ESMS.Data.Entities;
+﻿using ESMS.Data.EF;
+using ESMS.Data.Entities;
+using ESMS.Data.Enums;
 using ESMS.ViewModels.Common;
 using ESMS.ViewModels.System.Employees;
 using Microsoft.AspNetCore.Identity;
@@ -21,14 +23,16 @@ namespace ESMS.Application.System.Employees
         private readonly SignInManager<Employee> _signInManager;
         private readonly RoleManager<Role> _roleManager;
         private readonly IConfiguration _config;
+        private readonly ESMSDbContext _context;
 
         public EmployeeService(UserManager<Employee> userManager, SignInManager<Employee> signInManager,
-            RoleManager<Role> roleManager, IConfiguration config)
+            RoleManager<Role> roleManager, IConfiguration config, ESMSDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
             _config = config;
+            _context = context;
         }
 
         public async Task<ApiResult<string>> Authenticate(LoginRequest request)
@@ -159,6 +163,141 @@ namespace ESMS.Application.System.Employees
                 };
                 return new ApiSuccessResult<PagedResult<EmpVm>>(pagedResult);
             }
+        }
+
+        public async Task<List<CandidateViewModel>> SuggestCandidate(int projectID, SuggestCadidateRequest request)
+        {
+            List<CandidateViewModel> candidates = new List<CandidateViewModel>();
+            var query = _userManager.Users;
+            var data = await query.Select(x => new EmpVm()
+            {
+                Email = x.Email,
+                PhoneNumber = x.PhoneNumber,
+                Name = x.Name,
+                Id = x.Id,
+                UserName = x.UserName
+            }).ToListAsync();
+            foreach (var item in data)
+            {
+                int match = 0;
+                var empPosition = from ep in _context.EmpPositions
+                                  select new { ep };
+                empPosition = empPosition.Where(x => x.ep.EmpID.Equals(item.Id));
+                var positions = await empPosition.Select(x => new EmpPosition()
+                {
+                    PosID = x.ep.PosID,
+                    DateIn = x.ep.DateIn,
+                    DateOut = x.ep.DateOut,
+                    NameExp = x.ep.NameExp
+                }).ToListAsync();
+                var empCerti = from ec in _context.EmpCertifications
+                               select new { ec };
+                empCerti = empCerti.Where(x => x.ec.EmpID.Equals(item.Id));
+                var certifications = await empCerti.Select(x => new EmpCertification()
+                {
+                    CertificationID = x.ec.CertificationID,
+                    DateTaken = x.ec.DateTaken,
+                    DateEnd = x.ec.DateEnd
+                }).ToListAsync();
+                var empSkill = from es in _context.EmpSkills
+                               select new { es };
+                empSkill = empSkill.Where(x => x.es.EmpID.Equals(item.Id));
+                var skills = await empSkill.Select(x => new EmpSkill()
+                {
+                    SkillID = x.es.SkillID
+                }).ToListAsync();
+                foreach (var requiredPosition in request.RequiredPositions)
+                {
+                    foreach (var position in positions)
+                    {
+                        if (position.ID.Equals(requiredPosition.PosID))
+                        {
+                            switch (position.NameExp)
+                            {
+                                case NameExp.Fresher:
+                                    match = match + 5;
+                                    break;
+
+                                case NameExp.Intern:
+                                    match = match + 10;
+                                    break;
+
+                                case NameExp.Junior:
+                                    match = match + 15;
+                                    break;
+
+                                case NameExp.Senior:
+                                    match = match + 20;
+                                    break;
+
+                                case NameExp.Master:
+                                    match = match + 25;
+                                    break;
+                            }
+                            foreach (var skill in skills)
+                            {
+                                var s = await _context.Skills.FindAsync(skill.SkillID);
+                                if (s.SkillType == SkillType.SoftSkill)
+                                {
+                                    foreach (var requiredSoftSkill in requiredPosition.SoftSkillIDs)
+                                    {
+                                        if (skill.SkillID.Equals(requiredSoftSkill))
+                                        {
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    foreach (var requiredHardSKill in requiredPosition.HardSkills)
+                                    {
+                                        if (skill.SkillID.Equals(requiredHardSKill.HardSkillID))
+                                        {
+                                            switch (skill.SkillLevel)
+                                            {
+                                                case SkillLevel.BasicKnowledge:
+                                                    match = match + 5;
+                                                    break;
+
+                                                case SkillLevel.LimitedExperience:
+                                                    match = match + 10;
+                                                    break;
+
+                                                case SkillLevel.Practical:
+                                                    match = match + 15;
+                                                    break;
+
+                                                case SkillLevel.AppliedTheory:
+                                                    match = match + 20;
+                                                    break;
+
+                                                case SkillLevel.RecognizedAuthority:
+                                                    match = match + 25;
+                                                    break;
+                                            }
+                                        }
+                                        foreach (var certi in certifications)
+                                        {
+                                            if (certi.ID.Equals(requiredHardSKill.CertificationID))
+                                            {
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (match >= 50)
+                {
+                    var candidate = new CandidateViewModel()
+                    {
+                        Emp = item,
+                        Match = match
+                    };
+                    candidates.Add(candidate);
+                }
+            }
+            return candidates;
         }
 
         public async Task<ApiResult<bool>> Update(string id, EmpUpdateRequest request)
