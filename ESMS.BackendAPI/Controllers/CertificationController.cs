@@ -1,5 +1,5 @@
-﻿using ESMS.Application.System.Certifications;
-using ESMS.ViewModels.System.Certification;
+﻿using ESMS.BackendAPI.Services.Certifications;
+using ESMS.BackendAPI.ViewModels.Certification;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;

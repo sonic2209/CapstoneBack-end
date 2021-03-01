@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ESMS.Application.System.Employees;
-using ESMS.ViewModels.System.Employees;
+using ESMS.BackendAPI.Services.Employees;
+using ESMS.BackendAPI.ViewModels.Employees;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;

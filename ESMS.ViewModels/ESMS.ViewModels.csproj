@@ -11,4 +11,9 @@
   <ItemGroup>
     <ProjectReference Include="..\ESMS.Data\ESMS.Data.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\" />
+    <Folder Include="System\" />
+  </ItemGroup>
 </Project>

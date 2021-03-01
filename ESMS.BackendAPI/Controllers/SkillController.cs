@@ -1,5 +1,5 @@
-﻿using ESMS.Application.System.Skills;
-using ESMS.ViewModels.System.Skill;
+﻿using ESMS.BackendAPI.Services.Skills;
+using ESMS.BackendAPI.ViewModels.Skill;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;

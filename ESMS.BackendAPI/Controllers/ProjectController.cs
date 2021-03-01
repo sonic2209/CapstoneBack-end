@@ -1,5 +1,5 @@
-﻿using ESMS.Application.Services.Projects;
-using ESMS.ViewModels.Services.Project;
+﻿using ESMS.BackendAPI.Services.Projects;
+using ESMS.BackendAPI.ViewModels.Project;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
