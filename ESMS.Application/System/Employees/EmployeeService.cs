@@ -2,6 +2,7 @@
 using ESMS.Data.Entities;
 using ESMS.Data.Enums;
 using ESMS.ViewModels.Common;
+using ESMS.ViewModels.Services.Position;
 using ESMS.ViewModels.System.Employees;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -167,138 +168,200 @@ namespace ESMS.Application.System.Employees
 
         public async Task<List<CandidateViewModel>> SuggestCandidate(int projectID, SuggestCadidateRequest request)
         {
-            List<CandidateViewModel> candidates = new List<CandidateViewModel>();
-            var query = _userManager.Users;
-            var data = await query.Select(x => new EmpVm()
-            {
-                Email = x.Email,
-                PhoneNumber = x.PhoneNumber,
-                Name = x.Name,
-                Id = x.Id,
-                UserName = x.UserName
-            }).ToListAsync();
-            foreach (var item in data)
-            {
-                int match = 0;
-                var empPosition = from ep in _context.EmpPositions
-                                  select new { ep };
-                empPosition = empPosition.Where(x => x.ep.EmpID.Equals(item.Id));
-                var positions = await empPosition.Select(x => new EmpPosition()
+            foreach (RequiredPositionDetail requiredPosition in request.RequiredPositions) { 
+                if (requiredPosition.SoftSkillIDs != null)
                 {
-                    PosID = x.ep.PosID,
-                    DateIn = x.ep.DateIn,
-                    DateOut = x.ep.DateOut,
-                    NameExp = x.ep.NameExp
-                }).ToListAsync();
-                var empCerti = from ec in _context.EmpCertifications
-                               select new { ec };
-                empCerti = empCerti.Where(x => x.ec.EmpID.Equals(item.Id));
-                var certifications = await empCerti.Select(x => new EmpCertification()
-                {
-                    CertificationID = x.ec.CertificationID,
-                    DateTaken = x.ec.DateTaken,
-                    DateEnd = x.ec.DateEnd
-                }).ToListAsync();
-                var empSkill = from es in _context.EmpSkills
-                               select new { es };
-                empSkill = empSkill.Where(x => x.es.EmpID.Equals(item.Id));
-                var skills = await empSkill.Select(x => new EmpSkill()
-                {
-                    SkillID = x.es.SkillID
-                }).ToListAsync();
-                foreach (var requiredPosition in request.RequiredPositions)
-                {
-                    foreach (var position in positions)
-                    {
-                        if (position.ID.Equals(requiredPosition.PosID))
-                        {
-                            switch (position.NameExp)
-                            {
-                                case NameExp.Fresher:
-                                    match = match + 5;
-                                    break;
+                    var match = 0;
+                    
+                    //list <Candidate> result = null   //candidate{empID, candidateMatch = 60}
 
-                                case NameExp.Intern:
-                                    match = match + 10;
-                                    break;
+                    //var match = 0
 
-                                case NameExp.Junior:
-                                    match = match + 15;
-                                    break;
+                    //function kiem Candidate trong result theo empID (findCandidate(empID))
 
-                                case NameExp.Senior:
-                                    match = match + 20;
-                                    break;
+                    var ListEmpInPos = from ep in _context.EmpPositions.Where(x=> x.)
+                    //- Get Emp in Pos by emp id -
+                    //var ListEmpInPos = select empID, DateIn, DateOut, NameExp from EmpPositions where PosID = required.PosID and DateOut == null
+                    //foreach (Emp emp in ListEmpInPos) 
+                    //////switch (emp.NameExp):
+                    ////////case intern : match += (10/5)*1; result.add(Candidate(empid, match))
+                    ////////case fresher : match += (10/5)*2
+                    ////////case junior : match += (10/5)*3
+                    ////////case senior : match += (10/5)*4
+                    ////////case master : match += (10/5)*5
 
-                                case NameExp.Master:
-                                    match = match + 25;
-                                    break;
-                            }
-                            foreach (var skill in skills)
-                            {
-                                var s = await _context.Skills.FindAsync(skill.SkillID);
-                                if (s.SkillType == SkillType.SoftSkill)
-                                {
-                                    foreach (var requiredSoftSkill in requiredPosition.SoftSkillIDs)
-                                    {
-                                        if (skill.SkillID.Equals(requiredSoftSkill))
-                                        {
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    foreach (var requiredHardSKill in requiredPosition.HardSkills)
-                                    {
-                                        if (skill.SkillID.Equals(requiredHardSKill.HardSkillID))
-                                        {
-                                            switch (skill.SkillLevel)
-                                            {
-                                                case SkillLevel.BasicKnowledge:
-                                                    match = match + 5;
-                                                    break;
+                    //- Get Emp in Lang by emp id -
+                    //var ListEmpLang = select empID, langLevel from EmpLan where LangId = require.langid and empid = ListEmpInPos.empID
+                    //foreach (Emp emp in ListEmpLang) 
+                    //////switch (langLevel):
+                    ////////case 1 : match += (10/5)*1 ; findCandidate(emp.empID).candidateMatch + match 
+                    ////////case 2 : match += (10/5)*2
+                    ////////case 3 : match += (10/5)*3
+                    ////////case 4 : match += (10/5)*4
+                    ////////case 5 : match += (10/5)*5
 
-                                                case SkillLevel.LimitedExperience:
-                                                    match = match + 10;
-                                                    break;
 
-                                                case SkillLevel.Practical:
-                                                    match = match + 15;
-                                                    break;
+                    //--tinh diem soft skill
+                    //var listEmpSoftSkill
+                    //foreach (int softskillID in request.SoftSkillIDs) 
+                    ////listEmpSoftSkill = select empID from EmpSkill where empID=ListEmpInPos.empID and skillid = softskillID join bang skill vs skill type  = softskill
+                    /////**{1,1,1,1,2,2,2,2,4,4,4,...}
+                    ////function count so phan tu lap trong list return  Map<key = Set empSkill, value = so phan tu giong nhau> map
+                    ///var softSkillPoint = 0
+                    //foreach (var value in listEmpSoftSkill) 
+                    ////softSkillPoint = (map.value) * 10  / (request.SoftSkillIDs.length); findCandidate(emp.empID).candidateMatch + match 
 
-                                                case SkillLevel.AppliedTheory:
-                                                    match = match + 20;
-                                                    break;
+                    ////Get highest certi level in hard skill of emp          
+                    ///get requiredCertiLevel
+                    //////Map<empId,List<obj(highestCertLevel,hardSkillLevel)>> empHardSkillCerti
+                    ///foreach(var list in empHardSkillCerti.key){
+                    /////match1 =0;
+                    /////foreach(var obj in list)
+                    ////////match1 += ((obj.highestCertLevel - requiredCertiLevel) * 5) + (hardSkillLevel * 5)) * requirePriority / request.HardSkills.length
+                    /////findCandidate(empHardSkillCerti.key).candidateMatch + match1
+                    ///
 
-                                                case SkillLevel.RecognizedAuthority:
-                                                    match = match + 25;
-                                                    break;
-                                            }
-                                        }
-                                        foreach (var certi in certifications)
-                                        {
-                                            if (certi.ID.Equals(requiredHardSKill.CertificationID))
-                                            {
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (match >= 50)
-                {
-                    var candidate = new CandidateViewModel()
-                    {
-                        Emp = item,
-                        Match = match
-                    };
-                    candidates.Add(candidate);
                 }
             }
-            return candidates;
+            return null;
         }
+
+        //public async Task<List<CandidateViewModel>> SuggestCandidate(int projectID, SuggestCadidateRequest request)
+        //{
+        //    List<CandidateViewModel> candidates = new List<CandidateViewModel>();
+        //    var query = _userManager.Users;
+        //    var listEmp = await query.Select(x => new EmpVm()
+        //    {
+        //        Email = x.Email,
+        //        PhoneNumber = x.PhoneNumber,
+        //        Name = x.Name,
+        //        Id = x.Id,
+        //        UserName = x.UserName
+        //    }).ToListAsync();
+        //    foreach (var item in listEmp)
+        //    {
+
+        //        int match = 0;
+        //        var empPosition = from ep in _context.EmpPositions
+        //                          select new { ep };
+        //        empPosition = empPosition.Where(x => x.ep.EmpID.Equals(item.Id));
+        //        var positions = await empPosition.Select(x => new EmpPosition()
+        //        {
+        //            PosID = x.ep.PosID,
+        //            DateIn = x.ep.DateIn,
+        //            DateOut = x.ep.DateOut,
+        //            NameExp = x.ep.NameExp
+        //        }).ToListAsync();
+        //        var empCerti = from ec in _context.EmpCertifications
+        //                       select new { ec };
+        //        empCerti = empCerti.Where(x => x.ec.EmpID.Equals(item.Id));
+        //        var certifications = await empCerti.Select(x => new EmpCertification()
+        //        {
+        //            CertificationID = x.ec.CertificationID,
+        //            DateTaken = x.ec.DateTaken,
+        //            DateEnd = x.ec.DateEnd
+        //        }).ToListAsync();
+        //        var empSkill = from es in _context.EmpSkills
+        //                       select new { es };
+        //        empSkill = empSkill.Where(x => x.es.EmpID.Equals(item.Id));
+        //        var skills = await empSkill.Select(x => new EmpSkill()
+        //        {
+        //            SkillID = x.es.SkillID
+        //        }).ToListAsync();
+        //        foreach (var requiredPosition in request.RequiredPositions)
+        //        {
+        //            foreach (var position in positions)
+        //            {
+        //                if (position.ID.Equals(requiredPosition.PosID))
+        //                {
+        //                    switch (position.NameExp)
+        //                    {
+        //                        case NameExp.Fresher:
+        //                            match = match + 5;
+        //                            break;
+
+        //                        case NameExp.Intern:
+        //                            match = match + 10;
+        //                            break;
+
+        //                        case NameExp.Junior:
+        //                            match = match + 15;
+        //                            break;
+
+        //                        case NameExp.Senior:
+        //                            match = match + 20;
+        //                            break;
+
+        //                        case NameExp.Master:
+        //                            match = match + 25;
+        //                            break;
+        //                    }
+        //                    foreach (var skill in skills)
+        //                    {
+        //                        var s = await _context.Skills.FindAsync(skill.SkillID);
+        //                        if (s.SkillType == SkillType.SoftSkill)
+        //                        {
+        //                            foreach (var requiredSoftSkill in requiredPosition.SoftSkillIDs)
+        //                            {
+        //                                if (skill.SkillID.Equals(requiredSoftSkill))
+        //                                {
+        //                                }
+        //                            }
+        //                        }
+        //                        else
+        //                        {
+        //                            foreach (var requiredHardSKill in requiredPosition.HardSkills)
+        //                            {
+        //                                if (skill.SkillID.Equals(requiredHardSKill.HardSkillID))
+        //                                {
+        //                                    switch (skill.SkillLevel)
+        //                                    {
+        //                                        case SkillLevel.BasicKnowledge:
+        //                                            match = match + 5;
+        //                                            break;
+
+        //                                        case SkillLevel.LimitedExperience:
+        //                                            match = match + 10;
+        //                                            break;
+
+        //                                        case SkillLevel.Practical:
+        //                                            match = match + 15;
+        //                                            break;
+
+        //                                        case SkillLevel.AppliedTheory:
+        //                                            match = match + 20;
+        //                                            break;
+
+        //                                        case SkillLevel.RecognizedAuthority:
+        //                                            match = match + 25;
+        //                                            break;
+        //                                    }
+        //                                }
+        //                                foreach (var certi in certifications)
+        //                                {
+        //                                    if (certi.ID.Equals(requiredHardSKill.CertificationID))
+        //                                    {
+        //                                    }
+        //                                }
+        //                            }
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
+        //        if (match >= 50)
+        //        {
+        //            var candidate = new CandidateViewModel()
+        //            {
+        //                Emp = item,
+        //                Match = match
+        //            };
+        //            candidates.Add(candidate);
+        //        }
+        //    }
+        //    return candidates;
+        //}
+
 
         public async Task<ApiResult<bool>> Update(string id, EmpUpdateRequest request)
         {
