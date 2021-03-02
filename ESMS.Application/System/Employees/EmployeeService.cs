@@ -37,13 +37,13 @@ namespace ESMS.Application.System.Employees
 
         public async Task<ApiResult<string>> Authenticate(LoginRequest request)
         {
-            var user = await _userManager.FindByNameAsync(request.UserName);
+            var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null) return new ApiErrorResult<string>("Account does not exist");
 
             var result = await _signInManager.PasswordSignInAsync(user, request.Password, request.RememberMe, true);
             if (!result.Succeeded)
             {
-                return new ApiErrorResult<string>("Username or password is not correct");
+                return new ApiErrorResult<string>("Email or password is not correct");
             }
             var roles = await _userManager.GetRolesAsync(user);
             var claims = new[]
