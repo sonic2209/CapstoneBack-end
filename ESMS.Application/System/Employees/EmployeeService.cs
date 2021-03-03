@@ -4,6 +4,7 @@ using ESMS.Data.Enums;
 using ESMS.ViewModels.Common;
 using ESMS.ViewModels.Services.Position;
 using ESMS.ViewModels.System.Employees;
+using ESMS.ViewModels.System.Employees.Suggestion;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -172,14 +173,53 @@ namespace ESMS.Application.System.Employees
                 if (requiredPosition.SoftSkillIDs != null)
                 {
                     var match = 0;
-                    
+
                     //list <Candidate> result = null   //candidate{empID, candidateMatch = 60}
 
                     //var match = 0
 
                     //function kiem Candidate trong result theo empID (findCandidate(empID))
 
-                    var ListEmpInPos = from ep in _context.EmpPositions.Where(x=> x.)
+
+                    var ListEmpInPos = await _context.EmpPositions.Where(x => x.PosID == requiredPosition.PosID && x.DateOut == null).Select(x=> new EmpInPos()
+                    {
+                        EmpId = x.EmpID,
+                        DateIn = x.DateIn,
+                        DateOut = x.DateOut,
+                        NameExp = x.NameExp,
+                    }).ToListAsync();
+                    foreach (EmpInPos emp in ListEmpInPos)
+                    {
+                        switch (emp.NameExp)
+                        {
+                            case NameExp.Intern:
+                                match += (10 / 5) * 1;
+                                break;
+                            case NameExp.Fresher:
+                                match += (10 / 5) * 2;
+                                break;
+                            case NameExp.Junior:
+                                match += (10 / 5) * 3;
+                                break;
+                            case NameExp.Senior:
+                                match += (10 / 5) * 4;
+                                break;
+                            case NameExp.Master:
+                                match += (10 / 5) * 3;
+                                break;
+                        }
+                        foreach (int softskillId in requiredPosition.SoftSkillIDs)
+                        {
+                            var listEmpSoftSKillquery = from es in _context.EmpSkills
+                                                        join s in _context.Skills on es.SkillID equals s.SkillID
+                                                        select new { es, s };
+                            var listEmpSoftSKillquery1 = listEmpSoftSKillquery.Where(x => x.s.SkillType == SkillType.SoftSkill);
+                            var listEmpSoftSkill = await listEmpSoftSKillquery1.Select(x => x.es.EmpID).ToListAsync();
+                            var softSkillPoint = 0;
+                    }
+                    
+                }
+                }
                     //- Get Emp in Pos by emp id -
                     //var ListEmpInPos = select empID, DateIn, DateOut, NameExp from EmpPositions where PosID = required.PosID and DateOut == null
                     //foreach (Emp emp in ListEmpInPos) 
@@ -200,7 +240,7 @@ namespace ESMS.Application.System.Employees
                     ////////case 4 : match += (10/5)*4
                     ////////case 5 : match += (10/5)*5
 
-
+                    
                     //--tinh diem soft skill
                     //var listEmpSoftSkill
                     //foreach (int softskillID in request.SoftSkillIDs) 
@@ -222,7 +262,6 @@ namespace ESMS.Application.System.Employees
                     ///
 
                 }
-            }
             return null;
         }
 
