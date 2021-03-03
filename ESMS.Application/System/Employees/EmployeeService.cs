@@ -180,7 +180,7 @@ namespace ESMS.Application.System.Employees
 
                     //function kiem Candidate trong result theo empID (findCandidate(empID))
 
-
+                    
                     var ListEmpInPos = await _context.EmpPositions.Where(x => x.PosID == requiredPosition.PosID && x.DateOut == null).Select(x=> new EmpInPos()
                     {
                         EmpId = x.EmpID,
@@ -215,6 +215,9 @@ namespace ESMS.Application.System.Employees
                                                         select new { es, s };
                             var listEmpSoftSKillquery1 = listEmpSoftSKillquery.Where(x => x.s.SkillType == SkillType.SoftSkill);
                             var listEmpSoftSkill = await listEmpSoftSKillquery1.Select(x => x.es.EmpID).ToListAsync();
+                            var SoftSkillCount = new Dictionary<string, int>();
+                            SoftSkillCount = listEmpSoftSkill.GroupBy(x => x).ToDictionary(x => x.Key, x => x.Count());
+
                             var softSkillPoint = 0;
                     }
                     
