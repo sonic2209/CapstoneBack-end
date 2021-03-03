@@ -13,5 +13,6 @@ namespace ESMS.Data.Entities
         public Project Project { get; set; }
         public Position Position { get; set; }
         public List<RequiredSkill> RequiredSkills { get; set; }
+        public List<RequiredLanguage> RequiredLanguages { get; set; }
     }
 }
