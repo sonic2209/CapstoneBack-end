@@ -1,12 +1,12 @@
-using ESMS.Application.Services.Positions;
-using ESMS.Application.Services.Projects;
-using ESMS.Application.System.Certifications;
-using ESMS.Application.System.Employees;
-using ESMS.Application.System.Skills;
+using ESMS.BackendAPI.Constants;
+using ESMS.BackendAPI.Services.Certifications;
+using ESMS.BackendAPI.Services.Employees;
+using ESMS.BackendAPI.Services.Positions;
+using ESMS.BackendAPI.Services.Projects;
+using ESMS.BackendAPI.Services.Skills;
+using ESMS.BackendAPI.ViewModels.Employees;
 using ESMS.Data.EF;
 using ESMS.Data.Entities;
-using ESMS.Utilities.Constants;
-using ESMS.ViewModels.System.Employees;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -167,25 +167,24 @@ namespace ESMS.BackendAPI
 
             app.UseAuthorization();
 
-            app.UseSwagger();
+            app.UseSwagger(c =>
+            {
+                c.PreSerializeFilters.Add((swagger, httpReq) =>
+                {
+                    swagger.Servers = new List<OpenApiServer>();
+                });
+            });
 
             app.UseSwaggerUI(c =>
             {
+                c.DocumentTitle = "ESMSBackEndApi";
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Swagger CapstoneProject V1");
+                c.RoutePrefix = string.Empty;
             });
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-                endpoints.MapGet("/echo",
-                context => context.Response.WriteAsync("echo"))
-                .RequireCors("MyPolicy");
-
-                endpoints.MapControllers()
-                         .RequireCors("MyPolicy");
+                endpoints.MapControllers();
             });
         }
     }

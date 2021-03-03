@@ -103,6 +103,31 @@ namespace ESMS.Data.Migrations
                     b.ToTable("EmpCertifications");
                 });
 
+            modelBuilder.Entity("ESMS.Data.Entities.EmpLanguage", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<string>("EmpID")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("LangID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LangLevel")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("EmpID");
+
+                    b.HasIndex("LangID");
+
+                    b.ToTable("EmpLanguages");
+                });
+
             modelBuilder.Entity("ESMS.Data.Entities.EmpPosition", b =>
                 {
                     b.Property<int>("ID")
@@ -278,8 +303,8 @@ namespace ESMS.Data.Migrations
                             Id = "69BD714F-9576-45BA-B5B7-F00649BE00DE",
                             AccessFailedCount = 0,
                             Address = "580 Quang Trung P10",
-                            ConcurrencyStamp = "ac046c9c-ea90-45dd-8498-31c885cbc000",
-                            DateCreated = new DateTime(2021, 2, 24, 15, 51, 59, 327, DateTimeKind.Local).AddTicks(8271),
+                            ConcurrencyStamp = "2fdcb336-75c3-4ff4-b6df-f53d33418360",
+                            DateCreated = new DateTime(2021, 3, 3, 15, 40, 48, 92, DateTimeKind.Local).AddTicks(8323),
                             Email = "resker123@gmail.com",
                             EmailConfirmed = true,
                             IdentityNumber = "0123456789",
@@ -287,13 +312,30 @@ namespace ESMS.Data.Migrations
                             Name = "Pham Tuan",
                             NormalizedEmail = "resker123@gmail.com",
                             NormalizedUserName = "admin",
-                            PasswordHash = "AQAAAAEAACcQAAAAEFVBpXX5sAlg7ri9Gom6SuV/5u3ze0jlss7ZNu/i8rMZoFJKLeZbspEhm8e6ypzBRg==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEFHmdBDiiLpMl1lbaCcg2/rcpLm4Dc/HB8x18CoMwAS1ojoQNNlrL9tzCYQy6f4+bA==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
                             Status = 0,
                             TwoFactorEnabled = false,
                             UserName = "admin"
                         });
+                });
+
+            modelBuilder.Entity("ESMS.Data.Entities.Language", b =>
+                {
+                    b.Property<int>("LangID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<string>("LangName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("LangID");
+
+                    b.ToTable("Languages");
                 });
 
             modelBuilder.Entity("ESMS.Data.Entities.Position", b =>
@@ -363,6 +405,28 @@ namespace ESMS.Data.Migrations
                     b.HasIndex("ProjectManagerID");
 
                     b.ToTable("Projects");
+                });
+
+            modelBuilder.Entity("ESMS.Data.Entities.RequiredLanguage", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<int>("LangID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RequiredPositionID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("LangID");
+
+                    b.HasIndex("RequiredPositionID");
+
+                    b.ToTable("RequiredLanguages");
                 });
 
             modelBuilder.Entity("ESMS.Data.Entities.RequiredPosition", b =>
@@ -448,7 +512,7 @@ namespace ESMS.Data.Migrations
                         new
                         {
                             Id = "8D04DCE2-969A-435D-BBA4-DF3F325983DC",
-                            ConcurrencyStamp = "27169839-6a11-44ad-a080-e14d902d4420",
+                            ConcurrencyStamp = "db685d75-288c-44b5-8dcd-7587d88b78d1",
                             Description = "Administrator role",
                             Name = "admin",
                             NormalizedName = "admin"
@@ -667,6 +731,23 @@ namespace ESMS.Data.Migrations
                     b.Navigation("Employee");
                 });
 
+            modelBuilder.Entity("ESMS.Data.Entities.EmpLanguage", b =>
+                {
+                    b.HasOne("ESMS.Data.Entities.Employee", "Employee")
+                        .WithMany("EmpLanguages")
+                        .HasForeignKey("EmpID");
+
+                    b.HasOne("ESMS.Data.Entities.Language", "Language")
+                        .WithMany("EmpLanguages")
+                        .HasForeignKey("LangID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Language");
+                });
+
             modelBuilder.Entity("ESMS.Data.Entities.EmpPosition", b =>
                 {
                     b.HasOne("ESMS.Data.Entities.Employee", "Employee")
@@ -735,6 +816,25 @@ namespace ESMS.Data.Migrations
                     b.Navigation("Employee");
                 });
 
+            modelBuilder.Entity("ESMS.Data.Entities.RequiredLanguage", b =>
+                {
+                    b.HasOne("ESMS.Data.Entities.Language", "Language")
+                        .WithMany("RequiredLanguages")
+                        .HasForeignKey("LangID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ESMS.Data.Entities.RequiredPosition", "RequiredPosition")
+                        .WithMany("RequiredLanguages")
+                        .HasForeignKey("RequiredPositionID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Language");
+
+                    b.Navigation("RequiredPosition");
+                });
+
             modelBuilder.Entity("ESMS.Data.Entities.RequiredPosition", b =>
                 {
                     b.HasOne("ESMS.Data.Entities.Position", "Position")
@@ -801,6 +901,8 @@ namespace ESMS.Data.Migrations
                 {
                     b.Navigation("EmpCertifications");
 
+                    b.Navigation("EmpLanguages");
+
                     b.Navigation("EmpPosInProjects");
 
                     b.Navigation("EmpPositions");
@@ -808,6 +910,13 @@ namespace ESMS.Data.Migrations
                     b.Navigation("EmpSkills");
 
                     b.Navigation("Projects");
+                });
+
+            modelBuilder.Entity("ESMS.Data.Entities.Language", b =>
+                {
+                    b.Navigation("EmpLanguages");
+
+                    b.Navigation("RequiredLanguages");
                 });
 
             modelBuilder.Entity("ESMS.Data.Entities.Position", b =>
@@ -830,6 +939,8 @@ namespace ESMS.Data.Migrations
 
             modelBuilder.Entity("ESMS.Data.Entities.RequiredPosition", b =>
                 {
+                    b.Navigation("RequiredLanguages");
+
                     b.Navigation("RequiredSkills");
                 });
 

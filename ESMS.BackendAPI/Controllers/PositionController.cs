@@ -1,5 +1,5 @@
-﻿using ESMS.Application.Services.Positions;
-using ESMS.ViewModels.Services.Position;
+﻿using ESMS.BackendAPI.Services.Positions;
+using ESMS.BackendAPI.ViewModels.Position;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
