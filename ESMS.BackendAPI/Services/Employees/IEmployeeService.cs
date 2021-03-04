@@ -16,7 +16,7 @@ namespace ESMS.BackendAPI.Services.Employees
 
         Task<ApiResult<bool>> Update(string id, EmpUpdateRequest request);
 
-        //Task<List<CandidateViewModel>> SuggestCandidate(int projectID, SuggestCadidateRequest request);
+        Task<List<CandidateViewModel>> SuggestCandidate(int projectID, SuggestCadidateRequest request);
 
         Task<ApiResult<PagedResult<EmpVm>>> GetEmpsPaging(GetEmpPagingRequest request);
 
