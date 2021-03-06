@@ -31,7 +31,7 @@ namespace ESMS.BackendAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest();
             var result = await _userService.Authenticate(request);
-            if (string.IsNullOrEmpty(result.ResultObj))
+            if (result.ResultObj == null)
             {
                 return BadRequest(result);
             }
