@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ESMS.BackendAPI.Services.Employees;
 using ESMS.BackendAPI.ViewModels.Employees;
+using ESMS.ViewModels.System.Employees;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
@@ -66,6 +67,13 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(result);
         }
 
+        [HttpGet("candidate/{projectID}")]
+        public async Task<IActionResult> SuggestCandidate(int projectID, [FromBody]SuggestCadidateRequest request)
+        {
+            var candidates = await _userService.SuggestCandidate(projectID , request);
+            return Ok(candidates);
+        }
+
         //http://localhost/api/user/paging?pageIndex=1&pageSize=10&keyword=
         [HttpGet("paging")]
         public async Task<IActionResult> GetAllPaging([FromQuery] GetEmpPagingRequest request)
@@ -73,7 +81,7 @@ namespace ESMS.BackendAPI.Controllers
             var products = await _userService.GetEmpsPaging(request);
             return Ok(products);
         }
-
+        
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
