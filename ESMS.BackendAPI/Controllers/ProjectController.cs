@@ -1,4 +1,5 @@
 ﻿using ESMS.BackendAPI.Services.Projects;
+using ESMS.BackendAPI.ViewModels.Position;
 using ESMS.BackendAPI.ViewModels.Project;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -78,10 +79,21 @@ namespace ESMS.BackendAPI.Controllers
         }
 
         //Delete:http://localhost/api/project/id
-        [HttpDelete("{projectId}")]
-        public async Task<IActionResult> Delete(int projectId)
+        [HttpDelete("{projectID}")]
+        public async Task<IActionResult> Delete(int projectID)
         {
-            var result = await _projectService.Delete(projectId);
+            var result = await _projectService.Delete(projectID);
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+
+        [HttpPost("addRequirements/{projectID}")]
+        public async Task<IActionResult> AddRequiredPosition(int projectID, [FromBody] AddRequiredPositionRequest request)
+        {
+            var result = await _projectService.AddRequiredPosition(projectID, request);
             if (!result.IsSuccessed)
             {
                 return BadRequest(result);

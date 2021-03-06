@@ -79,16 +79,5 @@ namespace ESMS.BackendAPI.Controllers
             }
             return Ok(result);
         }
-
-        [HttpPost("{projectID}")]
-        public async Task<IActionResult> AddRequiredPosition(int projectID, [FromBody] AddRequiredPositionRequest request)
-        {
-            var result = await _positionService.AddRequiredPosition(projectID, request);
-            if (!result.IsSuccessed)
-            {
-                return BadRequest(result);
-            }
-            return Ok(result);
-        }
     }
 }

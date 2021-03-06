@@ -1,4 +1,5 @@
 ﻿using ESMS.BackendAPI.ViewModels.Common;
+using ESMS.BackendAPI.ViewModels.Position;
 using ESMS.BackendAPI.ViewModels.Project;
 using ESMS.Data.Entities;
 using System;
@@ -25,5 +26,7 @@ namespace ESMS.BackendAPI.Services.Projects
         Task<ApiResult<PagedResult<ProjectViewModel>>> GetProjectByEmpID(string EmpID, GetProjectPagingRequest request);
 
         Task<ApiResult<PagedResult<EmpInProjectViewModel>>> GetEmpInProjectPaging(int projectID, GetEmpInProjectPaging request);
+
+        Task<ApiResult<bool>> AddRequiredPosition(int projectID, AddRequiredPositionRequest request);
     }
 }

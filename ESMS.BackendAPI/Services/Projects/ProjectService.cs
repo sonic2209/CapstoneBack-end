@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ESMS.BackendAPI.ViewModels.Common;
 using ESMS.BackendAPI.ViewModels.Project;
+using ESMS.BackendAPI.ViewModels.Position;
 
 namespace ESMS.BackendAPI.Services.Projects
 {
@@ -240,6 +241,53 @@ namespace ESMS.BackendAPI.Services.Projects
             if (result == 0)
             {
                 return new ApiErrorResult<bool>("Update project failed");
+            }
+            return new ApiSuccessResult<bool>();
+        }
+
+        public async Task<ApiResult<bool>> AddRequiredPosition(int projectID, AddRequiredPositionRequest request)
+        {
+            foreach (var position in request.RequiredPositions)
+            {
+                var requiredPosition = new RequiredPosition()
+                {
+                    NumberOfCandidates = position.NumberOfCandidates,
+                    PositionID = position.PosID,
+                    ProjectID = projectID
+                };
+                _context.RequiredPositions.Add(requiredPosition);
+                var result = await _context.SaveChangesAsync();
+                if (result == 0)
+                {
+                    return new ApiErrorResult<bool>("Create requiredPosition failed");
+                }
+                RequiredSkill requiredSkill;
+                foreach (var softSkill in position.SoftSkillIDs)
+                {
+                    requiredSkill = new RequiredSkill()
+                    {
+                        RequiredPositionID = requiredPosition.ID,
+                        SkillID = softSkill
+                    };
+                    _context.RequiredSkills.Add(requiredSkill);
+                }
+                foreach (var hardSkill in position.HardSkills)
+                {
+                    requiredSkill = new RequiredSkill()
+                    {
+                        RequiredPositionID = requiredPosition.ID,
+                        SkillID = hardSkill.HardSkillID,
+                        Priority = hardSkill.Priority,
+                        Exp = hardSkill.Exp,
+                        CertificationID = hardSkill.CertificationID
+                    };
+                    _context.RequiredSkills.Add(requiredSkill);
+                }
+                result = await _context.SaveChangesAsync();
+                if (result == 0)
+                {
+                    return new ApiErrorResult<bool>("Create requiredSkill failed");
+                }
             }
             return new ApiSuccessResult<bool>();
         }
