@@ -20,53 +20,6 @@ namespace ESMS.BackendAPI.Services.Positions
             _context = context;
         }
 
-        public async Task<ApiResult<bool>> AddRequiredPosition(int projectID, AddRequiredPositionRequest request)
-        {
-            foreach (var position in request.RequiredPositions)
-            {
-                var requiredPosition = new RequiredPosition()
-                {
-                    NumberOfCandidates = position.NumberOfCandidates,
-                    PositionID = position.PosID,
-                    ProjectID = projectID
-                };
-                _context.RequiredPositions.Add(requiredPosition);
-                var result = await _context.SaveChangesAsync();
-                if (result == 0)
-                {
-                    return new ApiErrorResult<bool>("Create requiredPosition failed");
-                }
-                RequiredSkill requiredSkill;
-                foreach (var softSkill in position.SoftSkillIDs)
-                {
-                    requiredSkill = new RequiredSkill()
-                    {
-                        RequiredPositionID = requiredPosition.ID,
-                        SkillID = softSkill
-                    };
-                    _context.RequiredSkills.Add(requiredSkill);
-                }
-                foreach (var hardSkill in position.HardSkills)
-                {
-                    requiredSkill = new RequiredSkill()
-                    {
-                        RequiredPositionID = requiredPosition.ID,
-                        SkillID = hardSkill.HardSkillID,
-                        Priority = hardSkill.Priority,
-                        Exp = hardSkill.Exp,
-                        CertificationID = hardSkill.CertificationID
-                    };
-                    _context.RequiredSkills.Add(requiredSkill);
-                }
-                result = await _context.SaveChangesAsync();
-                if (result == 0)
-                {
-                    return new ApiErrorResult<bool>("Create requiredSkill failed");
-                }
-            }
-            return new ApiSuccessResult<bool>();
-        }
-
         public async Task<ApiResult<bool>> Create(PositionCreateRequest request)
         {
             var position = new Position()
@@ -148,6 +101,7 @@ namespace ESMS.BackendAPI.Services.Positions
             position.Name = request.Name;
             position.Description = request.Description;
 
+            _context.Positions.Update(position);
             var result = await _context.SaveChangesAsync();
             if (result == 0)
             {
