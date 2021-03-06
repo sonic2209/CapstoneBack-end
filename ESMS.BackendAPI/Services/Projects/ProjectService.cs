@@ -230,21 +230,6 @@ namespace ESMS.BackendAPI.Services.Projects
             return new ApiSuccessResult<bool>();
         }
 
-        public async Task<ApiResult<bool>> UpdateStatus(int projectID, int status)
-        {
-            var project = await _context.Projects.FindAsync(projectID);
-            if (project == null) return new ApiErrorResult<bool>("Project does not exist");
-
-            project.Status = (ProjectStatus)status;
-
-            var result = await _context.SaveChangesAsync();
-            if (result == 0)
-            {
-                return new ApiErrorResult<bool>("Update project failed");
-            }
-            return new ApiSuccessResult<bool>();
-        }
-
         public async Task<ApiResult<bool>> AddRequiredPosition(int projectID, AddRequiredPositionRequest request)
         {
             foreach (var position in request.RequiredPositions)
@@ -290,6 +275,23 @@ namespace ESMS.BackendAPI.Services.Projects
                 }
             }
             return new ApiSuccessResult<bool>();
+        }
+
+        public async Task<ApiResult<int>> ChangeStatus(int projectID)
+        {
+            var project = await _context.Projects.FindAsync(projectID);
+            if (project == null) return new ApiErrorResult<int>("Project does not exist");
+
+            project.Status = ProjectStatus.Finished;
+            project.DateEnd = DateTime.Now;
+
+            _context.Projects.Update(project);
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                return new ApiErrorResult<int>("Update project failed");
+            }
+            return new ApiSuccessResult<int>((int)project.Status);
         }
     }
 }

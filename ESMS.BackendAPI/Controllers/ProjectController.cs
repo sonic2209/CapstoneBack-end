@@ -63,7 +63,7 @@ namespace ESMS.BackendAPI.Controllers
         }
 
         //Put:http://localhost/api/project/id
-        [HttpPut("projectID")]
+        [HttpPut("{projectID}")]
         public async Task<IActionResult> Update(int projectID, [FromBody] ProjectUpdateRequest request)
         {
             if (!ModelState.IsValid)
@@ -71,6 +71,21 @@ namespace ESMS.BackendAPI.Controllers
                 return BadRequest();
             }
             var result = await _projectService.Update(projectID, request);
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+
+        [HttpPut("changeStatus/{projectID}")]
+        public async Task<IActionResult> ChangeStatus(int projectID)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            var result = await _projectService.ChangeStatus(projectID);
             if (!result.IsSuccessed)
             {
                 return BadRequest(result);
