@@ -254,11 +254,11 @@ namespace ESMS.BackendAPI.Services.Employees
                             }
                         }
                         //
-                        var listEmpSoftSKillquery = from es in _context.EmpSkills
+                        var listEmpSkillquery = from es in _context.EmpSkills
                                                     join s in _context.Skills on es.SkillID equals s.SkillID
                                                     select new { es, s };
-                        var listEmpSoftSKillquery1 = listEmpSoftSKillquery.Where(x => x.s.SkillType == SkillType.SoftSkill && x.es.EmpID.Equals(emp.EmpId));
-                        var listEmpSoftSkill = await listEmpSoftSKillquery1.Select(x => x.es.SkillID).ToListAsync();
+                        var listEmpSoftSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.SoftSkill && x.es.EmpID.Equals(emp.EmpId));
+                        var listEmpSoftSkill = await listEmpSoftSkillquery.Select(x => x.es.SkillID).ToListAsync();
                         var softSkillcount = 0;
                         foreach (int softskillId in requiredPosition.SoftSkillIDs)
                             {
@@ -275,7 +275,8 @@ namespace ESMS.BackendAPI.Services.Employees
 
                                 //var softSkillPoint = 0;
                             }
-
+                            var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.HardSkill && x.es.EmpID.Equals(emp.EmpId));
+                            var listEmpHardSkill = await listEmpHardSkillquery.Select(x=> new )
                         }
                         
                     }
