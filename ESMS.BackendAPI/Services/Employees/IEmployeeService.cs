@@ -10,7 +10,7 @@ namespace ESMS.BackendAPI.Services.Employees
 {
     public interface IEmployeeService
     {
-        Task<ApiResult<string>> Authenticate(LoginRequest request);
+        Task<ApiResult<LoginVm>> Authenticate(LoginRequest request);
 
         Task<ApiResult<bool>> Create(EmpCreateRequest request);
 
