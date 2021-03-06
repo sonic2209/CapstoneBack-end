@@ -8,7 +8,7 @@ namespace ESMS.ViewModels.System.Employees
 {
     public class CandidateViewModel
     {
-        public EmpVm Emp { get; set; }
+        public string EmpID { get; set; }
         public int Match { get; set; }
     }
 }

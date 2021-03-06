@@ -179,11 +179,12 @@ namespace ESMS.BackendAPI.Services.Employees
 
         public async Task<List<CandidateViewModel>> SuggestCandidate(int projectID, SuggestCadidateRequest request)
         {
+            List<CandidateViewModel> result = new List<CandidateViewModel>();
+            var dicCandidate = new Dictionary<string, int>();
             foreach (RequiredPositionDetail requiredPosition in request.RequiredPositions)
             {
                 if (requiredPosition.SoftSkillIDs != null)
-                {
-                    var match = 0;
+                {                  
 
                     //list <Candidate> result = null   //candidate{empID, candidateMatch = 60}
 
@@ -191,6 +192,7 @@ namespace ESMS.BackendAPI.Services.Employees
 
                     //function kiem Candidate trong result theo empID (findCandidate(empID))
 
+                    //Get List Emp Theo Position
                     var ListEmpInPos = await _context.EmpPositions.Where(x => x.PosID == requiredPosition.PosID && x.DateOut == null).Select(x => new EmpInPos()
                     {
                         EmpId = x.EmpID,
@@ -198,32 +200,35 @@ namespace ESMS.BackendAPI.Services.Employees
                         DateOut = x.DateOut,
                         NameExp = x.NameExp,
                     }).ToListAsync();
-                    if (ListEmpInPos != null) { 
+                    if (ListEmpInPos != null) {                  
                     foreach (EmpInPos emp in ListEmpInPos)
                     {
+                        //add match theo kinh nghiem
+                        dicCandidate.Add(emp.EmpId, 60);
                         switch (emp.NameExp)
                         {
                             case NameExp.Intern:
-                                match += (10 / 5) * 1;
+                                dicCandidate[emp.EmpId] += (10 / 5) * 1;
                                 break;
                             case NameExp.Fresher:
-                                match += (10 / 5) * 2;
+                                dicCandidate[emp.EmpId] += (10 / 5) * 2;
                                 break;
                             case NameExp.Junior:
-                                match += (10 / 5) * 3;
+                                dicCandidate[emp.EmpId] += (10 / 5) * 3;
                                 break;
                             case NameExp.Senior:
-                                match += (10 / 5) * 4;
+                                dicCandidate[emp.EmpId] += (10 / 5) * 4;
                                 break;
                             case NameExp.Master:
-                                match += (10 / 5) * 5;
+                                dicCandidate[emp.EmpId] += (10 / 5) * 5;
                                 break;
                         }
+                            //add match theo ngon ngu
                         var query = from ep in _context.EmpPositions
                                     join el in _context.EmpLanguages on ep.EmpID equals el.EmpID
                                     select new { ep, el };
 
-                        var ListEmpInLang = await query.Where(x => x.el.EmpID.Equals(emp.EmpId) && x.el.LangID == requiredPosition.Language.LangID).Select(x => new EmpInLang()
+                        var ListEmpInLang = await query.Where(x => x.el.EmpID.Equals(emp.EmpId) && x.el.LangID == requiredPosition.LanguageID).Select(x => new EmpInLang()
                         {
                             EmpId = x.el.EmpID,
                             LangLevel = x.el.LangLevel,
@@ -236,36 +241,35 @@ namespace ESMS.BackendAPI.Services.Employees
                                 switch (empl.LangLevel)
                                 {
                                     case 1:
-                                        match += (10 / 5) * 1;
+                                        dicCandidate[emp.EmpId] += (10 / 5) * 1;
                                         break;
                                     case 2:
-                                        match += (10 / 5) * 2;
+                                        dicCandidate[emp.EmpId] += (10 / 5) * 2;
                                         break;
                                     case 3:
-                                        match += (10 / 5) * 3;
+                                        dicCandidate[emp.EmpId] += (10 / 5) * 3;
                                         break;
                                     case 4:
-                                        match += (10 / 5) * 4;
+                                        dicCandidate[emp.EmpId] += (10 / 5) * 4;
                                         break;
                                     case 5:
-                                        match += (10 / 5) * 5;
+                                        dicCandidate[emp.EmpId] += (10 / 5) * 5;
                                         break;
                                 }
                             }
                         }
-                        //
+                        //Add theo softskill
                         var listEmpSkillquery = from es in _context.EmpSkills
                                                     join s in _context.Skills on es.SkillID equals s.SkillID
                                                     select new { es, s };
                         var listEmpSoftSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.SoftSkill && x.es.EmpID.Equals(emp.EmpId));
                         var listEmpSoftSkill = await listEmpSoftSkillquery.Select(x => x.es.SkillID).ToListAsync();
-                        var softSkillcount = 0;
                         foreach (int softskillId in requiredPosition.SoftSkillIDs)
                             {
                             foreach (var softSkill in listEmpSoftSkill)
                             {
                                 if (softSkill.Equals(softskillId)){
-                                    softSkillcount++;
+                                        dicCandidate[emp.EmpId] += 10 / (requiredPosition.SoftSkillIDs.Count);
                                 }
                             }
                                 
@@ -275,8 +279,38 @@ namespace ESMS.BackendAPI.Services.Employees
 
                                 //var softSkillPoint = 0;
                             }
+                            //add match vao hardskill
                             var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.HardSkill && x.es.EmpID.Equals(emp.EmpId));
-                            var listEmpHardSkill = await listEmpHardSkillquery.Select(x=> new )
+                            var listEmpHardSkill = await listEmpHardSkillquery.Select(x => new EmpInHardSkill()
+                            {
+                                EmpID = emp.EmpId,
+                                SkillID = x.s.SkillID,
+                                SkillLevel = x.es.SkillLevel,
+                            }).ToListAsync();
+                            foreach (HardSkillDetail hardskill in requiredPosition.HardSkills)
+                            {                   
+                            foreach (EmpInHardSkill emphs in listEmpHardSkill)
+                            {
+                                if (emphs.SkillID.Equals(hardskill.HardSkillID)) { 
+                                var certiquery = from c in _context.Certifications
+                                            join ec in _context.EmpCertifications on c.CertificationID equals ec.CertificationID
+                                            select new { c, ec };
+                                var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID).Select(x => new CertiInSkill
+                                {
+                                    CertiID = x.c.CertificationID,
+                                    SkillID = x.c.SkillID,
+                                    CertiLevel = x.c.CertiLevel
+                                }).ToListAsync();
+                                var HighestCerti = new EmpHighestCerti()
+                                {
+                                    EmpID = emphs.EmpID,
+                                    HighestCertiLevel = listCertiSkill.Max(x => x.CertiLevel),
+                                };
+                                    dicCandidate[emp.EmpId] += ((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel) * 5) + ((int)emphs.SkillLevel * 5) * hardskill.Priority / requiredPosition.HardSkills.Count;
+                                 }
+                                }
+
+                            }
                         }
                         
                     }
@@ -323,7 +357,11 @@ namespace ESMS.BackendAPI.Services.Employees
                 ///
 
             }
-                return null;
+            foreach (var item in dicCandidate)
+            {
+                result.Add(new CandidateViewModel { EmpID = item.Key, Match = item.Value });
+            }
+            return result;
             }
 
             //public async Task<List<CandidateViewModel>> SuggestCandidate(int projectID, SuggestCadidateRequest request)
