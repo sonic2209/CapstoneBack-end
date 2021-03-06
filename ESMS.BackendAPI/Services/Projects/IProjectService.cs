@@ -15,7 +15,7 @@ namespace ESMS.BackendAPI.Services.Projects
 
         Task<ApiResult<bool>> Update(int projectID, ProjectUpdateRequest request);
 
-        Task<ApiResult<bool>> UpdateStatus(int projectID, int status);
+        Task<ApiResult<int>> ChangeStatus(int projectID);
 
         Task<ApiResult<bool>> Delete(int projectID);
 
