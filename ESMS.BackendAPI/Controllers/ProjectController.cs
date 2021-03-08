@@ -1,4 +1,5 @@
 ﻿using ESMS.BackendAPI.Services.Projects;
+using ESMS.BackendAPI.ViewModels.Position;
 using ESMS.BackendAPI.ViewModels.Project;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -62,7 +63,7 @@ namespace ESMS.BackendAPI.Controllers
         }
 
         //Put:http://localhost/api/project/id
-        [HttpPut("projectID")]
+        [HttpPut("{projectID}")]
         public async Task<IActionResult> Update(int projectID, [FromBody] ProjectUpdateRequest request)
         {
             if (!ModelState.IsValid)
@@ -77,11 +78,37 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(result);
         }
 
-        //Delete:http://localhost/api/project/id
-        [HttpDelete("{projectId}")]
-        public async Task<IActionResult> Delete(int projectId)
+        [HttpPut("changeStatus/{projectID}")]
+        public async Task<IActionResult> ChangeStatus(int projectID)
         {
-            var result = await _projectService.Delete(projectId);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            var result = await _projectService.ChangeStatus(projectID);
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+
+        //Delete:http://localhost/api/project/id
+        [HttpDelete("{projectID}")]
+        public async Task<IActionResult> Delete(int projectID)
+        {
+            var result = await _projectService.Delete(projectID);
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+
+        [HttpPost("addRequirements/{projectID}")]
+        public async Task<IActionResult> AddRequiredPosition(int projectID, [FromBody] AddRequiredPositionRequest request)
+        {
+            var result = await _projectService.AddRequiredPosition(projectID, request);
             if (!result.IsSuccessed)
             {
                 return BadRequest(result);
