@@ -11,7 +11,7 @@ namespace ESMS.Data.Entities
         public string EmpID { get; set; }
         public int PosID { get; set; }
         public DateTime DateIn { get; set; }
-        public DateTime DateOut { get; set; }
+        public DateTime? DateOut { get; set; }
         public NameExp NameExp { get; set; }
         public Employee Employee { get; set; }
         public Position Position { get; set; }

@@ -180,20 +180,13 @@ namespace ESMS.BackendAPI.Services.Employees
         public async Task<List<CandidateViewModel>> SuggestCandidate(int projectID, SuggestCadidateRequest request)
         {
             List<CandidateViewModel> result = new List<CandidateViewModel>();
-            var dicCandidate = new Dictionary<string, int>();
+            var dicCandidate = new Dictionary<string, double>();
             foreach (RequiredPositionDetail requiredPosition in request.RequiredPositions)
             {
                 if (requiredPosition.SoftSkillIDs != null)
                 {                  
-
-                    //list <Candidate> result = null   //candidate{empID, candidateMatch = 60}
-
-                    //var match = 0
-
-                    //function kiem Candidate trong result theo empID (findCandidate(empID))
-
                     //Get List Emp Theo Position
-                    var ListEmpInPos = await _context.EmpPositions.Where(x => x.PosID == requiredPosition.PosID).Select(x => new EmpInPos()
+                    var ListEmpInPos = await _context.EmpPositions.Where(x => x.PosID == requiredPosition.PosID && x.DateOut == null).Select(x => new EmpInPos()
                     {
                         EmpId = x.EmpID,
                         DateIn = x.DateIn,                   
@@ -251,10 +244,22 @@ namespace ESMS.BackendAPI.Services.Employees
                                     case 4:
                                         dicCandidate[emp.EmpId] += (10 / 5) * 4;
                                         break;
-                                    case 5:
-                                        dicCandidate[emp.EmpId] += (10 / 5) * 5;
+                                    case 6:
+                                        dicCandidate[emp.EmpId] += (10 / 6) * 5;
                                         break;
-                                }
+                                    case 7:
+                                            dicCandidate[emp.EmpId] += (10 / 7) * 5;
+                                            break;
+                                    case 8:
+                                            dicCandidate[emp.EmpId] += (10 / 8) * 5;
+                                            break;
+                                    case 9:
+                                            dicCandidate[emp.EmpId] += (10 / 9) * 5;
+                                            break;
+                                    case 10:
+                                            dicCandidate[emp.EmpId] += (10 / 10) * 5;
+                                            break;
+                                    }
                             }
                         }
                         //Add theo softskill
@@ -272,11 +277,6 @@ namespace ESMS.BackendAPI.Services.Employees
                                 }
                             }
                                 
-                                //var SoftSkillCount = new Dictionary<string, int>();
-
-                                //SoftSkillCount = listEmpSoftSkill.GroupBy(x => x).ToDictionary(x => x.Key, x => x.Count());
-
-                                //var softSkillPoint = 0;
                             }
                             //add match vao hardskill
                             var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.HardSkill && x.es.EmpID.Equals(emp.EmpId));
@@ -305,54 +305,16 @@ namespace ESMS.BackendAPI.Services.Employees
                                     EmpID = emphs.EmpID,
                                     HighestCertiLevel = listCertiSkill.Any() ? listCertiSkill.Max(x => x.CertiLevel) : 0,
                                 };
-                                    dicCandidate[emp.EmpId] += ((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel) * 5) + ((int)emphs.SkillLevel * 5) * hardskill.Priority / requiredPosition.HardSkills.Count;
-                                 }
+                                    double Hardskillmatch = (((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel) * 0.5) + ((int)emphs.SkillLevel * 0.5)) * hardskill.Priority/ 10*requiredPosition.HardSkills.Count;
+                                        dicCandidate[emp.EmpId] += Hardskillmatch;
+                                    }
                                 }
                             }
                         }
                         
                     }
                 }
-                //- Get Emp in Pos by emp id -
-                //var ListEmpInPos = select empID, DateIn, DateOut, NameExp from EmpPositions where PosID = required.PosID and DateOut == null
-                //foreach (Emp emp in ListEmpInPos) 
-                //////switch (emp.NameExp):
-                ////////case intern : match += (10/5)*1; result.add(Candidate(empid, match))
-                ////////case fresher : match += (10/5)*2
-                ////////case junior : match += (10/5)*3
-                ////////case senior : match += (10/5)*4
-                ////////case master : match += (10/5)*5
-
-                //- Get Emp in Lang by emp id -
-                //var ListEmpLang = select empID, langLevel from EmpLan where LangId = require.langid and empid = ListEmpInPos.empID
-                //foreach (Emp emp in ListEmpLang) 
-                //////switch (langLevel):
-                ////////case 1 : match += (10/5)*1 ; findCandidate(emp.empID).candidateMatch + match 
-                ////////case 2 : match += (10/5)*2
-                ////////case 3 : match += (10/5)*3
-                ////////case 4 : match += (10/5)*4
-                ////////case 5 : match += (10/5)*5
-
-
-                //--tinh diem soft skill
-                //var listEmpSoftSkill
-                //foreach (int softskillID in request.SoftSkillIDs) 
-                ////listEmpSoftSkill = select empID from EmpSkill where empID=ListEmpInPos.empID and skillid = softskillID join bang skill vs skill type  = softskill
-                /////**{1,1,1,1,2,2,2,2,4,4,4,...}
-                ////function count so phan tu lap trong list return  Map<key = Set empSkill, value = so phan tu giong nhau> map
-                ///var softSkillPoint = 0
-                //foreach (var value in listEmpSoftSkill) 
-                ////softSkillPoint = (map.value) * 10  / (request.SoftSkillIDs.length); findCandidate(emp.empID).candidateMatch + match 
-
-                ////Get highest certi level in hard skill of emp          
-                ///get requiredCertiLevel
-                //////Map<empId,List<obj(highestCertLevel,hardSkillLevel)>> empHardSkillCerti
-                ///foreach(var list in empHardSkillCerti.key){
-                /////match1 =0;
-                /////foreach(var obj in list)
-                ////////match1 += ((obj.highestCertLevel - requiredCertiLevel) * 5) + (hardSkillLevel * 5)) * requirePriority / request.HardSkills.length
-                /////findCandidate(empHardSkillCerti.key).candidateMatch + match1
-                ///
+      
 
             }
             foreach (var item in dicCandidate)
