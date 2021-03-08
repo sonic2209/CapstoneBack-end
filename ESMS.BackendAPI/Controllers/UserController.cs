@@ -67,7 +67,7 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(result);
         }
 
-        [HttpGet("candidate/{projectID}")]
+        [HttpPost("candidate/{projectID}")]
         public async Task<IActionResult> SuggestCandidate(int projectID, [FromBody]SuggestCadidateRequest request)
         {
             var candidates = await _userService.SuggestCandidate(projectID , request);

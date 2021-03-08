@@ -309,7 +309,6 @@ namespace ESMS.BackendAPI.Services.Employees
                                     dicCandidate[emp.EmpId] += ((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel) * 5) + ((int)emphs.SkillLevel * 5) * hardskill.Priority / requiredPosition.HardSkills.Count;
                                  }
                                 }
-
                             }
                         }
                         
