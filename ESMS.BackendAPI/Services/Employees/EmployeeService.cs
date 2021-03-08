@@ -193,11 +193,10 @@ namespace ESMS.BackendAPI.Services.Employees
                     //function kiem Candidate trong result theo empID (findCandidate(empID))
 
                     //Get List Emp Theo Position
-                    var ListEmpInPos = await _context.EmpPositions.Where(x => x.PosID == requiredPosition.PosID && x.DateOut == null).Select(x => new EmpInPos()
+                    var ListEmpInPos = await _context.EmpPositions.Where(x => x.PosID == requiredPosition.PosID).Select(x => new EmpInPos()
                     {
                         EmpId = x.EmpID,
-                        DateIn = x.DateIn,
-                        DateOut = x.DateOut,
+                        DateIn = x.DateIn,                   
                         NameExp = x.NameExp,
                     }).ToListAsync();
                     if (ListEmpInPos != null) {                  
@@ -304,7 +303,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 var HighestCerti = new EmpHighestCerti()
                                 {
                                     EmpID = emphs.EmpID,
-                                    HighestCertiLevel = listCertiSkill.Max(x => x.CertiLevel),
+                                    HighestCertiLevel = listCertiSkill.Any() ? listCertiSkill.Max(x => x.CertiLevel) : 0,
                                 };
                                     dicCandidate[emp.EmpId] += ((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel) * 5) + ((int)emphs.SkillLevel * 5) * hardskill.Priority / requiredPosition.HardSkills.Count;
                                  }
