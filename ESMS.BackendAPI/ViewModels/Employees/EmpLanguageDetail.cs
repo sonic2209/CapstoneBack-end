@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ESMS.BackendAPI.ViewModels.Position
+namespace ESMS.BackendAPI.ViewModels.Employees
 {
-    public class LanguageDetail
+    public class EmpLanguageDetail
     {
         public int LangID { get; set; }
-        public int Priority { get; set; }
+        public int LangLevel { get; set; }
     }
 }
