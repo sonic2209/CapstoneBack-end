@@ -1,4 +1,5 @@
 ﻿using ESMS.BackendAPI.ViewModels.Employees;
+using ESMS.BackendAPI.ViewModels.Employees.Suggestion;
 using ESMS.Data.Enums;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ namespace ESMS.ViewModels.System.Employees
 {
     public class CandidateViewModel
     {
-        public EmpVm Emp { get; set; }
-        public int Match { get; set; }
+        public string Position { get; set; }
+        public List<MatchViewModel> MatchDetail { get; set; }
     }
 }
