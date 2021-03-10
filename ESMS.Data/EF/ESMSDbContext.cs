@@ -30,7 +30,6 @@ namespace ESMS.Data.EF
             modelBuilder.ApplyConfiguration(new EmpCertificationConfiguration());
             modelBuilder.ApplyConfiguration(new RoleConfiguration());
             modelBuilder.ApplyConfiguration(new RequiredPositionConfiguration());
-            modelBuilder.ApplyConfiguration(new SkillInPositionConfiguration());
             modelBuilder.ApplyConfiguration(new RequiredSkillConfiguration());
             modelBuilder.ApplyConfiguration(new EmpPositionConfiguration());
             modelBuilder.ApplyConfiguration(new LanguageConfiguration());
@@ -56,7 +55,6 @@ namespace ESMS.Data.EF
         public DbSet<EmpCertification> EmpCertifications { get; set; }
         public DbSet<EmpPositionInProject> EmpPositionInProjects { get; set; }
         public DbSet<RequiredPosition> RequiredPositions { get; set; }
-        public DbSet<SkillInPosition> SkillInPositions { get; set; }
         public DbSet<RequiredSkill> RequiredSkills { get; set; }
         public DbSet<EmpPosition> EmpPositions { get; set; }
         public DbSet<Language> Languages { get; set; }

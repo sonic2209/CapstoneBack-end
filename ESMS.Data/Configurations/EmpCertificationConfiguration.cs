@@ -14,6 +14,8 @@ namespace ESMS.Data.Configurations
             builder.ToTable("EmpCertifications");
             builder.HasKey(x => x.ID);
             builder.Property(x => x.ID).UseIdentityColumn();
+            builder.Property(x => x.DateTaken).HasColumnType("date");
+            builder.Property(x => x.DateEnd).HasColumnType("date");
             builder.HasOne(x => x.Employee).WithMany(x => x.EmpCertifications).HasForeignKey(x => x.EmpID);
             builder.HasOne(x => x.Certification).WithMany(x => x.EmpCertifications).HasForeignKey(x => x.CertificationID);
         }

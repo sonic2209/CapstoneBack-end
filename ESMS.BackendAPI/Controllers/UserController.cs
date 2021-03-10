@@ -87,5 +87,16 @@ namespace ESMS.BackendAPI.Controllers
             var result = await _userService.Delete(id);
             return Ok(result);
         }
+
+        [HttpPost("{empID}")]
+        public async Task<IActionResult> AddRequiredPosition(string empID, [FromBody] AddEmpPositionRequest request)
+        {
+            var result = await _userService.AddEmpPosition(empID, request);
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
     }
 }
