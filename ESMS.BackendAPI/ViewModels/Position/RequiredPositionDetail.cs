@@ -8,7 +8,7 @@ namespace ESMS.BackendAPI.ViewModels.Position
     {
         public int PosID { get; set; }
         public int NumberOfCandidates { get; set; }
-        public int LanguageID { get; set; }
+        public List<LanguageDetail> Language { get; set; }
         public List<int> SoftSkillIDs { get; set; }
         public List<HardSkillDetail> HardSkills { get; set; }
     }

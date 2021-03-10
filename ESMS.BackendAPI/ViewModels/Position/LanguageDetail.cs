@@ -8,6 +8,6 @@ namespace ESMS.BackendAPI.ViewModels.Position
     public class LanguageDetail
     {
         public int LangID { get; set; }
-        public int LangLevel { get; set; }
+        public int Priority { get; set; }
     }
 }
