@@ -246,6 +246,16 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     return new ApiErrorResult<bool>("Create requiredPosition failed");
                 }
+                foreach (var language in position.Language)
+                {
+                    var requiredLanguage = new RequiredLanguage()
+                    {
+                        LangID = language.LangID,
+                        RequiredPositionID = requiredPosition.ID,
+                        Priority = language.Priority
+                    };
+                    _context.RequiredLanguages.Add(requiredLanguage);
+                }
                 RequiredSkill requiredSkill;
                 foreach (var softSkill in position.SoftSkillIDs)
                 {
