@@ -41,6 +41,14 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(project);
         }
 
+        //Get:http://localhost/api/project/getProjects/id
+        [HttpGet("getEmpsInProject/{projectID}")]
+        public async Task<IActionResult> GetProjectByEmpID(int projectID, [FromQuery] GetEmpInProjectPaging request)
+        {
+            var project = await _projectService.GetEmpInProjectPaging(projectID, request);
+            return Ok(project);
+        }
+
         //http://localhost/api/project/paging?pageIndex=1&pageSize=10&keyword=
         [HttpGet("paging")]
         public async Task<IActionResult> GetProjectPaging([FromQuery] GetProjectPagingRequest request)
@@ -113,6 +121,20 @@ namespace ESMS.BackendAPI.Controllers
             {
                 return BadRequest(result);
             }
+            return Ok(result);
+        }
+
+        [HttpPost("addCandidate/{projectID}")]
+        public async Task<IActionResult> AddCandidate(int projectID, [FromBody] AddCandidateRequest request)
+        {
+            var result = await _projectService.AddCandidate(projectID, request);
+            return Ok(result);
+        }
+
+        [HttpPost("confirmCandidate/{projectID}")]
+        public async Task<IActionResult> ConfirmCandidate(int projectID, [FromBody] ConfirmCandidateRequest request)
+        {
+            var result = await _projectService.ConfirmCandidate(projectID, request);
             return Ok(result);
         }
     }
