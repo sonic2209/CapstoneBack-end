@@ -190,11 +190,13 @@ namespace ESMS.BackendAPI.Services.Employees
                     var Position = _context.Positions.Where(x => x.PosID == requiredPosition.PosID).Select(x => x.Name).FirstOrDefault();
                     var ListEmpPosquery = from ep in _context.EmpPositions
                                           join p in _context.Positions on ep.PosID equals p.PosID
-                                          select new { ep, p };
+                                          join e in _context.Employees on ep.EmpID equals e.Name
+                                          select new { ep, p, e };
 
                     var ListEmpInPos = await ListEmpPosquery.Where(x => x.ep.PosID == requiredPosition.PosID && x.ep.DateOut == null).Select(x => new EmpInPos()
                     {
                         EmpId = x.ep.EmpID,
+                        EmpName = x.e.Name,
                         DateIn = x.ep.DateIn,                   
                         NameExp = x.ep.NameExp,
                         Position = x.p.Name,
@@ -310,6 +312,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             matchDetail = new MatchViewModel()
                             {
                                 EmpID = emp.EmpId,
+                                EmpName = emp.EmpName,
                                 LanguageMatch = Languagematch,
                                 SoftSkillMatch = Softskillmatch,
                                 HardSkillMatch = Hardskillmatch,

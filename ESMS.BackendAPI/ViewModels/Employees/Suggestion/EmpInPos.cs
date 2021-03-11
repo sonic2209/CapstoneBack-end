@@ -9,6 +9,7 @@ namespace ESMS.BackendAPI.ViewModels.Employees.Suggestion
     public class EmpInPos
     {
         public string EmpId { get; set; }
+        public string EmpName { get; set; }
         public DateTime DateIn { get; set; }
         public DateTime DateOut { get; set; }
         public String Position { get; set; }
