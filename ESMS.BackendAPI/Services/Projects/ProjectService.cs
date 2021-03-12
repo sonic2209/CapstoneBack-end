@@ -120,11 +120,12 @@ namespace ESMS.BackendAPI.Services.Projects
                 .Take(request.PageSize)
                 .Select(x => new EmpInProjectViewModel()
                 {
-                    EmployeeID = x.e.Id,
+                    EmpID = x.e.Id,
                     Name = x.e.Name,
+                    PosID = x.po.PosID,
                     PosName = x.po.Name,
-                    Description = x.po.Description,
-                    Status = x.e.Status
+                    Status = x.e.Status,
+                    ProjectID = x.ep.ProjectID
                 }).ToListAsync();
 
             var pagedResult = new PagedResult<EmpInProjectViewModel>()
@@ -302,6 +303,87 @@ namespace ESMS.BackendAPI.Services.Projects
                 return new ApiErrorResult<int>("Update project failed");
             }
             return new ApiSuccessResult<int>((int)project.Status);
+        }
+
+        public async Task<ApiResult<List<EmpInProjectViewModel>>> AddCandidate(int projectID, AddCandidateRequest request)
+        {
+            var query = from e in _context.EmpPositionInProjects
+                        select new { e };
+            foreach (var candidate in request.Candidates)
+            {
+                var emp = query.Where(x => x.e.EmpID.Equals(candidate.EmpID) && x.e.ProjectID == projectID).Select(x => new EmpPositionInProject()
+                {
+                    ID = x.e.ID,
+                    EmpID = x.e.EmpID,
+                    PosID = x.e.PosID,
+                    ProjectID = x.e.ProjectID
+                }).FirstOrDefault();
+                if (emp != null)
+                {
+                    emp.PosID = candidate.PosID;
+                    _context.EmpPositionInProjects.Update(emp);
+                }
+                else
+                {
+                    emp = new EmpPositionInProject()
+                    {
+                        ProjectID = projectID,
+                        EmpID = candidate.EmpID,
+                        PosID = candidate.PosID
+                    };
+                    _context.EmpPositionInProjects.Add(emp);
+                }
+            }
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                return new ApiErrorResult<List<EmpInProjectViewModel>>("add candidate failed failed");
+            }
+            var empQuerry = from e in _context.Employees
+                            join ep in _context.EmpPositionInProjects on e.Id equals ep.EmpID
+                            join po in _context.Positions on ep.PosID equals po.PosID
+                            select new { e, ep, po };
+            var data = await empQuerry.Where(x => x.ep.ProjectID == projectID).Select(x => new EmpInProjectViewModel()
+            {
+                EmpID = x.e.Id,
+                Name = x.e.Name,
+                PosID = x.po.PosID,
+                PosName = x.po.Name,
+                Status = x.e.Status,
+                ProjectID = x.ep.ProjectID
+            }
+            ).ToListAsync();
+            return new ApiSuccessResult<List<EmpInProjectViewModel>>(data);
+        }
+
+        public async Task<ApiResult<List<EmpInProjectViewModel>>> ConfirmCandidate(int projectID, ConfirmCandidateRequest request)
+        {
+            foreach (var emp in request.EmpIDs)
+            {
+                var employee = await _context.Employees.FindAsync(emp);
+                employee.Status = EmployeeStatus.OnGoing;
+                _context.Employees.Update(employee);
+            }
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                return new ApiErrorResult<List<EmpInProjectViewModel>>("confirm candidate failed");
+            }
+            var empQuerry = from e in _context.Employees
+                            join ep in _context.EmpPositionInProjects on e.Id equals ep.EmpID
+                            join po in _context.Positions on ep.PosID equals po.PosID
+                            select new { e, ep, po };
+            var data = await empQuerry.Where(x => x.ep.ProjectID == projectID && x.e.Status == EmployeeStatus.OnGoing).Select(x => new EmpInProjectViewModel()
+            {
+                EmpID = x.e.Id,
+                Name = x.e.Name,
+                PosID = x.po.PosID,
+                PosName = x.po.Name,
+                Status = x.e.Status,
+                ProjectID = x.ep.ProjectID
+            }
+            ).ToListAsync();
+            return new ApiSuccessResult<List<EmpInProjectViewModel>>(data);
         }
     }
 }
