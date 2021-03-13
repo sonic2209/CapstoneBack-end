@@ -85,10 +85,10 @@ namespace ESMS.BackendAPI.Controllers
         }
 
         //Get: http://localhost/api/certification/getCertifications
-        [HttpGet("getCertifications")]
-        public async Task<IActionResult> GetCertifications()
+        [HttpGet("getCertifications/{skillID}")]
+        public async Task<IActionResult> GetCertifications(int skillID)
         {
-            var certifications = await _certificationService.GetCertifications();
+            var certifications = await _certificationService.GetCertifications(skillID);
             return Ok(certifications);
         }
     }
