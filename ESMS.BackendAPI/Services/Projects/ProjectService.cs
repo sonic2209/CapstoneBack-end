@@ -152,7 +152,8 @@ namespace ESMS.BackendAPI.Services.Projects
             //Paging
             int totalRow = await query.CountAsync();
 
-            var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
+            var data = await query.OrderByDescending(x => x.p.DateCreated)
+                .Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .Select(x => new ProjectViewModel()
                 {
@@ -189,7 +190,8 @@ namespace ESMS.BackendAPI.Services.Projects
             //Paging
             int totalRow = await query.CountAsync();
 
-            var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
+            var data = await query.OrderByDescending(x => x.p.DateCreated)
+                .Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .Select(x => new ProjectViewModel()
                 {
