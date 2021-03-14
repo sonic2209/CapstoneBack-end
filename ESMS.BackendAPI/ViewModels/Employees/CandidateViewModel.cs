@@ -10,6 +10,7 @@ namespace ESMS.ViewModels.System.Employees
     public class CandidateViewModel
     {
         public string Position { get; set; }
+        public int PosId { get; set; }
         public List<MatchViewModel> MatchDetail { get; set; }
     }
 }

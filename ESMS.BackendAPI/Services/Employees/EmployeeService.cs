@@ -188,15 +188,18 @@ namespace ESMS.BackendAPI.Services.Employees
                     //Get List Emp Theo Position
                     List<MatchViewModel> listMatchDetail = new List<MatchViewModel>();
                     var Position = _context.Positions.Where(x => x.PosID == requiredPosition.PosID).Select(x => x.Name).FirstOrDefault();
+                    var PosId = _context.Positions.Where(x => x.PosID == requiredPosition.PosID).Select(x => x.PosID).FirstOrDefault();
                     var ListEmpPosquery = from ep in _context.EmpPositions
                                           join p in _context.Positions on ep.PosID equals p.PosID
-                                          select new { ep, p };
+                                          join e in _context.Employees on ep.EmpID equals e.Id
+                                          select new { ep, p, e };
 
                     var ListEmpInPos = await ListEmpPosquery.Where(x => x.ep.PosID == requiredPosition.PosID && x.ep.DateOut == null).Select(x => new EmpInPos()
                     {
                         EmpId = x.ep.EmpID,
                         DateIn = x.ep.DateIn,                   
                         NameExp = x.ep.NameExp,
+                        EmpName = x.e.Name,
                         Position = x.p.Name,
                     }).ToListAsync();
                     if (ListEmpInPos != null) {                  
@@ -234,22 +237,28 @@ namespace ESMS.BackendAPI.Services.Employees
                                     select new { ep, el };
 
                         foreach (LanguageDetail language in requiredPosition.Language)
-                            {                      
-                        var ListEmpInLang = await query.Where(x => x.el.EmpID.Equals(emp.EmpId) && x.el.LangID == language.LangID).Select(x => new EmpInLang()
-                        {
-                            EmpId = x.el.EmpID,
-                            LangLevel = x.el.LangLevel,
-                        }).ToListAsync();
-                            //match += (langlevel1*prio/10)/tong so requiredlang
-                            
-                        if (ListEmpInLang != null)
+                            {
+                                
+                                    var ListEmpInLang = await _context.EmpLanguages.Where(x => x.EmpID.Equals(emp.EmpId) && x.LangID == language.LangID).Select(x => new EmpInLang()
+                                    {
+                                        EmpId = x.EmpID,
+                                        LangLevel = x.LangLevel,
+                                    }).ToListAsync();
+                                //var ListEmpInLang = await query.Where(x => x.el.EmpID.Equals(emp.EmpId) && x.el.LangID == language.LangID).Select(x => new EmpInLang()
+                                //{
+                                //    EmpId = x.el.EmpID,
+                                //    LangLevel = x.el.LangLevel,
+                                //}).ToListAsync();
+                                //match += (langlevel1*prio/10)/tong so requiredlang
+
+                                if (ListEmpInLang != null)
                         {
                             foreach (EmpInLang empl in ListEmpInLang)
                             {
-                                        Languagematch = (empl.LangLevel * language.Priority / 10) / requiredPosition.Language.Count;
-                                        match += Languagematch;
+                                        Languagematch += (empl.LangLevel * language.Priority * 0.1) / requiredPosition.Language.Count;                                       
                             }
-                        }
+                                    match += Math.Round(Languagematch,2);
+                                }
                             }
                             //Add theo softskill
                             var listEmpSkillquery = from es in _context.EmpSkills
@@ -262,10 +271,11 @@ namespace ESMS.BackendAPI.Services.Employees
                             foreach (var softSkill in listEmpSoftSkill)
                             {
                                 if (softSkill.Equals(softskillId)){
-                                        Softskillmatch= 10 / (requiredPosition.SoftSkillIDs.Count);
-                                        match += Softskillmatch;
+                                        Softskillmatch += 10 / (requiredPosition.SoftSkillIDs.Count);
+                                        
+                                }                                   
                                 }
-                            }
+                            match += Math.Round(Softskillmatch,2);
                                 
                             }
                             //add match vao hardskill
@@ -296,13 +306,13 @@ namespace ESMS.BackendAPI.Services.Employees
                                     HighestCertiLevel = listCertiSkill.Any() ? listCertiSkill.Max(x => x.CertiLevel) : 0,
                                 };
                                     if (HighestCerti.HighestCertiLevel>= hardskill.CertificationLevel) { 
-                                    Hardskillmatch = (((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel) * 0.5) + ((int)emphs.SkillLevel * 0.5)) * hardskill.Priority/ 10*requiredPosition.HardSkills.Count;
-                                        match += Hardskillmatch;
+                                    Hardskillmatch = (((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel) * 0.5) + ((int)emphs.SkillLevel * 2* 0.5)) * hardskill.Priority/ 10*requiredPosition.HardSkills.Count;
+                                        match += Math.Round(Hardskillmatch, 2);
                                         }
                                     else
                                         {
-                                            Hardskillmatch = (((int)emphs.SkillLevel * 0.5)) * hardskill.Priority / 10 * requiredPosition.HardSkills.Count;
-                                            match += Hardskillmatch;
+                                            Hardskillmatch = (((int)emphs.SkillLevel * 2 * 0.5)) * hardskill.Priority / 10 * requiredPosition.HardSkills.Count;
+                                            match += Math.Round(Hardskillmatch, 2);
                                         }
                                     }
                                 }
@@ -310,6 +320,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             matchDetail = new MatchViewModel()
                             {
                                 EmpID = emp.EmpId,
+                                EmpName = emp.EmpName,
                                 LanguageMatch = Languagematch,
                                 SoftSkillMatch = Softskillmatch,
                                 HardSkillMatch = Hardskillmatch,
@@ -321,6 +332,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         result.Add(new CandidateViewModel()
                         {
                             Position = Position,
+                            PosId = PosId,
                             MatchDetail = listMatchDetail,
                         });
                     }
