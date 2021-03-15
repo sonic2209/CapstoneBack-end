@@ -6,7 +6,6 @@ namespace ESMS.Data.Entities
 {
     public class EmpLanguage
     {
-        public int ID { get; set; }
         public string EmpID { get; set; }
         public int LangID { get; set; }
         public int LangLevel { get; set; }

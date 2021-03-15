@@ -309,31 +309,17 @@ namespace ESMS.BackendAPI.Services.Projects
 
         public async Task<ApiResult<List<EmpInProjectViewModel>>> AddCandidate(int projectID, AddCandidateRequest request)
         {
-            var query = from e in _context.EmpPositionInProjects
-                        select new { e };
             foreach (var candidate in request.Candidates)
             {
-                var emp = query.Where(x => x.e.EmpID.Equals(candidate.EmpID) && x.e.ProjectID == projectID).Select(x => new EmpPositionInProject()
+                foreach (var emp in candidate.EmpID)
                 {
-                    ID = x.e.ID,
-                    EmpID = x.e.EmpID,
-                    PosID = x.e.PosID,
-                    ProjectID = x.e.ProjectID
-                }).FirstOrDefault();
-                if (emp != null)
-                {
-                    emp.PosID = candidate.PosID;
-                    _context.EmpPositionInProjects.Update(emp);
-                }
-                else
-                {
-                    emp = new EmpPositionInProject()
+                    var employee = new EmpPositionInProject()
                     {
-                        ProjectID = projectID,
-                        EmpID = candidate.EmpID,
-                        PosID = candidate.PosID
+                        EmpID = emp,
+                        PosID = candidate.PosID,
+                        ProjectID = projectID
                     };
-                    _context.EmpPositionInProjects.Add(emp);
+                    _context.EmpPositionInProjects.Add(employee);
                 }
             }
             var result = await _context.SaveChangesAsync();

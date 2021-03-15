@@ -7,7 +7,6 @@ namespace ESMS.Data.Entities
 {
     public class EmpSkill
     {
-        public int EmpSkillID { get; set; }
         public string EmpID { get; set; }
         public int SkillID { get; set; }
         public SkillLevel? SkillLevel { get; set; }

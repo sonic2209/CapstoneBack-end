@@ -6,7 +6,6 @@ namespace ESMS.Data.Entities
 {
     public class RequiredLanguage
     {
-        public int ID { get; set; }
         public int RequiredPositionID { get; set; }
         public int LangID { get; set; }
         public int Priority { get; set; }

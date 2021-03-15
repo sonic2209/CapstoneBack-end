@@ -7,7 +7,7 @@ namespace ESMS.BackendAPI.ViewModels.Project
 {
     public class Candidate
     {
-        public string EmpID { get; set; }
         public int PosID { get; set; }
+        public List<string> EmpID { get; set; }
     }
 }
