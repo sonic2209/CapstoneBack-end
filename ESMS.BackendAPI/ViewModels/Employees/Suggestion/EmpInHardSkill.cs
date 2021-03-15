@@ -10,6 +10,6 @@ namespace ESMS.BackendAPI.ViewModels.Employees.Suggestion
     {
         public string EmpID { get; set; }
         public int SkillID { get; set; }
-        public SkillLevel SkillLevel { get; set; }
+        public SkillLevel? SkillLevel { get; set; }
     }
 }

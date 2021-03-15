@@ -15,7 +15,7 @@ namespace ESMS.BackendAPI.Services.Certifications
 
         public Task<ApiResult<bool>> Delete(int certificationID);
 
-        public Task<ApiResult<List<ListCertificationViewModel>>> GetCertifications();
+        public Task<ApiResult<List<ListCertificationViewModel>>> GetCertifications(int skillID);
 
         public Task<ApiResult<PagedResult<ListCertificationViewModel>>> GetCertificationPaging(GetCertificationPagingRequest request);
 

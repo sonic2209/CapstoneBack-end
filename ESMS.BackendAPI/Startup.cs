@@ -1,6 +1,7 @@
 using ESMS.BackendAPI.Constants;
 using ESMS.BackendAPI.Services.Certifications;
 using ESMS.BackendAPI.Services.Employees;
+using ESMS.BackendAPI.Services.Languages;
 using ESMS.BackendAPI.Services.Positions;
 using ESMS.BackendAPI.Services.Projects;
 using ESMS.BackendAPI.Services.Skills;
@@ -51,8 +52,6 @@ namespace ESMS.BackendAPI
                 options.Password.RequiredUniqueChars = 1;
             });
 
-
-          
             services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
             {
                 builder.AllowAnyOrigin()
@@ -74,6 +73,7 @@ namespace ESMS.BackendAPI
             services.AddTransient<IEmployeeService, EmployeeService>();
             services.AddTransient<ICertificationService, CertificationService>();
             services.AddTransient<ISkillService, SkillService>();
+            services.AddTransient<ILanguageService, LanguageService>();
             services.AddTransient<UserManager<Employee>, UserManager<Employee>>();
             services.AddTransient<SignInManager<Employee>, SignInManager<Employee>>();
             services.AddTransient<RoleManager<Role>, RoleManager<Role>>();
