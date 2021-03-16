@@ -5,13 +5,11 @@ using System.Text;
 
 namespace ESMS.BackendAPI.ViewModels.Project
 {
-    public class EmpInProjectViewModel
+    public class EmpInProject
     {
         public string EmpID { get; set; }
         public string Name { get; set; }
-        public int PosID { get; set; }
-        public string PosName { get; set; }
+        public DateTime? DateIn { get; set; }
         public EmployeeStatus Status { get; set; }
-        public int ProjectID { get; set; }
     }
 }
