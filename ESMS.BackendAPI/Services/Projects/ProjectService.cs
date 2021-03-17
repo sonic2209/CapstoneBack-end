@@ -234,54 +234,62 @@ namespace ESMS.BackendAPI.Services.Projects
         {
             foreach (var position in request.RequiredPositions)
             {
-                var requiredPosition = new RequiredPosition()
+                var list = new List<int>();
+                foreach (var poslevel in position.PosLevel)
                 {
-                    NumberOfCandidates = position.NumberOfCandidates,
-                    PositionID = position.PosID,
-                    ProjectID = projectID
-                };
-                _context.RequiredPositions.Add(requiredPosition);
-                var result = await _context.SaveChangesAsync();
-                if (result == 0)
-                {
-                    return new ApiErrorResult<bool>("Create requiredPosition failed");
-                }
-                foreach (var language in position.Language)
-                {
-                    var requiredLanguage = new RequiredLanguage()
+                    var requiredPosition = new RequiredPosition()
                     {
-                        LangID = language.LangID,
-                        RequiredPositionID = requiredPosition.ID,
-                        Priority = language.Priority
+                        PositionID = position.PosID,
+                        ProjectID = projectID,
+                        PositionLevel = (PositionLevel)poslevel
                     };
-                    _context.RequiredLanguages.Add(requiredLanguage);
-                }
-                RequiredSkill requiredSkill;
-                foreach (var softSkill in position.SoftSkillIDs)
-                {
-                    requiredSkill = new RequiredSkill()
+                    _context.RequiredPositions.Add(requiredPosition);
+                    var result = await _context.SaveChangesAsync();
+                    if (result == 0)
                     {
-                        RequiredPositionID = requiredPosition.ID,
-                        SkillID = softSkill
-                    };
-                    _context.RequiredSkills.Add(requiredSkill);
+                        return new ApiErrorResult<bool>("Create requiredPosition failed");
+                    }
+                    list.Add(requiredPosition.ID);
                 }
-                foreach (var hardSkill in position.HardSkills)
+                foreach (var id in list)
                 {
-                    requiredSkill = new RequiredSkill()
+                    foreach (var language in position.Language)
                     {
-                        RequiredPositionID = requiredPosition.ID,
-                        SkillID = hardSkill.HardSkillID,
-                        Priority = hardSkill.Priority,
-                        Exp = hardSkill.Exp,
-                        CertificationLevel = hardSkill.CertificationLevel
-                    };
-                    _context.RequiredSkills.Add(requiredSkill);
-                }
-                result = await _context.SaveChangesAsync();
-                if (result == 0)
-                {
-                    return new ApiErrorResult<bool>("Create requiredSkill failed");
+                        var requiredLanguage = new RequiredLanguage()
+                        {
+                            LangID = language.LangID,
+                            RequiredPositionID = id,
+                            Priority = language.Priority
+                        };
+                        _context.RequiredLanguages.Add(requiredLanguage);
+                    }
+                    RequiredSkill requiredSkill;
+                    foreach (var softSkill in position.SoftSkillIDs)
+                    {
+                        requiredSkill = new RequiredSkill()
+                        {
+                            RequiredPositionID = id,
+                            SkillID = softSkill
+                        };
+                        _context.RequiredSkills.Add(requiredSkill);
+                    }
+                    foreach (var hardSkill in position.HardSkills)
+                    {
+                        requiredSkill = new RequiredSkill()
+                        {
+                            RequiredPositionID = id,
+                            SkillID = hardSkill.HardSkillID,
+                            Priority = hardSkill.Priority,
+                            SkillLevel = (SkillLevel)hardSkill.SkillLevel,
+                            CertificationLevel = hardSkill.CertificationLevel
+                        };
+                        _context.RequiredSkills.Add(requiredSkill);
+                    }
+                    var result = await _context.SaveChangesAsync();
+                    if (result == 0)
+                    {
+                        return new ApiErrorResult<bool>("Create requiredSkill failed");
+                    }
                 }
             }
             return new ApiSuccessResult<bool>();

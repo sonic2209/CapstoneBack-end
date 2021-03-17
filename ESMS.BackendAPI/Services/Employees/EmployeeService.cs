@@ -112,7 +112,7 @@ namespace ESMS.BackendAPI.Services.Employees
             {
                 EmpID = empID,
                 PosID = request.PosID,
-                NameExp = (NameExp)request.NameExp,
+                NameExp = (PositionLevel)request.NameExp,
                 DateIn = DateTime.Now
             };
             _context.EmpPositions.Add(empPosition);
@@ -275,23 +275,23 @@ namespace ESMS.BackendAPI.Services.Employees
                             //dicCandidate.Add(emp.EmpId, 60);
                             switch (emp.NameExp)
                             {
-                                case NameExp.Intern:
+                                case PositionLevel.Intern:
                                     match += (10 / 5) * 1;
                                     break;
 
-                                case NameExp.Fresher:
+                                case PositionLevel.Fresher:
                                     match += (10 / 5) * 2;
                                     break;
 
-                                case NameExp.Junior:
+                                case PositionLevel.Junior:
                                     match += (10 / 5) * 3;
                                     break;
 
-                                case NameExp.Senior:
+                                case PositionLevel.Senior:
                                     match += (10 / 5) * 4;
                                     break;
 
-                                case NameExp.Master:
+                                case PositionLevel.Master:
                                     match += (10 / 5) * 5;
                                     break;
                             }
