@@ -484,7 +484,9 @@ namespace ESMS.BackendAPI.Services.Employees
                     return new ApiErrorResult<bool>("Email existed");
                 }
                 var user = await _userManager.FindByIdAsync(id.ToString());
-                user.DateCreated = request.DateCreated;
+                
+                user.IdentityNumber = request.IdentityNumber;
+                user.Address = request.Address;
                 user.Email = request.Email;
                 user.Name = request.Name;
                 user.PhoneNumber = request.PhoneNumber;
