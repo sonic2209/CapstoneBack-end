@@ -264,14 +264,17 @@ namespace ESMS.BackendAPI.Services.Projects
                         _context.RequiredLanguages.Add(requiredLanguage);
                     }
                     RequiredSkill requiredSkill;
-                    foreach (var softSkill in position.SoftSkillIDs)
+                    if (position.SoftSkillIDs != null)
                     {
-                        requiredSkill = new RequiredSkill()
+                        foreach (var softSkill in position.SoftSkillIDs)
                         {
-                            RequiredPositionID = id,
-                            SkillID = softSkill
-                        };
-                        _context.RequiredSkills.Add(requiredSkill);
+                            requiredSkill = new RequiredSkill()
+                            {
+                                RequiredPositionID = id,
+                                SkillID = softSkill
+                            };
+                            _context.RequiredSkills.Add(requiredSkill);
+                        }
                     }
                     foreach (var hardSkill in position.HardSkills)
                     {

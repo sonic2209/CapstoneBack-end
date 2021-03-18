@@ -15,6 +15,7 @@ namespace ESMS.Data.Configurations
             builder.ToTable("Projects");
             builder.HasKey(x => x.ProjectID);
             builder.Property(x => x.ProjectID).UseIdentityColumn();
+            builder.HasIndex(x => x.ProjectName).IsUnique();
             builder.Property(x => x.ProjectName).HasMaxLength(200).IsRequired();
             builder.Property(x => x.Description).IsRequired();
             builder.Property(x => x.Skateholder).IsRequired();
