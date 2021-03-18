@@ -8,7 +8,6 @@ namespace ESMS.BackendAPI.ViewModels.Employees
     public class EmpCreateRequest
     {
         public string Name { get; set; }
-        public DateTime DoB { get; set; }
         public string IdentityNumber { get; set; }
         public string Address { get; set; }
         public string Email { get; set; }
