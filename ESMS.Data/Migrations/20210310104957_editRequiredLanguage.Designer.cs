@@ -4,14 +4,16 @@ using ESMS.Data.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ESMS.Data.Migrations
 {
     [DbContext(typeof(ESMSDbContext))]
-    partial class ESMSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210310104957_editRequiredLanguage")]
+    partial class editRequiredLanguage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,8 +82,10 @@ namespace ESMS.Data.Migrations
 
             modelBuilder.Entity("ESMS.Data.Entities.EmpCertification", b =>
                 {
-                    b.Property<string>("EmpID")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
 
                     b.Property<int>("CertificationID")
                         .HasColumnType("int");
@@ -92,15 +96,25 @@ namespace ESMS.Data.Migrations
                     b.Property<DateTime>("DateTaken")
                         .HasColumnType("date");
 
-                    b.HasKey("EmpID", "CertificationID");
+                    b.Property<string>("EmpID")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("ID");
 
                     b.HasIndex("CertificationID");
+
+                    b.HasIndex("EmpID");
 
                     b.ToTable("EmpCertifications");
                 });
 
             modelBuilder.Entity("ESMS.Data.Entities.EmpLanguage", b =>
                 {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
                     b.Property<string>("EmpID")
                         .HasColumnType("nvarchar(450)");
 
@@ -110,7 +124,9 @@ namespace ESMS.Data.Migrations
                     b.Property<int>("LangLevel")
                         .HasColumnType("int");
 
-                    b.HasKey("EmpID", "LangID");
+                    b.HasKey("ID");
+
+                    b.HasIndex("EmpID");
 
                     b.HasIndex("LangID");
 
@@ -119,11 +135,10 @@ namespace ESMS.Data.Migrations
 
             modelBuilder.Entity("ESMS.Data.Entities.EmpPosition", b =>
                 {
-                    b.Property<string>("EmpID")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("PosID")
-                        .HasColumnType("int");
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
 
                     b.Property<DateTime>("DateIn")
                         .HasColumnType("date");
@@ -131,10 +146,18 @@ namespace ESMS.Data.Migrations
                     b.Property<DateTime?>("DateOut")
                         .HasColumnType("date");
 
+                    b.Property<string>("EmpID")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("NameExp")
                         .HasColumnType("int");
 
-                    b.HasKey("EmpID", "PosID");
+                    b.Property<int>("PosID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("EmpID");
 
                     b.HasIndex("PosID");
 
@@ -143,34 +166,37 @@ namespace ESMS.Data.Migrations
 
             modelBuilder.Entity("ESMS.Data.Entities.EmpPositionInProject", b =>
                 {
-                    b.Property<int>("ProjectID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PosID")
-                        .HasColumnType("int");
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
 
                     b.Property<string>("EmpID")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime?>("DateIn")
-                        .HasColumnType("date");
+                    b.Property<int>("PosID")
+                        .HasColumnType("int");
 
-                    b.HasKey("ProjectID", "PosID", "EmpID");
+                    b.Property<int>("ProjectID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
 
                     b.HasIndex("EmpID");
 
                     b.HasIndex("PosID");
+
+                    b.HasIndex("ProjectID");
 
                     b.ToTable("EmpPositionInProjects");
                 });
 
             modelBuilder.Entity("ESMS.Data.Entities.EmpSkill", b =>
                 {
-                    b.Property<string>("EmpID")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("SkillID")
-                        .HasColumnType("int");
+                    b.Property<int>("EmpSkillID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
 
                     b.Property<DateTime?>("DateEnd")
                         .HasColumnType("date");
@@ -178,13 +204,21 @@ namespace ESMS.Data.Migrations
                     b.Property<DateTime?>("DateStart")
                         .HasColumnType("date");
 
+                    b.Property<string>("EmpID")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int?>("Exp")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SkillID")
                         .HasColumnType("int");
 
                     b.Property<int?>("SkillLevel")
                         .HasColumnType("int");
 
-                    b.HasKey("EmpID", "SkillID");
+                    b.HasKey("EmpSkillID");
+
+                    b.HasIndex("EmpID");
 
                     b.HasIndex("SkillID");
 
@@ -274,8 +308,8 @@ namespace ESMS.Data.Migrations
                             Id = "69BD714F-9576-45BA-B5B7-F00649BE00DE",
                             AccessFailedCount = 0,
                             Address = "580 Quang Trung P10",
-                            ConcurrencyStamp = "4b0c9c25-2cec-4aaa-ab9c-eefe622817cb",
-                            DateCreated = new DateTime(2021, 3, 15, 15, 20, 5, 867, DateTimeKind.Local).AddTicks(4023),
+                            ConcurrencyStamp = "0fd51efd-5b8e-4ba5-bba7-653c055766bb",
+                            DateCreated = new DateTime(2021, 3, 10, 17, 49, 56, 810, DateTimeKind.Local).AddTicks(3457),
                             Email = "resker123@gmail.com",
                             EmailConfirmed = true,
                             IdentityNumber = "0123456789",
@@ -283,7 +317,7 @@ namespace ESMS.Data.Migrations
                             Name = "Pham Tuan",
                             NormalizedEmail = "resker123@gmail.com",
                             NormalizedUserName = "admin",
-                            PasswordHash = "AQAAAAEAACcQAAAAEMZ8m2589GOX4+voQ13OKJpzeppDm3bVNq46RktzAKQPTXWvt4JpfAW9U3tXJMDg7w==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEKbUs5O1jgXSbUU/I29Wodj4eQkI/Ie/Jqns/5LBR5ci9PQS/hWomvJHymCcFR1tKg==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
                             Status = 0,
@@ -380,16 +414,23 @@ namespace ESMS.Data.Migrations
 
             modelBuilder.Entity("ESMS.Data.Entities.RequiredLanguage", b =>
                 {
-                    b.Property<int>("LangID")
-                        .HasColumnType("int");
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
 
-                    b.Property<int>("RequiredPositionID")
+                    b.Property<int>("LangID")
                         .HasColumnType("int");
 
                     b.Property<int>("Priority")
                         .HasColumnType("int");
 
-                    b.HasKey("LangID", "RequiredPositionID");
+                    b.Property<int>("RequiredPositionID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("LangID");
 
                     b.HasIndex("RequiredPositionID");
 
@@ -423,11 +464,10 @@ namespace ESMS.Data.Migrations
 
             modelBuilder.Entity("ESMS.Data.Entities.RequiredSkill", b =>
                 {
-                    b.Property<int>("SkillID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RequiredPositionID")
-                        .HasColumnType("int");
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
 
                     b.Property<int>("CertificationID")
                         .HasColumnType("int");
@@ -438,9 +478,17 @@ namespace ESMS.Data.Migrations
                     b.Property<int>("Priority")
                         .HasColumnType("int");
 
-                    b.HasKey("SkillID", "RequiredPositionID");
+                    b.Property<int>("RequiredPositionID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SkillID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
 
                     b.HasIndex("RequiredPositionID");
+
+                    b.HasIndex("SkillID");
 
                     b.ToTable("RequiredSkills");
                 });
@@ -472,7 +520,7 @@ namespace ESMS.Data.Migrations
                         new
                         {
                             Id = "8D04DCE2-969A-435D-BBA4-DF3F325983DC",
-                            ConcurrencyStamp = "1644037c-95ac-4aa6-8e8c-cd9ce3019a02",
+                            ConcurrencyStamp = "ec496a28-fb68-4ef1-9b39-0a2883eddec2",
                             Description = "Administrator role",
                             Name = "admin",
                             NormalizedName = "admin"
@@ -662,9 +710,7 @@ namespace ESMS.Data.Migrations
 
                     b.HasOne("ESMS.Data.Entities.Employee", "Employee")
                         .WithMany("EmpCertifications")
-                        .HasForeignKey("EmpID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("EmpID");
 
                     b.Navigation("Certification");
 
@@ -675,9 +721,7 @@ namespace ESMS.Data.Migrations
                 {
                     b.HasOne("ESMS.Data.Entities.Employee", "Employee")
                         .WithMany("EmpLanguages")
-                        .HasForeignKey("EmpID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("EmpID");
 
                     b.HasOne("ESMS.Data.Entities.Language", "Language")
                         .WithMany("EmpLanguages")
@@ -694,9 +738,7 @@ namespace ESMS.Data.Migrations
                 {
                     b.HasOne("ESMS.Data.Entities.Employee", "Employee")
                         .WithMany("EmpPositions")
-                        .HasForeignKey("EmpID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("EmpID");
 
                     b.HasOne("ESMS.Data.Entities.Position", "Position")
                         .WithMany("EmpPositions")
@@ -713,9 +755,7 @@ namespace ESMS.Data.Migrations
                 {
                     b.HasOne("ESMS.Data.Entities.Employee", "Employee")
                         .WithMany("EmpPosInProjects")
-                        .HasForeignKey("EmpID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("EmpID");
 
                     b.HasOne("ESMS.Data.Entities.Position", "Position")
                         .WithMany("EmpPosInProjects")
@@ -740,9 +780,7 @@ namespace ESMS.Data.Migrations
                 {
                     b.HasOne("ESMS.Data.Entities.Employee", "Employee")
                         .WithMany("EmpSkills")
-                        .HasForeignKey("EmpID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("EmpID");
 
                     b.HasOne("ESMS.Data.Entities.Skill", "Skill")
                         .WithMany("EmpSkills")

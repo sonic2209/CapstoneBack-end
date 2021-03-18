@@ -7,7 +7,6 @@ namespace ESMS.Data.Entities
 {
     public class RequiredSkill
     {
-        public int ID { get; set; }
         public int SkillID { get; set; }
         public int CertificationID { get; set; }
         public int RequiredPositionID { get; set; }

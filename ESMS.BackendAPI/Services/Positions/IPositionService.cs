@@ -18,8 +18,6 @@ namespace ESMS.BackendAPI.Services.Positions
 
         Task<ApiResult<PagedResult<PositionViewModel>>> GetPositionPaging(GetPositionPagingRequest request);
 
-        Task<ApiResult<bool>> AddRequiredPosition(int projectID, AddRequiredPositionRequest request);
-
         Task<ApiResult<PositionViewModel>> GetByID(int positionID);
     }
 }

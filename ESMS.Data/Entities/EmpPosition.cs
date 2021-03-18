@@ -7,7 +7,6 @@ namespace ESMS.Data.Entities
 {
     public class EmpPosition
     {
-        public int ID { get; set; }
         public string EmpID { get; set; }
         public int PosID { get; set; }
         public DateTime DateIn { get; set; }

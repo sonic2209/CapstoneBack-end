@@ -12,8 +12,7 @@ namespace ESMS.Data.Configurations
         public void Configure(EntityTypeBuilder<RequiredLanguage> builder)
         {
             builder.ToTable("RequiredLanguages");
-            builder.HasKey(x => x.ID);
-            builder.Property(x => x.ID).UseIdentityColumn();
+            builder.HasKey(x => new { x.LangID, x.RequiredPositionID });
             builder.HasOne(x => x.RequiredPosition).WithMany(x => x.RequiredLanguages).HasForeignKey(x => x.RequiredPositionID);
             builder.HasOne(x => x.Language).WithMany(x => x.RequiredLanguages).HasForeignKey(x => x.LangID);
         }
