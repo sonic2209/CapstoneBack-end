@@ -9,8 +9,7 @@ namespace ESMS.Data.Configurations
         public void Configure(EntityTypeBuilder<RequiredSkill> builder)
         {
             builder.ToTable("RequiredSkills");
-            builder.HasKey(x => x.ID);
-            builder.Property(x => x.ID).UseIdentityColumn();
+            builder.HasKey(x => new { x.SkillID, x.RequiredPositionID });
             builder.HasOne(x => x.Skill).WithMany(x => x.RequiredSkills).HasForeignKey(x => x.SkillID);
             builder.HasOne(x => x.RequiredPosition).WithMany(x => x.RequiredSkills).HasForeignKey(x => x.RequiredPositionID);
         }

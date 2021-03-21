@@ -12,8 +12,7 @@ namespace ESMS.Data.Configurations
         public void Configure(EntityTypeBuilder<EmpSkill> builder)
         {
             builder.ToTable("EmpSkills");
-            builder.HasKey(x => x.EmpSkillID);
-            builder.Property(x => x.EmpSkillID).UseIdentityColumn();
+            builder.HasKey(x => new { x.EmpID, x.SkillID });
             builder.Property(x => x.DateStart).HasColumnType("date");
             builder.Property(x => x.DateEnd).HasColumnType("date");
             builder.HasOne(x => x.Employee).WithMany(x => x.EmpSkills).HasForeignKey(x => x.EmpID);

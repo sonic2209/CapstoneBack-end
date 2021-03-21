@@ -4,14 +4,16 @@ using ESMS.Data.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ESMS.Data.Migrations
 {
     [DbContext(typeof(ESMSDbContext))]
-    partial class ESMSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210316065731_editRequiredSkillTable")]
+    partial class editRequiredSkillTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -178,6 +180,9 @@ namespace ESMS.Data.Migrations
                     b.Property<DateTime?>("DateStart")
                         .HasColumnType("date");
 
+                    b.Property<int?>("Exp")
+                        .HasColumnType("int");
+
                     b.Property<int?>("SkillLevel")
                         .HasColumnType("int");
 
@@ -271,8 +276,8 @@ namespace ESMS.Data.Migrations
                             Id = "69BD714F-9576-45BA-B5B7-F00649BE00DE",
                             AccessFailedCount = 0,
                             Address = "580 Quang Trung P10",
-                            ConcurrencyStamp = "bf5bdbc7-cf14-4e35-acef-5dfd48d29455",
-                            DateCreated = new DateTime(2021, 3, 18, 12, 28, 19, 61, DateTimeKind.Local).AddTicks(527),
+                            ConcurrencyStamp = "3b1d2c29-da0c-4c56-ab42-9a8db0fb0229",
+                            DateCreated = new DateTime(2021, 3, 16, 13, 57, 31, 142, DateTimeKind.Local).AddTicks(6075),
                             Email = "resker123@gmail.com",
                             EmailConfirmed = true,
                             IdentityNumber = "0123456789",
@@ -280,7 +285,7 @@ namespace ESMS.Data.Migrations
                             Name = "Pham Tuan",
                             NormalizedEmail = "resker123@gmail.com",
                             NormalizedUserName = "admin",
-                            PasswordHash = "AQAAAAEAACcQAAAAED5aZaPMqgb717aFzSKLVeohTatoKuHi+CMAEdKdvvgEustFyJI2eT3Sr1CZleUnkw==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEBQ3VvXau/BXqsXWSoiQoeESep90ONpV58+RKobBGQlIUU7zqogqR8qRucSustQYeQ==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
                             Status = 0,
@@ -372,9 +377,6 @@ namespace ESMS.Data.Migrations
 
                     b.HasIndex("ProjectManagerID");
 
-                    b.HasIndex("ProjectName")
-                        .IsUnique();
-
                     b.ToTable("Projects");
                 });
 
@@ -403,10 +405,10 @@ namespace ESMS.Data.Migrations
                         .HasColumnType("int")
                         .UseIdentityColumn();
 
-                    b.Property<int>("PositionID")
+                    b.Property<int>("NumberOfCandidates")
                         .HasColumnType("int");
 
-                    b.Property<int>("PositionLevel")
+                    b.Property<int>("PositionID")
                         .HasColumnType("int");
 
                     b.Property<int>("ProjectID")
@@ -432,10 +434,10 @@ namespace ESMS.Data.Migrations
                     b.Property<int?>("CertificationLevel")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Priority")
+                    b.Property<int?>("Exp")
                         .HasColumnType("int");
 
-                    b.Property<int?>("SkillLevel")
+                    b.Property<int?>("Priority")
                         .HasColumnType("int");
 
                     b.HasKey("SkillID", "RequiredPositionID");
@@ -472,7 +474,7 @@ namespace ESMS.Data.Migrations
                         new
                         {
                             Id = "8D04DCE2-969A-435D-BBA4-DF3F325983DC",
-                            ConcurrencyStamp = "db68debb-c9fc-4065-9751-f8bb0df3791c",
+                            ConcurrencyStamp = "64a3c62c-03f9-4ad9-ab1d-e64039e30bcc",
                             Description = "Administrator role",
                             Name = "admin",
                             NormalizedName = "admin"

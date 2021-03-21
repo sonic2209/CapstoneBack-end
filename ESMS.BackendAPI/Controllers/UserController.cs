@@ -68,9 +68,9 @@ namespace ESMS.BackendAPI.Controllers
         }
 
         [HttpPost("candidate/{projectID}")]
-        public async Task<IActionResult> SuggestCandidate(int projectID, [FromBody]SuggestCadidateRequest request)
+        public async Task<IActionResult> SuggestCandidate(int projectID, [FromBody] SuggestCadidateRequest request)
         {
-            var candidates = await _userService.SuggestCandidate(projectID , request);
+            var candidates = await _userService.SuggestCandidate(projectID, request);
             return Ok(candidates);
         }
 
@@ -81,7 +81,7 @@ namespace ESMS.BackendAPI.Controllers
             var products = await _userService.GetEmpsPaging(request);
             return Ok(products);
         }
-        
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {

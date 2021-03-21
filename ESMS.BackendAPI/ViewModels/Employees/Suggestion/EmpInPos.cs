@@ -12,7 +12,8 @@ namespace ESMS.BackendAPI.ViewModels.Employees.Suggestion
         public string EmpName { get; set; }
         public DateTime DateIn { get; set; }
         public DateTime DateOut { get; set; }
+        public string EmpName { get; set; }
         public String Position { get; set; }
-        public NameExp NameExp { get; set; }
+        public PositionLevel NameExp { get; set; }
     }
 }

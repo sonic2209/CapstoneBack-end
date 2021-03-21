@@ -43,10 +43,10 @@ namespace ESMS.BackendAPI.Controllers
 
         //Get:http://localhost/api/project/getProjects/id
         [HttpGet("getEmpsInProject/{projectID}")]
-        public async Task<IActionResult> GetProjectByEmpID(int projectID, [FromQuery] GetEmpInProjectPaging request)
+        public async Task<IActionResult> GetProjectByEmpID(int projectID)
         {
-            var project = await _projectService.GetEmpInProjectPaging(projectID, request);
-            return Ok(project);
+            var employees = await _projectService.GetEmpInProjectPaging(projectID);
+            return Ok(employees);
         }
 
         //http://localhost/api/project/paging?pageIndex=1&pageSize=10&keyword=
@@ -128,6 +128,10 @@ namespace ESMS.BackendAPI.Controllers
         public async Task<IActionResult> AddCandidate(int projectID, [FromBody] AddCandidateRequest request)
         {
             var result = await _projectService.AddCandidate(projectID, request);
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
             return Ok(result);
         }
 
@@ -135,6 +139,10 @@ namespace ESMS.BackendAPI.Controllers
         public async Task<IActionResult> ConfirmCandidate(int projectID, [FromBody] ConfirmCandidateRequest request)
         {
             var result = await _projectService.ConfirmCandidate(projectID, request);
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
             return Ok(result);
         }
     }

@@ -112,7 +112,7 @@ namespace ESMS.BackendAPI.Services.Employees
             {
                 EmpID = empID,
                 PosID = request.PosID,
-                NameExp = (NameExp)request.NameExp,
+                NameExp = (PositionLevel)request.NameExp,
                 DateIn = DateTime.Now
             };
             _context.EmpPositions.Add(empPosition);
@@ -247,15 +247,18 @@ namespace ESMS.BackendAPI.Services.Employees
                     //Get List Emp Theo Position
                     List<MatchViewModel> listMatchDetail = new List<MatchViewModel>();
                     var Position = _context.Positions.Where(x => x.PosID == requiredPosition.PosID).Select(x => x.Name).FirstOrDefault();
+                    var PosId = _context.Positions.Where(x => x.PosID == requiredPosition.PosID).Select(x => x.PosID).FirstOrDefault();
                     var ListEmpPosquery = from ep in _context.EmpPositions
                                           join p in _context.Positions on ep.PosID equals p.PosID
-                                          select new { ep, p };
+                                          join e in _context.Employees on ep.EmpID equals e.Id
+                                          select new { ep, p, e };
 
                     var ListEmpInPos = await ListEmpPosquery.Where(x => x.ep.PosID == requiredPosition.PosID && x.ep.DateOut == null).Select(x => new EmpInPos()
                     {
                         EmpId = x.ep.EmpID,
                         DateIn = x.ep.DateIn,
                         NameExp = x.ep.NameExp,
+                        EmpName = x.e.Name,
                         Position = x.p.Name,
                     }).ToListAsync();
                     if (ListEmpInPos != null)
@@ -272,23 +275,23 @@ namespace ESMS.BackendAPI.Services.Employees
                             //dicCandidate.Add(emp.EmpId, 60);
                             switch (emp.NameExp)
                             {
-                                case NameExp.Intern:
+                                case PositionLevel.Intern:
                                     match += (10 / 5) * 1;
                                     break;
 
-                                case NameExp.Fresher:
+                                case PositionLevel.Fresher:
                                     match += (10 / 5) * 2;
                                     break;
 
-                                case NameExp.Junior:
+                                case PositionLevel.Junior:
                                     match += (10 / 5) * 3;
                                     break;
 
-                                case NameExp.Senior:
+                                case PositionLevel.Senior:
                                     match += (10 / 5) * 4;
                                     break;
 
-                                case NameExp.Master:
+                                case PositionLevel.Master:
                                     match += (10 / 5) * 5;
                                     break;
                             }
@@ -299,20 +302,25 @@ namespace ESMS.BackendAPI.Services.Employees
 
                             foreach (LanguageDetail language in requiredPosition.Language)
                             {
-                                var ListEmpInLang = await query.Where(x => x.el.EmpID.Equals(emp.EmpId) && x.el.LangID == language.LangID).Select(x => new EmpInLang()
+                                var ListEmpInLang = await _context.EmpLanguages.Where(x => x.EmpID.Equals(emp.EmpId) && x.LangID == language.LangID).Select(x => new EmpInLang()
                                 {
-                                    EmpId = x.el.EmpID,
-                                    LangLevel = x.el.LangLevel,
+                                    EmpId = x.EmpID,
+                                    LangLevel = x.LangLevel,
                                 }).ToListAsync();
+                                //var ListEmpInLang = await query.Where(x => x.el.EmpID.Equals(emp.EmpId) && x.el.LangID == language.LangID).Select(x => new EmpInLang()
+                                //{
+                                //    EmpId = x.el.EmpID,
+                                //    LangLevel = x.el.LangLevel,
+                                //}).ToListAsync();
                                 //match += (langlevel1*prio/10)/tong so requiredlang
 
                                 if (ListEmpInLang != null)
                                 {
                                     foreach (EmpInLang empl in ListEmpInLang)
                                     {
-                                        Languagematch = (empl.LangLevel * language.Priority / 10) / requiredPosition.Language.Count;
-                                        match += Languagematch;
+                                        Languagematch += (empl.LangLevel * language.Priority * 0.1) / requiredPosition.Language.Count;
                                     }
+                                    match += Math.Round(Languagematch, 2);
                                 }
                             }
                             //Add theo softskill
@@ -327,10 +335,10 @@ namespace ESMS.BackendAPI.Services.Employees
                                 {
                                     if (softSkill.Equals(softskillId))
                                     {
-                                        Softskillmatch = 10 / (requiredPosition.SoftSkillIDs.Count);
-                                        match += Softskillmatch;
+                                        Softskillmatch += 10 / (requiredPosition.SoftSkillIDs.Count);
                                     }
                                 }
+                                match += Math.Round(Softskillmatch, 2);
                             }
                             //add match vao hardskill
                             var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.HardSkill && x.es.EmpID.Equals(emp.EmpId));
@@ -362,13 +370,13 @@ namespace ESMS.BackendAPI.Services.Employees
                                         };
                                         if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
                                         {
-                                            Hardskillmatch = (((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel) * 0.5) + ((int)emphs.SkillLevel * 0.5)) * hardskill.Priority / 10 * requiredPosition.HardSkills.Count;
-                                            match += Hardskillmatch;
+                                            Hardskillmatch = (((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel) * 0.5) + ((int)emphs.SkillLevel * 2 * 0.5)) * hardskill.Priority / 10 * requiredPosition.HardSkills.Count;
+                                            match += Math.Round(Hardskillmatch, 2);
                                         }
                                         else
                                         {
-                                            Hardskillmatch = (((int)emphs.SkillLevel * 0.5)) * hardskill.Priority / 10 * requiredPosition.HardSkills.Count;
-                                            match += Hardskillmatch;
+                                            Hardskillmatch = (((int)emphs.SkillLevel * 2 * 0.5)) * hardskill.Priority / 10 * requiredPosition.HardSkills.Count;
+                                            match += Math.Round(Hardskillmatch, 2);
                                         }
                                     }
                                 }
@@ -376,6 +384,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             matchDetail = new MatchViewModel()
                             {
                                 EmpID = emp.EmpId,
+                                EmpName = emp.EmpName,
                                 LanguageMatch = Languagematch,
                                 SoftSkillMatch = Softskillmatch,
                                 HardSkillMatch = Hardskillmatch,
@@ -387,6 +396,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         result.Add(new CandidateViewModel()
                         {
                             Position = Position,
+                            PosId = PosId,
                             MatchDetail = listMatchDetail,
                         });
                     }
@@ -537,7 +547,8 @@ namespace ESMS.BackendAPI.Services.Employees
                 return new ApiErrorResult<bool>("Email existed");
             }
             var user = await _userManager.FindByIdAsync(id.ToString());
-            user.DateCreated = request.DateCreated;
+            user.IdentityNumber = request.IdentityNumber;
+            user.Address = request.Address;
             user.Email = request.Email;
             user.Name = request.Name;
             user.PhoneNumber = request.PhoneNumber;
