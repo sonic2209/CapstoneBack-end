@@ -4,7 +4,6 @@ using ESMS.Data.Enums;
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ESMS.BackendAPI.ViewModels.Common;
@@ -22,12 +21,20 @@ namespace ESMS.BackendAPI.Services.Projects
             _context = context;
         }
 
-        public async Task<ApiResult<int>> Create(string EmpID, ProjectCreateRequest request)
+        public async Task<ApiResult<int>> Create(string empID, ProjectCreateRequest request)
         {
             var project = _context.Projects.Find(request.ProjectID);
             if (project != null)
             {
-                project.ProjectName = request.ProjectName;
+                if (!project.ProjectName.Equals(request.ProjectName))
+                {
+                    var checkName = _context.Projects.Where(x => x.ProjectName.Equals(request.ProjectName)).Select(x => new Project()).FirstOrDefault();
+                    if (checkName != null)
+                    {
+                        return new ApiErrorResult<int>("This project name is existed");
+                    }
+                    project.ProjectName = request.ProjectName;
+                }
                 project.Description = request.Description;
                 project.Skateholder = request.Skateholder;
                 project.DateBegin = request.DateBegin;
@@ -45,6 +52,17 @@ namespace ESMS.BackendAPI.Services.Projects
             }
             else
             {
+                var projects = _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
+                .Select(x => new Project()).ToList();
+                if (projects.Count() != 0)
+                {
+                    return new ApiErrorResult<int>("Cannot create more project");
+                }
+                var checkName = _context.Projects.Where(x => x.ProjectName.Equals(request.ProjectName)).Select(x => new Project()).FirstOrDefault();
+                if (checkName != null)
+                {
+                    return new ApiErrorResult<int>("This project name is existed");
+                }
                 if (DateTime.Compare(request.DateBegin, request.DateEstimatedEnd) > 0)
                 {
                     return new ApiErrorResult<int>("Date estimated end is earlier than date begin");
@@ -58,7 +76,7 @@ namespace ESMS.BackendAPI.Services.Projects
                     DateBegin = request.DateBegin,
                     DateEstimatedEnd = request.DateEstimatedEnd,
                     Status = ProjectStatus.Pending,
-                    ProjectManagerID = EmpID
+                    ProjectManagerID = empID
                 };
                 _context.Projects.Add(project);
                 var result = await _context.SaveChangesAsync();
@@ -95,8 +113,8 @@ namespace ESMS.BackendAPI.Services.Projects
                 ProjectName = project.ProjectName,
                 Description = project.Description,
                 Skateholder = project.Skateholder,
-                DateBegin = project.DateBegin.ToString("dd/MM/yyyy"),
-                DateEstimatedEnd = project.DateEstimatedEnd.ToString("dd/MM/yyyy"),
+                DateBegin = project.DateBegin,
+                DateEstimatedEnd = project.DateEstimatedEnd,
                 Status = project.Status
             };
 
@@ -136,11 +154,18 @@ namespace ESMS.BackendAPI.Services.Projects
             return new ApiSuccessResult<List<PositionInProject>>(list);
         }
 
-        public async Task<ApiResult<PagedResult<ProjectViewModel>>> GetProjectByEmpID(string EmpID, GetProjectPagingRequest request)
+        public async Task<ApiResult<ListProjectViewModel>> GetProjectByEmpID(string empID, GetProjectPagingRequest request)
         {
+            bool check = true;
+            var projects = _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
+                .Select(x => new Project()).ToList();
+            if (projects.Count() != 0)
+            {
+                check = false;
+            }
             var query = from p in _context.Projects
                         select new { p };
-            query = query.Where(x => x.p.ProjectManagerID.Equals(EmpID));
+            query = query.Where(x => x.p.ProjectManagerID.Equals(empID));
             if (!string.IsNullOrEmpty(request.Keyword))
             {
                 query = query.Where(x => x.p.ProjectName.Contains(request.Keyword));
@@ -158,8 +183,8 @@ namespace ESMS.BackendAPI.Services.Projects
                     ProjectName = x.p.ProjectName,
                     Description = x.p.Description,
                     Skateholder = x.p.Skateholder,
-                    DateBegin = x.p.DateBegin.ToString("dd/MM/yyyy"),
-                    DateEstimatedEnd = x.p.DateEstimatedEnd.ToString("dd/MM/yyyy"),
+                    DateBegin = x.p.DateBegin,
+                    DateEstimatedEnd = x.p.DateEstimatedEnd,
                     Status = x.p.Status
                 }).ToListAsync();
 
@@ -171,8 +196,12 @@ namespace ESMS.BackendAPI.Services.Projects
                 PageSize = request.PageSize,
                 Items = data
             };
-
-            return new ApiSuccessResult<PagedResult<ProjectViewModel>>(pagedResult);
+            var listProjectViewModel = new ListProjectViewModel()
+            {
+                IsCreateNew = check,
+                data = pagedResult
+            };
+            return new ApiSuccessResult<ListProjectViewModel>(listProjectViewModel);
         }
 
         public async Task<ApiResult<PagedResult<ProjectViewModel>>> GetProjectPaging(GetProjectPagingRequest request)
@@ -196,8 +225,8 @@ namespace ESMS.BackendAPI.Services.Projects
                     ProjectName = x.p.ProjectName,
                     Description = x.p.Description,
                     Skateholder = x.p.Skateholder,
-                    DateBegin = x.p.DateBegin.ToString("dd/MM/yyyy"),
-                    DateEstimatedEnd = x.p.DateEstimatedEnd.ToString("dd/MM/yyyy"),
+                    DateBegin = x.p.DateBegin,
+                    DateEstimatedEnd = x.p.DateEstimatedEnd,
                     Status = x.p.Status
                 }).ToListAsync();
 
@@ -218,9 +247,9 @@ namespace ESMS.BackendAPI.Services.Projects
             var project = await _context.Projects.FindAsync(projectID);
             if (project == null) return new ApiErrorResult<bool>("Project does not exist");
 
-            project.ProjectName = request.ProjectName;
             project.Description = request.Description;
             project.Skateholder = request.Skateholder;
+            project.DateEstimatedEnd = request.DateEstimatedEnd;
 
             var result = await _context.SaveChangesAsync();
             if (result == 0)
@@ -381,6 +410,45 @@ namespace ESMS.BackendAPI.Services.Projects
                 return new ApiErrorResult<bool>("confirm candidate failed");
             }
             return new ApiSuccessResult<bool>();
+        }
+
+        public async Task<ApiResult<PagedResult<ProjectViewModel>>> GetEmployeeProjects(string empID, GetProjectPagingRequest request)
+        {
+            var query = from ep in _context.EmpPositionInProjects
+                        join p in _context.Projects on ep.ProjectID equals p.ProjectID
+                        select new { ep, p };
+            query = query.Where(x => x.ep.EmpID.Equals(empID));
+            if (!string.IsNullOrEmpty(request.Keyword))
+            {
+                query = query.Where(x => x.p.ProjectName.Contains(request.Keyword));
+            }
+
+            //Paging
+            int totalRow = await query.CountAsync();
+
+            var data = await query.OrderByDescending(x => x.p.DateCreated)
+                .Skip((request.PageIndex - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .Select(x => new ProjectViewModel()
+                {
+                    ProjectID = x.p.ProjectID,
+                    ProjectName = x.p.ProjectName,
+                    Description = x.p.Description,
+                    Skateholder = x.p.Skateholder,
+                    DateBegin = x.p.DateBegin,
+                    DateEstimatedEnd = x.p.DateEstimatedEnd,
+                    Status = x.p.Status
+                }).ToListAsync();
+
+            //Select and projection
+            var pagedResult = new PagedResult<ProjectViewModel>()
+            {
+                TotalRecords = totalRow,
+                PageIndex = request.PageIndex,
+                PageSize = request.PageSize,
+                Items = data
+            };
+            return new ApiSuccessResult<PagedResult<ProjectViewModel>>(pagedResult);
         }
     }
 }

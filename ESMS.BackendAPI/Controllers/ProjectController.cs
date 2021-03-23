@@ -15,7 +15,7 @@ namespace ESMS.BackendAPI.Controllers
     [EnableCors("MyPolicy")]
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class ProjectController : ControllerBase
     {
         private readonly IProjectService _projectService;
@@ -41,9 +41,16 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(project);
         }
 
+        [HttpGet("getEmployeeProjects/{empID}")]
+        public async Task<IActionResult> GetEmployeeProjects(string empID, [FromQuery] GetProjectPagingRequest request)
+        {
+            var project = await _projectService.GetEmployeeProjects(empID, request);
+            return Ok(project);
+        }
+
         //Get:http://localhost/api/project/getProjects/id
         [HttpGet("getEmpsInProject/{projectID}")]
-        public async Task<IActionResult> GetProjectByEmpID(int projectID)
+        public async Task<IActionResult> GetEmpInProjectPaging(int projectID)
         {
             var employees = await _projectService.GetEmpInProjectPaging(projectID);
             return Ok(employees);
