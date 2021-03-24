@@ -204,10 +204,11 @@ namespace ESMS.BackendAPI.Services.Projects
             return new ApiSuccessResult<ListProjectViewModel>(listProjectViewModel);
         }
 
-        public async Task<ApiResult<PagedResult<ProjectViewModel>>> GetProjectPaging(GetProjectPagingRequest request)
+        public async Task<ApiResult<PagedResult<AdminProjectsViewModel>>> GetProjectPaging(GetProjectPagingRequest request)
         {
             var query = from p in _context.Projects
-                        select new { p };
+                        join e in _context.Employees on p.ProjectManagerID equals e.Id
+                        select new { p, e };
             if (!string.IsNullOrEmpty(request.Keyword))
             {
                 query = query.Where(x => x.p.ProjectName.Contains(request.Keyword));
@@ -219,7 +220,7 @@ namespace ESMS.BackendAPI.Services.Projects
             var data = await query.OrderByDescending(x => x.p.DateCreated)
                 .Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .Select(x => new ProjectViewModel()
+                .Select(x => new AdminProjectsViewModel()
                 {
                     ProjectID = x.p.ProjectID,
                     ProjectName = x.p.ProjectName,
@@ -227,11 +228,13 @@ namespace ESMS.BackendAPI.Services.Projects
                     Skateholder = x.p.Skateholder,
                     DateBegin = x.p.DateBegin,
                     DateEstimatedEnd = x.p.DateEstimatedEnd,
-                    Status = x.p.Status
+                    Status = x.p.Status,
+                    EmpID = x.p.ProjectManagerID,
+                    Name = x.e.Name
                 }).ToListAsync();
 
             //Select and projection
-            var pagedResult = new PagedResult<ProjectViewModel>()
+            var pagedResult = new PagedResult<AdminProjectsViewModel>()
             {
                 TotalRecords = totalRow,
                 PageIndex = request.PageIndex,
@@ -239,7 +242,7 @@ namespace ESMS.BackendAPI.Services.Projects
                 Items = data
             };
 
-            return new ApiSuccessResult<PagedResult<ProjectViewModel>>(pagedResult);
+            return new ApiSuccessResult<PagedResult<AdminProjectsViewModel>>(pagedResult);
         }
 
         public async Task<ApiResult<bool>> Update(int projectID, ProjectUpdateRequest request)
@@ -386,6 +389,10 @@ namespace ESMS.BackendAPI.Services.Projects
 
         public async Task<ApiResult<bool>> ConfirmCandidate(int projectID, ConfirmCandidateRequest request)
         {
+            var project = await _context.Projects.FindAsync(projectID);
+            if (project == null) return new ApiErrorResult<bool>("Project does not exist");
+            project.Status = ProjectStatus.OnGoing;
+            _context.Projects.Update(project);
             foreach (var position in request.Candidates)
             {
                 foreach (var id in position.EmpIDs)
@@ -408,6 +415,28 @@ namespace ESMS.BackendAPI.Services.Projects
             if (result == 0)
             {
                 return new ApiErrorResult<bool>("confirm candidate failed");
+            }
+            var query = from ep in _context.EmpPositionInProjects
+                        join e in _context.Employees on ep.EmpID equals e.Id
+                        select new { ep, e };
+            var data = await query.Where(x => x.ep.ProjectID.Equals(projectID) && x.e.Status.Equals(EmployeeStatus.Pending)).Select(x => new EmpPositionInProject()
+            {
+                EmpID = x.ep.EmpID,
+                PosID = x.ep.PosID,
+                ProjectID = x.ep.ProjectID,
+                DateIn = x.ep.DateIn
+            }).ToListAsync();
+            if (data.Count() != 0)
+            {
+                foreach (var emp in data)
+                {
+                    _context.EmpPositionInProjects.Remove(emp);
+                }
+            }
+            result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                return new ApiErrorResult<bool>("Remove unchecked candidate failed");
             }
             return new ApiSuccessResult<bool>();
         }
