@@ -11,7 +11,7 @@ namespace ESMS.BackendAPI.Services.Projects
 {
     public interface IProjectService
     {
-        Task<ApiResult<int>> Create(string EmpID, ProjectCreateRequest request);
+        Task<ApiResult<int>> Create(string empID, ProjectCreateRequest request);
 
         Task<ApiResult<bool>> Update(int projectID, ProjectUpdateRequest request);
 
@@ -23,7 +23,9 @@ namespace ESMS.BackendAPI.Services.Projects
 
         Task<ApiResult<PagedResult<ProjectViewModel>>> GetProjectPaging(GetProjectPagingRequest request);
 
-        Task<ApiResult<PagedResult<ProjectViewModel>>> GetProjectByEmpID(string EmpID, GetProjectPagingRequest request);
+        Task<ApiResult<ListProjectViewModel>> GetProjectByEmpID(string empID, GetProjectPagingRequest request);
+
+        Task<ApiResult<PagedResult<ProjectViewModel>>> GetEmployeeProjects(string empID, GetProjectPagingRequest request);
 
         Task<ApiResult<List<PositionInProject>>> GetEmpInProjectPaging(int projectID);
 

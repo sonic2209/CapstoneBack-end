@@ -7,8 +7,8 @@ namespace ESMS.BackendAPI.ViewModels.Project
 {
     public class ProjectUpdateRequest
     {
-        public string ProjectName { get; set; }
         public string Description { get; set; }
         public string Skateholder { get; set; }
+        public DateTime DateEstimatedEnd { get; set; }
     }
 }
