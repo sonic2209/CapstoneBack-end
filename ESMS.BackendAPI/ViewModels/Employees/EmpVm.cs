@@ -12,7 +12,8 @@ namespace ESMS.BackendAPI.ViewModels.Employees
         public string PhoneNumber { get; set; }
         public string UserName { get; set; }
         public string Email { get; set; }
-        public DateTime DateCreated { get; set; }
+        public string IdentityNumber { get; set; }
+        public string Address { get; set; }
         public IList<string> Roles { get; set; }
     }
 }

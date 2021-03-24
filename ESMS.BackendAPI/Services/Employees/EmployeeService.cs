@@ -194,7 +194,9 @@ namespace ESMS.BackendAPI.Services.Employees
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
                 Name = user.Name,
-                DateCreated = (DateTime)user.DateCreated,
+                Address = user.Address,
+                IdentityNumber = user.IdentityNumber,
+                UserName = user.UserName,
                 Id = user.Id,
                 Roles = roles
             };
@@ -244,16 +246,19 @@ namespace ESMS.BackendAPI.Services.Employees
                 var dicCandidate = new Dictionary<string, double>();
                 if (requiredPosition.SoftSkillIDs != null)
                 {
+                   
                     //Get List Emp Theo Position
                     List<MatchViewModel> listMatchDetail = new List<MatchViewModel>();
                     var Position = _context.Positions.Where(x => x.PosID == requiredPosition.PosID).Select(x => x.Name).FirstOrDefault();
                     var PosId = _context.Positions.Where(x => x.PosID == requiredPosition.PosID).Select(x => x.PosID).FirstOrDefault();
+                                     
                     var ListEmpPosquery = from ep in _context.EmpPositions
                                           join p in _context.Positions on ep.PosID equals p.PosID
                                           join e in _context.Employees on ep.EmpID equals e.Id
                                           select new { ep, p, e };
-
-                    var ListEmpInPos = await ListEmpPosquery.Where(x => x.ep.PosID == requiredPosition.PosID && x.ep.DateOut == null).Select(x => new EmpInPos()
+                    foreach (var posLevel in requiredPosition.PosLevel)
+                    {
+                        var ListEmpInPos = await ListEmpPosquery.Where(x => x.ep.PosID == requiredPosition.PosID && x.ep.DateOut == null && x.ep.NameExp == (PositionLevel)posLevel).Select(x => new EmpInPos()
                     {
                         EmpId = x.ep.EmpID,
                         DateIn = x.ep.DateIn,
@@ -273,28 +278,28 @@ namespace ESMS.BackendAPI.Services.Employees
 
                             //add match theo kinh nghiem
                             //dicCandidate.Add(emp.EmpId, 60);
-                            switch (emp.NameExp)
-                            {
-                                case PositionLevel.Intern:
-                                    match += (10 / 5) * 1;
-                                    break;
+                            //switch (emp.NameExp)
+                            //{
+                            //    case PositionLevel.Intern:
+                            //        match += (10 / 5) * 1;
+                            //        break;
 
-                                case PositionLevel.Fresher:
-                                    match += (10 / 5) * 2;
-                                    break;
+                            //    case PositionLevel.Fresher:
+                            //        match += (10 / 5) * 2;
+                            //        break;
 
-                                case PositionLevel.Junior:
-                                    match += (10 / 5) * 3;
-                                    break;
+                            //    case PositionLevel.Junior:
+                            //        match += (10 / 5) * 3;
+                            //        break;
 
-                                case PositionLevel.Senior:
-                                    match += (10 / 5) * 4;
-                                    break;
+                            //    case PositionLevel.Senior:
+                            //        match += (10 / 5) * 4;
+                            //        break;
 
-                                case PositionLevel.Master:
-                                    match += (10 / 5) * 5;
-                                    break;
-                            }
+                            //    case PositionLevel.Master:
+                            //        match += (10 / 5) * 5;
+                            //        break;
+                            //}
                             //add match theo ngon ngu
                             var query = from ep in _context.EmpPositions
                                         join el in _context.EmpLanguages on ep.EmpID equals el.EmpID
@@ -385,6 +390,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             {
                                 EmpID = emp.EmpId,
                                 EmpName = emp.EmpName,
+                                PosLevel = emp.NameExp,
                                 LanguageMatch = Languagematch,
                                 SoftSkillMatch = Softskillmatch,
                                 HardSkillMatch = Hardskillmatch,
@@ -392,14 +398,14 @@ namespace ESMS.BackendAPI.Services.Employees
                             };
                             listMatchDetail.Add(matchDetail);
                         }
-
-                        result.Add(new CandidateViewModel()
+                        }
+                    }
+                    result.Add(new CandidateViewModel()
                         {
                             Position = Position,
                             PosId = PosId,
                             MatchDetail = listMatchDetail,
-                        });
-                    }
+                        });     
                 }
             }
             return result;
