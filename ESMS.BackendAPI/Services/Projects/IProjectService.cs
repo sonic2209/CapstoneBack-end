@@ -34,5 +34,7 @@ namespace ESMS.BackendAPI.Services.Projects
         Task<ApiResult<bool>> AddCandidate(int projectID, AddCandidateRequest request);
 
         Task<ApiResult<bool>> ConfirmCandidate(int projectID, ConfirmCandidateRequest request);
+
+        Task<ApiResult<List<ProjectTypeViewModel>>> GetProjectTypes();
     }
 }

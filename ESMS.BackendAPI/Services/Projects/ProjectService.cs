@@ -479,5 +479,19 @@ namespace ESMS.BackendAPI.Services.Projects
             };
             return new ApiSuccessResult<PagedResult<ProjectViewModel>>(pagedResult);
         }
+
+        public async Task<ApiResult<List<ProjectTypeViewModel>>> GetProjectTypes()
+        {
+            var data = await _context.ProjectTypes.Select(x => new ProjectTypeViewModel()
+            {
+                ID = x.ID,
+                Name = x.Name
+            }).ToListAsync();
+            if (data.Count == 0)
+            {
+                return new ApiErrorResult<List<ProjectTypeViewModel>>("Project's type not found");
+            }
+            return new ApiSuccessResult<List<ProjectTypeViewModel>>(data);
+        }
     }
 }
