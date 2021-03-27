@@ -64,6 +64,13 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(project);
         }
 
+        [HttpGet("getProjectTypes")]
+        public async Task<IActionResult> GetProjectTypes()
+        {
+            var projectTypes = await _projectService.GetProjectTypes();
+            return Ok(projectTypes);
+        }
+
         //http://localhost/api/project/empID
         [HttpPost("{empID}")]
         public async Task<IActionResult> Create(string empID, [FromBody] ProjectCreateRequest request)

@@ -35,6 +35,7 @@ namespace ESMS.Data.EF
             modelBuilder.ApplyConfiguration(new LanguageConfiguration());
             modelBuilder.ApplyConfiguration(new EmpLanguageConfiguration());
             modelBuilder.ApplyConfiguration(new RequiredLanguageConfiguration());
+            modelBuilder.ApplyConfiguration(new ProjectTypeConfiguration());
 
             modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("AppUserClaims");
             modelBuilder.Entity<IdentityUserRole<string>>().ToTable("AppUserRoles").HasKey(x => new { x.UserId, x.RoleId });
@@ -60,5 +61,6 @@ namespace ESMS.Data.EF
         public DbSet<Language> Languages { get; set; }
         public DbSet<EmpLanguage> EmpLanguages { get; set; }
         public DbSet<RequiredLanguage> RequiredLanguages { get; set; }
+        public DbSet<ProjectType> ProjectTypes { get; set; }
     }
 }

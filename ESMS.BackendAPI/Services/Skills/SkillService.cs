@@ -39,7 +39,7 @@ namespace ESMS.BackendAPI.Services.Skills
 
         public async Task<ApiResult<bool>> Delete(int skillID)
         {
-            var skill = _context.Skills.Find(skillID);
+            var skill = await _context.Skills.FindAsync(skillID);
             if (skill == null) return new ApiErrorResult<bool>("Skill does not exist");
             _context.Skills.Remove(skill);
             var result = await _context.SaveChangesAsync();
@@ -80,7 +80,7 @@ namespace ESMS.BackendAPI.Services.Skills
             return new ApiSuccessResult<List<ListSkillViewModel>>(data);
         }
 
-        public async Task<ApiResult<PagedResult<ListSkillViewModel>>> GetSkillPaging(GetSkillPagingRequest request)
+        public async Task<ApiResult<PagedResult<SkillViewModel>>> GetSkillPaging(GetSkillPagingRequest request)
         {
             var query = from s in _context.Skills
                         select new { s };
@@ -91,13 +91,14 @@ namespace ESMS.BackendAPI.Services.Skills
             int totalRow = await query.CountAsync();
             var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .Select(x => new ListSkillViewModel()
+                .Select(x => new SkillViewModel()
                 {
                     SkillID = x.s.SkillID,
-                    SkillName = x.s.SkillName
+                    SkillName = x.s.SkillName,
+                    SkillType = x.s.SkillType
                 }).ToListAsync();
 
-            var pagedResult = new PagedResult<ListSkillViewModel>()
+            var pagedResult = new PagedResult<SkillViewModel>()
             {
                 TotalRecords = totalRow,
                 PageIndex = request.PageIndex,
@@ -105,7 +106,7 @@ namespace ESMS.BackendAPI.Services.Skills
                 Items = data
             };
 
-            return new ApiSuccessResult<PagedResult<ListSkillViewModel>>(pagedResult);
+            return new ApiSuccessResult<PagedResult<SkillViewModel>>(pagedResult);
         }
 
         public async Task<ApiResult<bool>> Update(int skillID, SkillUpdateRequest request)

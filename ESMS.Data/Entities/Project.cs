@@ -17,7 +17,9 @@ namespace ESMS.Data.Entities
         public string Skateholder { get; set; }
         public ProjectStatus Status { get; set; }
         public string ProjectManagerID { get; set; }
+        public int? ProjectTypeID { get; set; }
         public Employee Employee { get; set; }
+        public ProjectType ProjectType { get; set; }
         public List<EmpPositionInProject> EmpPosInProjects { get; set; }
         public List<RequiredPosition> RequiredPositions { get; set; }
     }

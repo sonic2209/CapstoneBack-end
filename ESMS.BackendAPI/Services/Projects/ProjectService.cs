@@ -43,6 +43,7 @@ namespace ESMS.BackendAPI.Services.Projects
                     return new ApiErrorResult<int>("Date estimated end is earlier than date begin");
                 }
                 project.DateEstimatedEnd = request.DateEstimatedEnd;
+                project.ProjectTypeID = request.ProjectTypeID;
                 _context.Projects.Update(project);
                 var result = await _context.SaveChangesAsync();
                 if (result == 0)
@@ -76,7 +77,8 @@ namespace ESMS.BackendAPI.Services.Projects
                     DateBegin = request.DateBegin,
                     DateEstimatedEnd = request.DateEstimatedEnd,
                     Status = ProjectStatus.Pending,
-                    ProjectManagerID = empID
+                    ProjectManagerID = empID,
+                    ProjectTypeID = request.ProjectTypeID
                 };
                 _context.Projects.Add(project);
                 var result = await _context.SaveChangesAsync();
@@ -230,7 +232,8 @@ namespace ESMS.BackendAPI.Services.Projects
                     DateEstimatedEnd = x.p.DateEstimatedEnd,
                     Status = x.p.Status,
                     EmpID = x.p.ProjectManagerID,
-                    Name = x.e.Name
+                    Name = x.e.Name,
+                    ProjectTypeID = x.p.ProjectTypeID
                 }).ToListAsync();
 
             //Select and projection
@@ -478,6 +481,20 @@ namespace ESMS.BackendAPI.Services.Projects
                 Items = data
             };
             return new ApiSuccessResult<PagedResult<ProjectViewModel>>(pagedResult);
+        }
+
+        public async Task<ApiResult<List<ProjectTypeViewModel>>> GetProjectTypes()
+        {
+            var data = await _context.ProjectTypes.Select(x => new ProjectTypeViewModel()
+            {
+                ID = x.ID,
+                Name = x.Name
+            }).ToListAsync();
+            if (data.Count == 0)
+            {
+                return new ApiErrorResult<List<ProjectTypeViewModel>>("Project's type not found");
+            }
+            return new ApiSuccessResult<List<ProjectTypeViewModel>>(data);
         }
     }
 }
