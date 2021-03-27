@@ -10,5 +10,7 @@ namespace ESMS.BackendAPI.ViewModels.Certification
         public string CertificationName { get; set; }
         public string Description { get; set; }
         public int SkillID { get; set; }
+        public string SkillName { get; set; }
+        public int CertiLevel { get; set; }
     }
 }

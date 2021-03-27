@@ -2,9 +2,7 @@
 using ESMS.BackendAPI.ViewModels.Position;
 using ESMS.Data.EF;
 using ESMS.Data.Entities;
-using ESMS.Data.Enums;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,6 +20,12 @@ namespace ESMS.BackendAPI.Services.Positions
 
         public async Task<ApiResult<bool>> Create(PositionCreateRequest request)
         {
+            var checkName = _context.Positions.Where(x => x.Name.Equals(request.Name))
+                .Select(x => new Position()).FirstOrDefault();
+            if (checkName != null)
+            {
+                return new ApiErrorResult<bool>("This position name is existed");
+            }
             var position = new Position()
             {
                 Name = request.Name,

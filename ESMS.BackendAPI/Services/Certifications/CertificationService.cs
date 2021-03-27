@@ -1,8 +1,6 @@
 ﻿using ESMS.Data.EF;
 using ESMS.Data.Entities;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -22,11 +20,18 @@ namespace ESMS.BackendAPI.Services.Certifications
 
         public async Task<ApiResult<bool>> Create(CertificationCreateRequest request)
         {
+            var checkName = _context.Certifications.Where(x => x.CertificationName.Equals(request.CertificationName))
+                .Select(x => new Certification()).FirstOrDefault();
+            if (checkName != null)
+            {
+                return new ApiErrorResult<bool>("This certification name is existed");
+            }
             var certification = new Certification()
             {
                 CertificationName = request.CertificationName,
                 Description = request.Description,
-                SkillID = request.SkillID
+                SkillID = request.SkillID,
+                CertiLevel = request.CertiLevel
             };
             _context.Certifications.Add(certification);
             var result = await _context.SaveChangesAsync();
@@ -52,23 +57,27 @@ namespace ESMS.BackendAPI.Services.Certifications
 
         public async Task<ApiResult<CertificationViewModel>> GetByID(int certificationID)
         {
-            var certification = await _context.Certifications.FindAsync(certificationID);
-            if (certification == null) return new ApiErrorResult<CertificationViewModel>("Certification does not exist");
-            var certificationVm = new CertificationViewModel()
+            var query = from c in _context.Certifications
+                        join s in _context.Skills on c.SkillID equals s.SkillID
+                        select new { c, s };
+            var certificationVm = await query.Where(x => x.c.CertificationID.Equals(certificationID)).Select(x => new CertificationViewModel()
             {
-                CertificationID = certificationID,
-                CertificationName = certification.CertificationName,
-                Description = certification.Description,
-                SkillID = certification.SkillID
-            };
-
+                CertificationID = x.c.CertificationID,
+                CertificationName = x.c.CertificationName,
+                Description = x.c.Description,
+                SkillID = x.c.SkillID,
+                SkillName = x.s.SkillName,
+                CertiLevel = x.c.CertiLevel
+            }).FirstOrDefaultAsync();
+            if (certificationVm == null) return new ApiErrorResult<CertificationViewModel>("Certification does not exist");
             return new ApiSuccessResult<CertificationViewModel>(certificationVm);
         }
 
-        public async Task<ApiResult<PagedResult<ListCertificationViewModel>>> GetCertificationPaging(GetCertificationPagingRequest request)
+        public async Task<ApiResult<PagedResult<CertificationViewModel>>> GetCertificationPaging(GetCertificationPagingRequest request)
         {
             var query = from c in _context.Certifications
-                        select new { c };
+                        join s in _context.Skills on c.SkillID equals s.SkillID
+                        select new { c, s };
             if (!string.IsNullOrEmpty(request.Keyword))
             {
                 query = query.Where(x => x.c.CertificationName.Contains(request.Keyword));
@@ -76,13 +85,17 @@ namespace ESMS.BackendAPI.Services.Certifications
             int totalRow = await query.CountAsync();
             var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .Select(x => new ListCertificationViewModel()
+                .Select(x => new CertificationViewModel()
                 {
                     CertificationID = x.c.CertificationID,
-                    CertificationName = x.c.CertificationName
+                    CertificationName = x.c.CertificationName,
+                    Description = x.c.Description,
+                    SkillID = x.c.SkillID,
+                    SkillName = x.s.SkillName,
+                    CertiLevel = x.c.CertiLevel
                 }).ToListAsync();
 
-            var pagedResult = new PagedResult<ListCertificationViewModel>()
+            var pagedResult = new PagedResult<CertificationViewModel>()
             {
                 TotalRecords = totalRow,
                 PageIndex = request.PageIndex,
@@ -90,7 +103,7 @@ namespace ESMS.BackendAPI.Services.Certifications
                 Items = data
             };
 
-            return new ApiSuccessResult<PagedResult<ListCertificationViewModel>>(pagedResult);
+            return new ApiSuccessResult<PagedResult<CertificationViewModel>>(pagedResult);
         }
 
         public async Task<ApiResult<List<ListCertificationViewModel>>> GetCertifications(int skillID)

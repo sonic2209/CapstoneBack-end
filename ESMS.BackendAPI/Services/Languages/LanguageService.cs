@@ -3,7 +3,6 @@ using ESMS.BackendAPI.ViewModels.Language;
 using ESMS.Data.EF;
 using ESMS.Data.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,6 +20,12 @@ namespace ESMS.BackendAPI.Services.Languages
 
         public async Task<ApiResult<bool>> Create(LanguageCreateRequest request)
         {
+            var checkName = _context.Languages.Where(x => x.LangName.Equals(request.LangName))
+                .Select(x => new Language()).FirstOrDefault();
+            if (checkName != null)
+            {
+                return new ApiErrorResult<bool>("This language name is existed");
+            }
             var language = new Language()
             {
                 LangName = request.LangName

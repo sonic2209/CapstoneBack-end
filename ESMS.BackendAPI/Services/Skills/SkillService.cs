@@ -3,7 +3,6 @@ using ESMS.Data.Entities;
 using ESMS.Data.Enums;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using System;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +22,12 @@ namespace ESMS.BackendAPI.Services.Skills
 
         public async Task<ApiResult<bool>> Create(SkillCreateRequest request)
         {
+            var checkName = _context.Skills.Where(x => x.SkillName.Equals(request.SkillName))
+                .Select(x => new Skill()).FirstOrDefault();
+            if (checkName != null)
+            {
+                return new ApiErrorResult<bool>("This skill name is existed");
+            }
             var skill = new Skill()
             {
                 SkillName = request.SkillName,

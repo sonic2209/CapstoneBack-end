@@ -1,8 +1,6 @@
 ﻿using ESMS.BackendAPI.ViewModels.Certification;
 using ESMS.BackendAPI.ViewModels.Common;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ESMS.BackendAPI.Services.Certifications
@@ -17,7 +15,7 @@ namespace ESMS.BackendAPI.Services.Certifications
 
         public Task<ApiResult<List<ListCertificationViewModel>>> GetCertifications(int skillID);
 
-        public Task<ApiResult<PagedResult<ListCertificationViewModel>>> GetCertificationPaging(GetCertificationPagingRequest request);
+        public Task<ApiResult<PagedResult<CertificationViewModel>>> GetCertificationPaging(GetCertificationPagingRequest request);
 
         public Task<ApiResult<CertificationViewModel>> GetByID(int certificationID);
     }
