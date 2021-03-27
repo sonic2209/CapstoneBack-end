@@ -17,7 +17,7 @@ namespace ESMS.BackendAPI.Services.Skills
 
         public Task<ApiResult<List<ListSkillViewModel>>> GetSkill(string skillType);
 
-        public Task<ApiResult<PagedResult<ListSkillViewModel>>> GetSkillPaging(GetSkillPagingRequest request);
+        public Task<ApiResult<PagedResult<SkillViewModel>>> GetSkillPaging(GetSkillPagingRequest request);
 
         public Task<ApiResult<SkillViewModel>> GetByID(int skillID);
     }
