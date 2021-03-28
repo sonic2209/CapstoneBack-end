@@ -8,7 +8,9 @@ using ESMS.BackendAPI.Services.Skills;
 using ESMS.BackendAPI.ViewModels.Employees;
 using ESMS.Data.EF;
 using ESMS.Data.Entities;
+using FirebaseAdmin;
 using FluentValidation.AspNetCore;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,6 +25,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -147,6 +150,10 @@ namespace ESMS.BackendAPI
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            FirebaseApp.Create(new AppOptions()
+            {
+                Credential = GoogleCredential.FromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "capstone-esms-firebase-adminsdk-3z2td-a35a510cb1.json")),
+            });
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
