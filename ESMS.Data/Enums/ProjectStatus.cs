@@ -7,6 +7,7 @@ namespace ESMS.Data.Enums
     public enum ProjectStatus
     {
         Pending,
+        NoEmployee,
         OnGoing,
         Finished
     }

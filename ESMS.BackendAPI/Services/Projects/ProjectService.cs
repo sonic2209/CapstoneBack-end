@@ -94,8 +94,27 @@ namespace ESMS.BackendAPI.Services.Projects
         {
             var project = await _context.Projects.FindAsync(projectID);
             if (project == null) return new ApiErrorResult<bool>("Project does not exist");
-
-            project.DateEnd = DateTime.Now;
+            var empInProject = await _context.EmpPositionInProjects.Where(x => x.ProjectID.Equals(projectID))
+                .Select(x => new EmpPositionInProject()
+                {
+                    EmpID = x.EmpID,
+                    PosID = x.PosID,
+                    ProjectID = x.ProjectID,
+                    DateIn = x.DateIn
+                }).ToListAsync();
+            if (empInProject.Count() != 0)
+            {
+                foreach (var emp in empInProject)
+                {
+                    _context.EmpPositionInProjects.Remove(emp);
+                }
+                var check = await _context.SaveChangesAsync();
+                if (check == 0)
+                {
+                    return new ApiErrorResult<bool>("Delete employee in project failed");
+                }
+            }
+            _context.Projects.Remove(project);
             var result = await _context.SaveChangesAsync();
             if (result == 0)
             {
@@ -208,6 +227,23 @@ namespace ESMS.BackendAPI.Services.Projects
 
         public async Task<ApiResult<PagedResult<AdminProjectViewModel>>> GetProjectPaging(GetProjectPagingRequest request)
         {
+            var list = _context.Projects.Select(x => x.ProjectID).ToList();
+            foreach (var id in list)
+            {
+                var empInProject = _context.EmpPositionInProjects.Where(x => x.ProjectID.Equals(id))
+                    .Select(x => new EmpPositionInProject()).ToList();
+                if (empInProject.Count() == 0)
+                {
+                    var project = await _context.Projects.FindAsync(id);
+                    project.Status = ProjectStatus.NoEmployee;
+                    _context.Projects.Update(project);
+                }
+            }
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                return new ApiErrorResult<PagedResult<AdminProjectViewModel>>("Update project failed");
+            }
             var query = from p in _context.Projects
                         join e in _context.Employees on p.ProjectManagerID equals e.Id
                         select new { p, e };
@@ -219,7 +255,7 @@ namespace ESMS.BackendAPI.Services.Projects
             //Paging
             int totalRow = await query.CountAsync();
 
-            var data = await query.OrderByDescending(x => x.p.DateCreated)
+            var data = await query.OrderBy(x => x.p.Status)
                 .Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .Select(x => new AdminProjectViewModel()
