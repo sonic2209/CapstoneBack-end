@@ -206,7 +206,7 @@ namespace ESMS.BackendAPI.Services.Projects
             return new ApiSuccessResult<ListProjectViewModel>(listProjectViewModel);
         }
 
-        public async Task<ApiResult<PagedResult<AdminProjectsViewModel>>> GetProjectPaging(GetProjectPagingRequest request)
+        public async Task<ApiResult<PagedResult<AdminProjectViewModel>>> GetProjectPaging(GetProjectPagingRequest request)
         {
             var query = from p in _context.Projects
                         join e in _context.Employees on p.ProjectManagerID equals e.Id
@@ -222,7 +222,7 @@ namespace ESMS.BackendAPI.Services.Projects
             var data = await query.OrderByDescending(x => x.p.DateCreated)
                 .Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .Select(x => new AdminProjectsViewModel()
+                .Select(x => new AdminProjectViewModel()
                 {
                     ProjectID = x.p.ProjectID,
                     ProjectName = x.p.ProjectName,
@@ -237,7 +237,7 @@ namespace ESMS.BackendAPI.Services.Projects
                 }).ToListAsync();
 
             //Select and projection
-            var pagedResult = new PagedResult<AdminProjectsViewModel>()
+            var pagedResult = new PagedResult<AdminProjectViewModel>()
             {
                 TotalRecords = totalRow,
                 PageIndex = request.PageIndex,
@@ -245,7 +245,7 @@ namespace ESMS.BackendAPI.Services.Projects
                 Items = data
             };
 
-            return new ApiSuccessResult<PagedResult<AdminProjectsViewModel>>(pagedResult);
+            return new ApiSuccessResult<PagedResult<AdminProjectViewModel>>(pagedResult);
         }
 
         public async Task<ApiResult<bool>> Update(int projectID, ProjectUpdateRequest request)
@@ -444,11 +444,12 @@ namespace ESMS.BackendAPI.Services.Projects
             return new ApiSuccessResult<bool>();
         }
 
-        public async Task<ApiResult<PagedResult<ProjectViewModel>>> GetEmployeeProjects(string empID, GetProjectPagingRequest request)
+        public async Task<ApiResult<PagedResult<EmployeeProjectViewModel>>> GetEmployeeProjects(string empID, GetProjectPagingRequest request)
         {
-            var query = from ep in _context.EmpPositionInProjects
-                        join p in _context.Projects on ep.ProjectID equals p.ProjectID
-                        select new { ep, p };
+            var query = from p in _context.Projects
+                        join ep in _context.EmpPositionInProjects on p.ProjectID equals ep.ProjectID
+                        join po in _context.Positions on ep.PosID equals po.PosID
+                        select new { p, ep, po };
             query = query.Where(x => x.ep.EmpID.Equals(empID));
             if (!string.IsNullOrEmpty(request.Keyword))
             {
@@ -461,26 +462,22 @@ namespace ESMS.BackendAPI.Services.Projects
             var data = await query.OrderByDescending(x => x.p.DateCreated)
                 .Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .Select(x => new ProjectViewModel()
+                .Select(x => new EmployeeProjectViewModel()
                 {
-                    ProjectID = x.p.ProjectID,
                     ProjectName = x.p.ProjectName,
-                    Description = x.p.Description,
-                    Skateholder = x.p.Skateholder,
-                    DateBegin = x.p.DateBegin,
-                    DateEstimatedEnd = x.p.DateEstimatedEnd,
-                    Status = x.p.Status
+                    PosName = x.po.Name,
+                    DateIn = x.ep.DateIn
                 }).ToListAsync();
 
             //Select and projection
-            var pagedResult = new PagedResult<ProjectViewModel>()
+            var pagedResult = new PagedResult<EmployeeProjectViewModel>()
             {
                 TotalRecords = totalRow,
                 PageIndex = request.PageIndex,
                 PageSize = request.PageSize,
                 Items = data
             };
-            return new ApiSuccessResult<PagedResult<ProjectViewModel>>(pagedResult);
+            return new ApiSuccessResult<PagedResult<EmployeeProjectViewModel>>(pagedResult);
         }
 
         public async Task<ApiResult<List<ProjectTypeViewModel>>> GetProjectTypes()

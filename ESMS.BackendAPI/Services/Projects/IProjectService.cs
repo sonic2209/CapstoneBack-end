@@ -21,11 +21,11 @@ namespace ESMS.BackendAPI.Services.Projects
 
         Task<ApiResult<ProjectViewModel>> GetByID(int projectID);
 
-        Task<ApiResult<PagedResult<AdminProjectsViewModel>>> GetProjectPaging(GetProjectPagingRequest request);
+        Task<ApiResult<PagedResult<AdminProjectViewModel>>> GetProjectPaging(GetProjectPagingRequest request);
 
         Task<ApiResult<ListProjectViewModel>> GetProjectByEmpID(string empID, GetProjectPagingRequest request);
 
-        Task<ApiResult<PagedResult<ProjectViewModel>>> GetEmployeeProjects(string empID, GetProjectPagingRequest request);
+        Task<ApiResult<PagedResult<EmployeeProjectViewModel>>> GetEmployeeProjects(string empID, GetProjectPagingRequest request);
 
         Task<ApiResult<List<PositionInProject>>> GetEmpInProjectPaging(int projectID);
 
