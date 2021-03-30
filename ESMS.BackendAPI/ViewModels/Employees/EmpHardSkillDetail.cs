@@ -9,7 +9,6 @@ namespace ESMS.BackendAPI.ViewModels.Employees
     {
         public int SkillID { get; set; }
         public int? SkillLevel { get; set; }
-        public int? exp { get; set; }
         public List<EmpCertificationDetail> EmpCertifications { get; set; }
     }
 }

@@ -97,7 +97,7 @@ namespace ESMS.BackendAPI.Controllers
         }
 
         [HttpPost("{empID}")]
-        public async Task<IActionResult> AddRequiredPosition(string empID, [FromBody] AddEmpPositionRequest request)
+        public async Task<IActionResult> AddEmpPosition(string empID, [FromBody] AddEmpPositionRequest request)
         {
             var result = await _userService.AddEmpPosition(empID, request);
             if (!result.IsSuccessed)

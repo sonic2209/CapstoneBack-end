@@ -13,7 +13,7 @@ namespace ESMS.BackendAPI.Services.Skills
 
         public Task<ApiResult<bool>> Update(int skillID, SkillUpdateRequest request);
 
-        public Task<ApiResult<bool>> Delete(int skillID);
+        public Task<ApiResult<bool>> ChangeStatus(int skillID);
 
         public Task<ApiResult<List<ListSkillViewModel>>> GetSkill(string skillType);
 

@@ -18,6 +18,27 @@ namespace ESMS.BackendAPI.Services.Certifications
             _context = context;
         }
 
+        public async Task<ApiResult<bool>> ChangeStatus(int certificationID)
+        {
+            var certification = await _context.Certifications.FindAsync(certificationID);
+            if (certification == null) return new ApiErrorResult<bool>("Certification does not exist");
+            if (certification.Status)
+            {
+                certification.Status = false;
+            }
+            else
+            {
+                certification.Status = true;
+            }
+            _context.Certifications.Update(certification);
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                return new ApiErrorResult<bool>("Update certification failed");
+            }
+            return new ApiSuccessResult<bool>();
+        }
+
         public async Task<ApiResult<bool>> Create(CertificationCreateRequest request)
         {
             var checkName = _context.Certifications.Where(x => x.CertificationName.Equals(request.CertificationName))
@@ -38,19 +59,6 @@ namespace ESMS.BackendAPI.Services.Certifications
             if (result == 0)
             {
                 return new ApiErrorResult<bool>("Create certification failed");
-            }
-            return new ApiSuccessResult<bool>();
-        }
-
-        public async Task<ApiResult<bool>> Delete(int certificationID)
-        {
-            var certification = _context.Certifications.Find(certificationID);
-            if (certification == null) return new ApiErrorResult<bool>("Certification does not exist");
-            _context.Certifications.Remove(certification);
-            var result = await _context.SaveChangesAsync();
-            if (result == 0)
-            {
-                return new ApiErrorResult<bool>("Delete certification failed");
             }
             return new ApiSuccessResult<bool>();
         }
@@ -92,7 +100,8 @@ namespace ESMS.BackendAPI.Services.Certifications
                     Description = x.c.Description,
                     SkillID = x.c.SkillID,
                     SkillName = x.s.SkillName,
-                    CertiLevel = x.c.CertiLevel
+                    CertiLevel = x.c.CertiLevel,
+                    Status = x.c.Status
                 }).ToListAsync();
 
             var pagedResult = new PagedResult<CertificationViewModel>()

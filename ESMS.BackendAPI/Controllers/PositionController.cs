@@ -75,5 +75,21 @@ namespace ESMS.BackendAPI.Controllers
             }
             return Ok(result);
         }
+
+        [HttpPut("changeStatus/{positionID}")]
+        public async Task<IActionResult> ChangeStatus(int positionID)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            var result = await _positionService.ChangeStatus(positionID);
+
+            if (!result.IsSuccessed)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
     }
 }

@@ -52,7 +52,7 @@ namespace ESMS.BackendAPI.Controllers
         }
 
         //Put:http://localhost/api/skill/id
-        [HttpPut]
+        [HttpPut("{skillID}")]
         public async Task<IActionResult> Update(int skillID, [FromBody] SkillUpdateRequest request)
         {
             if (!ModelState.IsValid)
@@ -67,11 +67,14 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(result);
         }
 
-        //Delete:http://localhost/api/skill/id
-        [HttpDelete("{skillID}")]
-        public async Task<IActionResult> Delete(int skillID)
+        [HttpPut("changeStatus/{skillID}")]
+        public async Task<IActionResult> ChangeStatus(int skillID)
         {
-            var result = await _skillService.Delete(skillID);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            var result = await _skillService.ChangeStatus(skillID);
             if (!result.IsSuccessed)
             {
                 return BadRequest(result);

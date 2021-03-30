@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ESMS.BackendAPI.ViewModels.Project
 {
-    public class AdminProjectsViewModel
+    public class AdminProjectViewModel
     {
         public int ProjectID { get; set; }
         public string ProjectName { get; set; }
