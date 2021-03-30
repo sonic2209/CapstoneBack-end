@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using ESMS.BackendAPI.ViewModels.Common;
 using ESMS.BackendAPI.ViewModels.Project;
 using ESMS.BackendAPI.ViewModels.Position;
+using ESMS.BackendAPI.ViewModels.Employees;
 
 namespace ESMS.BackendAPI.Services.Projects
 {
@@ -528,6 +529,107 @@ namespace ESMS.BackendAPI.Services.Projects
                 return new ApiErrorResult<List<ProjectTypeViewModel>>("Project's type not found");
             }
             return new ApiSuccessResult<List<ProjectTypeViewModel>>(data);
+        }
+
+        public async Task<ApiResult<string>> CheckStatus(AddRequiredPositionRequest request)
+        {
+            string message;
+            foreach (var pos in request.RequiredPositions)
+            {
+                var position = await _context.Positions.FindAsync(pos.PosID);
+                if (position == null) return new ApiErrorResult<string>("position not found");
+                if (!position.Status)
+                {
+                    message = "Position " + position.Name + " is not enable";
+                    return new ApiErrorResult<string>(message);
+                }
+                if (pos.SoftSkillIDs != null)
+                {
+                    foreach (var id in pos.SoftSkillIDs)
+                    {
+                        var skill = await _context.Skills.FindAsync(id);
+                        if (!skill.Status)
+                        {
+                            message = "Skill " + skill.SkillName + " is not enable";
+                            return new ApiErrorResult<string>(message);
+                        }
+                    }
+                }
+                foreach (var hardSkill in pos.HardSkills)
+                {
+                    var skill = await _context.Skills.FindAsync(hardSkill.HardSkillID);
+                    if (!skill.Status)
+                    {
+                        message = "Skill " + skill.SkillName + " is not enable";
+                        return new ApiErrorResult<string>(message);
+                    }
+                }
+            }
+            message = "Success!";
+            return new ApiSuccessResult<string>(message);
+        }
+
+        public async Task<ApiResult<AddEmpPositionRequest>> GetEmpInfo(string empID)
+        {
+            AddEmpPositionRequest info = new AddEmpPositionRequest();
+            info.Languages = new List<EmpLanguageDetail>();
+            info.SoftSkills = new List<int>();
+            info.HardSkills = new List<EmpHardSkillDetail>();
+            var empPos = await _context.EmpPositions.Where(x => x.EmpID.Equals(empID) && x.DateOut == null)
+                .Select(x => new EmpPosition()
+                {
+                    PosID = x.PosID,
+                    PositionLevel = x.PositionLevel
+                }).FirstOrDefaultAsync();
+            if (empPos != null)
+            {
+                info.PosID = empPos.PosID;
+                info.PosLevel = (int)empPos.PositionLevel;
+            }
+            info.Languages = await _context.EmpLanguages.Where(x => x.EmpID.Equals(empID)).Select(x => new EmpLanguageDetail()
+            {
+                LangID = x.LangID,
+                LangLevel = x.LangLevel
+            }).ToListAsync();
+            var listSkill = await _context.EmpSkills.Where(x => x.EmpID.Equals(empID) && x.DateEnd == null)
+                .Select(x => new EmpSkill()
+                {
+                    SkillID = x.SkillID,
+                    SkillLevel = x.SkillLevel
+                }).ToListAsync();
+            var query = from ec in _context.EmpCertifications
+                        join c in _context.Certifications on ec.CertificationID equals c.CertificationID
+                        select new { ec, c };
+            foreach (var s in listSkill)
+            {
+                var skill = await _context.Skills.FindAsync(s.SkillID);
+                if (skill.SkillType == SkillType.SoftSkill)
+                {
+                    info.SoftSkills.Add(s.SkillID);
+                }
+                else
+                {
+                    var empCerti = query.Where(x => x.ec.EmpID.Equals(empID) && x.c.SkillID.Equals(s.SkillID))
+                        .Select(x => new EmpCertificationDetail()
+                        {
+                            CertiID = x.ec.CertificationID,
+                            DateEnd = x.ec.DateEnd,
+                            DateTaken = x.ec.DateTaken
+                        }).ToList();
+                    EmpHardSkillDetail empHardSkill = new EmpHardSkillDetail()
+                    {
+                        SkillID = s.SkillID,
+                        SkillLevel = (int)s.SkillLevel,
+                        EmpCertifications = empCerti
+                    };
+                    if (empHardSkill == null)
+                    {
+                        return new ApiErrorResult<AddEmpPositionRequest>("hard skill is null");
+                    }
+                    info.HardSkills.Add(empHardSkill);
+                }
+            }
+            return new ApiSuccessResult<AddEmpPositionRequest>(info);
         }
     }
 }

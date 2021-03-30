@@ -11,6 +11,7 @@ namespace ESMS.Data.Entities
         public string Description { get; set; }
         public int CertiLevel { get; set; }
         public int SkillID { get; set; }
+        public bool Status { get; set; }
         public Skill Skill { get; set; }
         public List<EmpCertification> EmpCertifications { get; set; }
     }

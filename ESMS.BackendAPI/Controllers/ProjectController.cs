@@ -159,5 +159,19 @@ namespace ESMS.BackendAPI.Controllers
             }
             return Ok(result);
         }
+
+        [HttpPost("checkStatus")]
+        public async Task<IActionResult> CheckStatus([FromBody] AddRequiredPositionRequest request)
+        {
+            var message = await _projectService.CheckStatus(request);
+            return Ok(message);
+        }
+
+        [HttpGet("getEmpInfo")]
+        public async Task<IActionResult> GetEmpInfo(string empID)
+        {
+            var result = await _projectService.GetEmpInfo(empID);
+            return Ok(result);
+        }
     }
 }
