@@ -241,6 +241,7 @@ namespace ESMS.BackendAPI.Services.Employees
         public async Task<List<CandidateViewModel>> SuggestCandidate(int projectID, SuggestCadidateRequest request)
         {
             List<CandidateViewModel> result = new List<CandidateViewModel>();
+            int ProjectTypeID = request.ProjectTypeID;
             foreach (RequiredPositionDetail requiredPosition in request.RequiredPositions)
             {
                 var dicCandidate = new Dictionary<string, double>();
@@ -274,6 +275,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             double Languagematch = 0;
                             double Softskillmatch = 0;
                             double Hardskillmatch = 0;
+                            double ProjectTypeMatch = 0;
                             MatchViewModel matchDetail = new MatchViewModel();
 
                             //add match theo kinh nghiem
@@ -386,6 +388,31 @@ namespace ESMS.BackendAPI.Services.Employees
                                     }
                                 }
                             }
+                                //Add match theo projecttype
+                                var projectquery = from p in _context.Projects
+                                                   join epip in _context.EmpPositionInProjects on p.ProjectID equals epip.ProjectID
+                                                   select new { p, epip };
+                                var listProjectWithType = await projectquery.Where(x => x.p.ProjectTypeID == ProjectTypeID && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.ProjectID).ToListAsync();
+                                var numberOfProjectWithType = listProjectWithType.Count();
+                                if (numberOfProjectWithType == 0)
+                                {
+                                    ProjectTypeMatch = 0;
+                                } 
+                                if (numberOfProjectWithType >2 && numberOfProjectWithType < 5)
+                                {
+                                    ProjectTypeMatch = 3;
+                                    match += ProjectTypeMatch;
+                                }
+                                if (numberOfProjectWithType >5 && numberOfProjectWithType < 10)
+                                {
+                                    ProjectTypeMatch = 6;
+                                    match += ProjectTypeMatch;
+                                }
+                                if (numberOfProjectWithType > 9)
+                                {
+                                    ProjectTypeMatch = 10;
+                                    match += ProjectTypeMatch;
+                                }
                             matchDetail = new MatchViewModel()
                             {
                                 EmpID = emp.EmpId,
@@ -394,6 +421,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 LanguageMatch = Languagematch,
                                 SoftSkillMatch = Softskillmatch,
                                 HardSkillMatch = Hardskillmatch,
+                                ProjectTypeMatch = ProjectTypeMatch,
                                 OverallMatch = match,
                             };
                             listMatchDetail.Add(matchDetail);
