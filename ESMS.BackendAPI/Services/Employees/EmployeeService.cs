@@ -112,7 +112,7 @@ namespace ESMS.BackendAPI.Services.Employees
             {
                 EmpID = empID,
                 PosID = request.PosID,
-                NameExp = (PositionLevel)request.NameExp,
+                PositionLevel = (PositionLevel)request.PosLevel,
                 DateIn = DateTime.Now
             };
             _context.EmpPositions.Add(empPosition);
@@ -126,14 +126,17 @@ namespace ESMS.BackendAPI.Services.Employees
                 };
                 _context.EmpLanguages.Add(empLanguage);
             }
-            foreach (var softSkill in request.SoftSkills)
+            if (request.SoftSkills != null)
             {
-                var empSoftSkill = new EmpSkill()
+                foreach (var softSkill in request.SoftSkills)
                 {
-                    EmpID = empID,
-                    SkillID = softSkill
-                };
-                _context.EmpSkills.Add(empSoftSkill);
+                    var empSoftSkill = new EmpSkill()
+                    {
+                        EmpID = empID,
+                        SkillID = softSkill
+                    };
+                    _context.EmpSkills.Add(empSoftSkill);
+                }
             }
             foreach (var hardSkill in request.HardSkills)
             {
@@ -259,11 +262,11 @@ namespace ESMS.BackendAPI.Services.Employees
                                           select new { ep, p, e };
                     foreach (var posLevel in requiredPosition.PosLevel)
                     {
-                        var ListEmpInPos = await ListEmpPosquery.Where(x => x.ep.PosID == requiredPosition.PosID && x.ep.DateOut == null && x.ep.NameExp == (PositionLevel)posLevel).Select(x => new EmpInPos()
+                        var ListEmpInPos = await ListEmpPosquery.Where(x => x.ep.PosID == requiredPosition.PosID && x.ep.DateOut == null && x.ep.PositionLevel == (PositionLevel)posLevel).Select(x => new EmpInPos()
                     {
                         EmpId = x.ep.EmpID,
                         DateIn = x.ep.DateIn,
-                        NameExp = x.ep.NameExp,
+                        NameExp = x.ep.PositionLevel,
                         EmpName = x.e.Name,
                         Position = x.p.Name,
                     }).ToListAsync();
