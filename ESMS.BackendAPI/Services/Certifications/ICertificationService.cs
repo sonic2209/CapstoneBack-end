@@ -11,7 +11,7 @@ namespace ESMS.BackendAPI.Services.Certifications
 
         public Task<ApiResult<bool>> Update(int certificationID, CertificationUpdateRequest request);
 
-        public Task<ApiResult<bool>> Delete(int certificationID);
+        public Task<ApiResult<bool>> ChangeStatus(int certificationID);
 
         public Task<ApiResult<List<ListCertificationViewModel>>> GetCertifications(int skillID);
 

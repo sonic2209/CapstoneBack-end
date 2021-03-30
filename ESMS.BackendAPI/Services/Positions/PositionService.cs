@@ -18,6 +18,27 @@ namespace ESMS.BackendAPI.Services.Positions
             _context = context;
         }
 
+        public async Task<ApiResult<bool>> ChangeStatus(int positionID)
+        {
+            var position = await _context.Positions.FindAsync(positionID);
+            if (position == null) new ApiErrorResult<bool>("Position does not exist");
+            if (position.Status)
+            {
+                position.Status = false;
+            }
+            else
+            {
+                position.Status = true;
+            }
+            _context.Positions.Update(position);
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                return new ApiErrorResult<bool>("Update position failed");
+            }
+            return new ApiSuccessResult<bool>();
+        }
+
         public async Task<ApiResult<bool>> Create(PositionCreateRequest request)
         {
             var checkName = _context.Positions.Where(x => x.Name.Equals(request.Name))
@@ -70,7 +91,8 @@ namespace ESMS.BackendAPI.Services.Positions
                 {
                     PosID = x.p.PosID,
                     Name = x.p.Name,
-                    Description = x.p.Description
+                    Description = x.p.Description,
+                    Status = x.p.Status
                 }).ToListAsync();
 
             var pagedResult = new PagedResult<PositionViewModel>()

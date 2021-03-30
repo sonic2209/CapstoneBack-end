@@ -20,6 +20,27 @@ namespace ESMS.BackendAPI.Services.Skills
             _context = context;
         }
 
+        public async Task<ApiResult<bool>> ChangeStatus(int skillID)
+        {
+            var skill = _context.Skills.Find(skillID);
+            if (skill == null) return new ApiErrorResult<bool>("Skill does not exist");
+            if (skill.Status)
+            {
+                skill.Status = false;
+            }
+            else
+            {
+                skill.Status = true;
+            }
+            _context.Skills.Update(skill);
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                return new ApiErrorResult<bool>("Update skill failed");
+            }
+            return new ApiSuccessResult<bool>();
+        }
+
         public async Task<ApiResult<bool>> Create(SkillCreateRequest request)
         {
             var checkName = _context.Skills.Where(x => x.SkillName.Equals(request.SkillName))
@@ -38,19 +59,6 @@ namespace ESMS.BackendAPI.Services.Skills
             if (result == 0)
             {
                 return new ApiErrorResult<bool>("Create skill failed");
-            }
-            return new ApiSuccessResult<bool>();
-        }
-
-        public async Task<ApiResult<bool>> Delete(int skillID)
-        {
-            var skill = await _context.Skills.FindAsync(skillID);
-            if (skill == null) return new ApiErrorResult<bool>("Skill does not exist");
-            _context.Skills.Remove(skill);
-            var result = await _context.SaveChangesAsync();
-            if (result == 0)
-            {
-                return new ApiErrorResult<bool>("Delete skill failed");
             }
             return new ApiSuccessResult<bool>();
         }
@@ -100,7 +108,8 @@ namespace ESMS.BackendAPI.Services.Skills
                 {
                     SkillID = x.s.SkillID,
                     SkillName = x.s.SkillName,
-                    SkillType = x.s.SkillType
+                    SkillType = x.s.SkillType,
+                    Status = x.s.Status
                 }).ToListAsync();
 
             var pagedResult = new PagedResult<SkillViewModel>()
@@ -120,6 +129,7 @@ namespace ESMS.BackendAPI.Services.Skills
             if (skill == null) return new ApiErrorResult<bool>("Skill does not exist");
             skill.SkillName = request.SkillName;
             skill.SkillType = (SkillType)request.SkillType;
+            _context.Skills.Update(skill);
             var result = await _context.SaveChangesAsync();
             if (result == 0)
             {

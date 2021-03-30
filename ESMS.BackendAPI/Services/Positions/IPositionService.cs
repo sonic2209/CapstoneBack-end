@@ -14,6 +14,8 @@ namespace ESMS.BackendAPI.Services.Positions
 
         Task<ApiResult<bool>> Update(int positionID, PositionUpdateRequest request);
 
+        Task<ApiResult<bool>> ChangeStatus(int positionID);
+
         Task<ApiResult<List<ListPositionViewModel>>> GetPositions();
 
         Task<ApiResult<PagedResult<PositionViewModel>>> GetPositionPaging(GetPositionPagingRequest request);

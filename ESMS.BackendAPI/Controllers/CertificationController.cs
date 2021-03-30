@@ -68,11 +68,15 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(result);
         }
 
-        //Delete: http://localhost/api/certification/id
-        [HttpDelete("{certificationID}")]
-        public async Task<IActionResult> Delete(int certificationID)
+        [HttpPut("changeStatus/{certificationID}")]
+        public async Task<IActionResult> ChangeStatus(int certificationID)
         {
-            var result = await _certificationService.Delete(certificationID);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            var result = await _certificationService.ChangeStatus(certificationID);
+
             if (!result.IsSuccessed)
             {
                 return BadRequest(result);

@@ -16,6 +16,7 @@ namespace ESMS.Data.Configurations
             builder.Property(x => x.CertificationID).UseIdentityColumn();
             builder.Property(x => x.CertificationName).IsRequired();
             builder.Property(x => x.Description).IsRequired();
+            builder.Property(x => x.Status).HasDefaultValue(true);
             builder.HasOne(x => x.Skill).WithMany(x => x.Certifications).HasForeignKey(x => x.SkillID);
         }
     }
