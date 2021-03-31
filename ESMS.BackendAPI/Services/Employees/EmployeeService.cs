@@ -99,6 +99,10 @@ namespace ESMS.BackendAPI.Services.Employees
                 PhoneNumber = request.PhoneNumber,
             };
             var result = await _userManager.CreateAsync(user, request.Password);
+            if (await _userManager.IsInRoleAsync(user, request.RoleName) == false)
+            {
+                await _userManager.AddToRoleAsync(user, request.RoleName);
+            }
             if (result.Succeeded)
             {
                 return new ApiSuccessResult<bool>();
