@@ -2,6 +2,7 @@
 using ESMS.BackendAPI.ViewModels.Employees;
 using ESMS.BackendAPI.ViewModels.Position;
 using ESMS.BackendAPI.ViewModels.Project;
+using ESMS.BackendAPI.ViewModels.Project.Statistics;
 using ESMS.Data.Entities;
 using System;
 using System.Collections.Generic;
@@ -41,5 +42,7 @@ namespace ESMS.BackendAPI.Services.Projects
         Task<ApiResult<string>> CheckStatus(AddRequiredPositionRequest request);
 
         Task<ApiResult<AddEmpPositionRequest>> GetEmpInfo(string empID);
+
+        Task<ApiResult<StatisticViewModel>> GetStatistics();
     }
 }
