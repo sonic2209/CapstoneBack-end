@@ -748,5 +748,46 @@ namespace ESMS.BackendAPI.Services.Projects
             };
             return new ApiSuccessResult<StatisticViewModel>(statisticVM);
         }
+
+        public async Task<ApiResult<List<PositionInProject>>> GetCandidates(int projectID)
+        {
+            var query = from e in _context.Employees
+                        join ep in _context.EmpPositionInProjects on e.Id equals ep.EmpID
+                        join po in _context.Positions on ep.PosID equals po.PosID
+                        select new { e, ep, po };
+            query = query.Where(x => x.ep.ProjectID == projectID);
+            var positions = await query.Select(x => new ListPositionViewModel()
+            {
+                PosID = x.po.PosID,
+                Name = x.po.Name
+            }).Distinct().ToListAsync();
+            var list = new List<PositionInProject>();
+            foreach (var pos in positions)
+            {
+                var employees = await query.Where(x => x.ep.PosID == pos.PosID && x.ep.DateIn == null).Select(x => new EmpInProject()
+                {
+                    EmpID = x.e.Id,
+                    Name = x.e.Name,
+                    Email = x.e.Email,
+                    PhoneNumber = x.e.PhoneNumber,
+                    Status = x.e.Status,
+                    DateIn = x.ep.DateIn
+                }).ToListAsync();
+                foreach (var emp in employees)
+                {
+                    var projects = _context.EmpPositionInProjects.Where(x => x.EmpID.Equals(emp.EmpID) && x.ProjectID != projectID)
+                        .Select(x => new EmpPositionInProject()).ToList();
+                    emp.NumberOfProject = projects.Count();
+                }
+                var positionInProject = new PositionInProject()
+                {
+                    PosID = pos.PosID,
+                    PosName = pos.Name,
+                    Employees = employees
+                };
+                list.Add(positionInProject);
+            }
+            return new ApiSuccessResult<List<PositionInProject>>(list);
+        }
     }
 }

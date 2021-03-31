@@ -31,6 +31,8 @@ namespace ESMS.BackendAPI.Services.Projects
 
         Task<ApiResult<List<PositionInProject>>> GetEmpInProjectPaging(int projectID);
 
+        Task<ApiResult<List<PositionInProject>>> GetCandidates(int projectID);
+
         Task<ApiResult<bool>> AddRequiredPosition(int projectID, AddRequiredPositionRequest request);
 
         Task<ApiResult<bool>> AddCandidate(int projectID, AddCandidateRequest request);
