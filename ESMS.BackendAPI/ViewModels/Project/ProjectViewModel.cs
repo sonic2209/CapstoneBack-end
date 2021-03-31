@@ -14,5 +14,7 @@ namespace ESMS.BackendAPI.ViewModels.Project
         public DateTime DateBegin { get; set; }
         public DateTime DateEstimatedEnd { get; set; }
         public ProjectStatus Status { get; set; }
+        public int? TypeID { get; set; }
+        public string TypeName { get; set; }
     }
 }
