@@ -25,6 +25,5 @@ namespace ESMS.BackendAPI.Services.Employees
         Task<ApiResult<bool>> Delete(string id);
 
         Task<ApiResult<bool>> AddEmpPosition(string empID, AddEmpPositionRequest request);
-        Task<ApiResult<bool>> RoleAssign(Guid id, RoleAssignRequest request);
     }
 }
