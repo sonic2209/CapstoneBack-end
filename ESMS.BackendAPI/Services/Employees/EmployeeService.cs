@@ -103,6 +103,7 @@ namespace ESMS.BackendAPI.Services.Employees
             {
                 return new ApiSuccessResult<bool>();
             }
+            
             return new ApiErrorResult<bool>("Register failed");
         }
 
