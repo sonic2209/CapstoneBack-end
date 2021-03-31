@@ -296,6 +296,7 @@ namespace ESMS.BackendAPI.Services.Projects
             project.Description = request.Description;
             project.Skateholder = request.Skateholder;
             project.DateEstimatedEnd = request.DateEstimatedEnd;
+            project.ProjectTypeID = request.TypeID;
 
             var result = await _context.SaveChangesAsync();
             if (result == 0)
@@ -409,6 +410,13 @@ namespace ESMS.BackendAPI.Services.Projects
 
         public async Task<ApiResult<bool>> AddCandidate(int projectID, AddCandidateRequest request)
         {
+            var project = await _context.Projects.FindAsync(projectID);
+            if (project == null) return new ApiErrorResult<bool>("Project does not exist");
+            if (project.Status == ProjectStatus.NoEmployee)
+            {
+                project.Status = ProjectStatus.OnGoing;
+                _context.Projects.Update(project);
+            }
             foreach (var candidate in request.Candidates)
             {
                 foreach (var emp in candidate.EmpIDs)
