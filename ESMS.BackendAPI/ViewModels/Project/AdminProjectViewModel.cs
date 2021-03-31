@@ -18,5 +18,6 @@ namespace ESMS.BackendAPI.ViewModels.Project
         public string EmpID { get; set; }
         public string Name { get; set; }
         public int? ProjectTypeID { get; set; }
+        public bool IsAddNewCandidate { get; set; }
     }
 }

@@ -165,9 +165,17 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     EmpID = x.e.Id,
                     Name = x.e.Name,
+                    Email = x.e.Email,
+                    PhoneNumber = x.e.PhoneNumber,
                     Status = x.e.Status,
                     DateIn = x.ep.DateIn
                 }).ToListAsync();
+                foreach (var emp in employees)
+                {
+                    var projects = _context.EmpPositionInProjects.Where(x => x.EmpID.Equals(emp.EmpID) && x.ProjectID != projectID)
+                        .Select(x => new EmpPositionInProject()).ToList();
+                    emp.NumberOfProject = projects.Count();
+                }
                 var positionInProject = new PositionInProject()
                 {
                     PosID = pos.PosID,
@@ -273,8 +281,21 @@ namespace ESMS.BackendAPI.Services.Projects
                     Status = x.p.Status,
                     EmpID = x.p.ProjectManagerID,
                     Name = x.e.Name,
-                    ProjectTypeID = x.p.ProjectTypeID
+                    ProjectTypeID = x.p.ProjectTypeID,
+                    IsAddNewCandidate = false
                 }).ToListAsync();
+            foreach (var p in data)
+            {
+                if (p.Status == ProjectStatus.OnGoing)
+                {
+                    var listEmp = await _context.EmpPositionInProjects.Where(x => x.ProjectID.Equals(p.ProjectID) && x.DateIn == null)
+                        .Select(x => new EmpPositionInProject()).ToListAsync();
+                    if (listEmp.Count() != 0)
+                    {
+                        p.IsAddNewCandidate = true;
+                    }
+                }
+            }
 
             //Select and projection
             var pagedResult = new PagedResult<AdminProjectViewModel>()
@@ -396,9 +417,16 @@ namespace ESMS.BackendAPI.Services.Projects
             }).ToListAsync();
             foreach (var emp in empInProject)
             {
-                var employee = await _context.Employees.FindAsync(emp.EmpID);
-                employee.Status = EmployeeStatus.Pending;
-                _context.Employees.Update(employee);
+                if (emp.DateIn != null)
+                {
+                    var employee = await _context.Employees.FindAsync(emp.EmpID);
+                    employee.Status = EmployeeStatus.Pending;
+                    _context.Employees.Update(employee);
+                }
+                else
+                {
+                    _context.EmpPositionInProjects.Remove(emp);
+                }
             }
             result = await _context.SaveChangesAsync();
             if (result == 0)

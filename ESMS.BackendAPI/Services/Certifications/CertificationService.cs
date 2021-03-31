@@ -133,9 +133,22 @@ namespace ESMS.BackendAPI.Services.Certifications
         {
             var certification = _context.Certifications.Find(certificationID);
             if (certification == null) return new ApiErrorResult<bool>("Certification does not exist");
-            certification.CertificationName = request.CertificationName;
+            if (!certification.CertificationName.Equals(request.CertificationName))
+            {
+                var checkName = _context.Certifications.Where(x => x.CertificationName.Equals(request.CertificationName))
+                    .Select(x => new Certification()).FirstOrDefault();
+                if (checkName != null)
+                {
+                    return new ApiErrorResult<bool>("this certification name existed");
+                }
+                else
+                {
+                    certification.CertificationName = request.CertificationName;
+                }
+            }
             certification.Description = request.Description;
             certification.SkillID = request.SkillID;
+            _context.Certifications.Update(certification);
             var result = await _context.SaveChangesAsync();
             if (result == 0)
             {
