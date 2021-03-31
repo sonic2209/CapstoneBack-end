@@ -12,7 +12,7 @@ namespace ESMS.BackendAPI.Services.Employees
     {
         Task<ApiResult<LoginVm>> Authenticate(LoginRequest request);
 
-        Task<ApiResult<bool>> Create(EmpCreateRequest request);
+        Task<ApiResult<string>> Create(EmpCreateRequest request);
 
         Task<ApiResult<bool>> Update(string id, EmpUpdateRequest request);
 

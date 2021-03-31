@@ -77,16 +77,16 @@ namespace ESMS.BackendAPI.Services.Employees
             );
         }
 
-        public async Task<ApiResult<bool>> Create(EmpCreateRequest request)
+        public async Task<ApiResult<string>> Create(EmpCreateRequest request)
         {
             var user = await _userManager.FindByNameAsync(request.UserName);
             if (user != null)
             {
-                return new ApiErrorResult<bool>("Account existed");
+                return new ApiErrorResult<string>("Account existed");
             }
             if (await _userManager.FindByEmailAsync(request.Email) != null)
             {
-                return new ApiErrorResult<bool>("Email existed");
+                return new ApiErrorResult<string>("Email existed");
             }
             user = new Employee()
             {
@@ -98,17 +98,19 @@ namespace ESMS.BackendAPI.Services.Employees
                 UserName = request.UserName,
                 PhoneNumber = request.PhoneNumber,
             };
-            var result = await _userManager.CreateAsync(user, request.Password);
-            if (await _userManager.IsInRoleAsync(user, request.RoleName) == false)
-            {
-                await _userManager.AddToRoleAsync(user, request.RoleName);
-            }
+            var result = await _userManager.CreateAsync(user, request.Password);            
             if (result.Succeeded)
             {
-                return new ApiSuccessResult<bool>();
+                if (await _userManager.IsInRoleAsync(user, request.RoleName) == false)
+                {
+                    await _userManager.AddToRoleAsync(user, request.RoleName);
+                }
+                user = await _userManager.FindByNameAsync(request.UserName);
+                string empID = user.Id;
+                return new ApiSuccessResult<string>(empID);
             }
             
-            return new ApiErrorResult<bool>("Register failed");
+            return new ApiErrorResult<string>("Register failed");
         }
 
         public async Task<ApiResult<bool>> AddEmpPosition(string empID, AddEmpPositionRequest request)
@@ -197,6 +199,10 @@ namespace ESMS.BackendAPI.Services.Employees
                 return new ApiErrorResult<EmpVm>("User does not exist");
             }
             var roles = await _userManager.GetRolesAsync(user);
+            string currentRole = null;
+            if (roles.Count> 0) { 
+            currentRole = roles[0];
+            }
             var empVm = new EmpVm()
             {
                 Email = user.Email,
@@ -206,7 +212,7 @@ namespace ESMS.BackendAPI.Services.Employees
                 IdentityNumber = user.IdentityNumber,
                 UserName = user.UserName,
                 Id = user.Id,
-                Roles = roles
+                RoleName = currentRole
             };
             return new ApiSuccessResult<EmpVm>(empVm);
         }
@@ -595,6 +601,18 @@ namespace ESMS.BackendAPI.Services.Employees
             user.Name = request.Name;
             user.PhoneNumber = request.PhoneNumber;
             var result = await _userManager.UpdateAsync(user);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (await _userManager.IsInRoleAsync(user, request.RoleName) == false)
+            {
+                foreach (string rolename in roles)
+                {
+                    if (await _userManager.IsInRoleAsync(user, rolename) == true)
+                    {
+                        await _userManager.RemoveFromRoleAsync(user, rolename);
+                    }
+                }
+                await _userManager.AddToRoleAsync(user, request.RoleName);
+            }
             if (result.Succeeded)
             {
                 return new ApiSuccessResult<bool>();
