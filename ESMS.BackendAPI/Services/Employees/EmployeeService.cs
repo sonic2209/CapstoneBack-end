@@ -774,15 +774,42 @@ namespace ESMS.BackendAPI.Services.Employees
             }
 
             //Update Skill
-            var listSkill = await _context.EmpSkills.Where(x => x.EmpID.Equals(empID))
+            var query = from es in _context.EmpSkills
+                        join s in _context.Skills on es.SkillID equals s.SkillID
+                        select new { es, s };
+            var listSoftSkill = await query.Where(x => x.es.EmpID.Equals(empID) && x.s.SkillType.Equals(SkillType.SoftSkill))
                 .Select(x => new EmpSkill()
                 {
-                    EmpID = x.EmpID,
-                    SkillID = x.SkillID,
-                    SkillLevel = x.SkillLevel,
-                    DateStart = x.DateStart,
-                    DateEnd = x.DateEnd
+                    EmpID = x.es.EmpID,
+                    SkillID = x.es.SkillID,
+                    SkillLevel = x.es.SkillLevel,
+                    DateStart = x.es.DateStart,
+                    DateEnd = x.es.DateEnd
                 }).ToListAsync();
+            //Update SoftSkill
+            if (request.SoftSkills == null)
+            {
+                if (listSoftSkill.Count != 0)
+                {
+                    foreach (var skill in listSoftSkill)
+                    {
+                        _context.EmpSkills.Remove(skill);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var skill in listSoftSkill)
+                {
+                    foreach (var sk in request.SoftSkills)
+                    {
+                        if (skill.SkillID.Equals(sk))
+                        {
+                            listSoftSkill.Remove(skill);
+                        }
+                    }
+                }
+            }
             return new ApiSuccessResult<bool>();
         }
     }

@@ -75,7 +75,8 @@ namespace ESMS.BackendAPI.Services.Certifications
                 Description = x.c.Description,
                 SkillID = x.c.SkillID,
                 SkillName = x.s.SkillName,
-                CertiLevel = x.c.CertiLevel
+                CertiLevel = x.c.CertiLevel,
+                Status = x.c.Status
             }).FirstOrDefaultAsync();
             if (certificationVm == null) return new ApiErrorResult<CertificationViewModel>("Certification does not exist");
             return new ApiSuccessResult<CertificationViewModel>(certificationVm);
@@ -148,6 +149,7 @@ namespace ESMS.BackendAPI.Services.Certifications
             }
             certification.Description = request.Description;
             certification.SkillID = request.SkillID;
+            certification.CertiLevel = request.CertiLevel;
             _context.Certifications.Update(certification);
             var result = await _context.SaveChangesAsync();
             if (result == 0)

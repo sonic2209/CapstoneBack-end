@@ -72,7 +72,8 @@ namespace ESMS.BackendAPI.Services.Skills
             {
                 SkillID = skillID,
                 SkillName = skill.SkillName,
-                SkillType = skill.SkillType
+                SkillType = skill.SkillType,
+                Status = skill.Status
             };
 
             return new ApiSuccessResult<SkillViewModel>(skillViewModel);

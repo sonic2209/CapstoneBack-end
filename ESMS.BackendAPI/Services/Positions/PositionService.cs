@@ -70,7 +70,8 @@ namespace ESMS.BackendAPI.Services.Positions
             {
                 PosID = positionID,
                 Name = position.Name,
-                Description = position.Description
+                Description = position.Description,
+                Status = position.Status
             };
 
             return new ApiSuccessResult<PositionViewModel>(positionViewModel);
