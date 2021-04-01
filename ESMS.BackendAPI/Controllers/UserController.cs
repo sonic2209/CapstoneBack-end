@@ -106,5 +106,12 @@ namespace ESMS.BackendAPI.Controllers
             }
             return Ok(result);
         }
+
+        [HttpGet("getEmpInfo/{empID}")]
+        public async Task<IActionResult> GetEmpInfo(string empID)
+        {
+            var result = await _userService.GetEmpInfo(empID);
+            return Ok(result);
+        }
     }
 }

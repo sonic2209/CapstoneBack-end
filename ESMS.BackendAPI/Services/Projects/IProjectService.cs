@@ -43,8 +43,6 @@ namespace ESMS.BackendAPI.Services.Projects
 
         Task<ApiResult<string>> CheckStatus(AddRequiredPositionRequest request);
 
-        Task<ApiResult<AddEmpPositionRequest>> GetEmpInfo(string empID);
-
         Task<ApiResult<StatisticViewModel>> GetStatistics();
     }
 }

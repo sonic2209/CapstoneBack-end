@@ -15,7 +15,7 @@ namespace ESMS.BackendAPI.Controllers
     [EnableCors("MyPolicy")]
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class ProjectController : ControllerBase
     {
         private readonly IProjectService _projectService;
@@ -172,13 +172,6 @@ namespace ESMS.BackendAPI.Controllers
         {
             var message = await _projectService.CheckStatus(request);
             return Ok(message);
-        }
-
-        [HttpGet("getEmpInfo")]
-        public async Task<IActionResult> GetEmpInfo(string empID)
-        {
-            var result = await _projectService.GetEmpInfo(empID);
-            return Ok(result);
         }
 
         [HttpGet("getStatistics")]
