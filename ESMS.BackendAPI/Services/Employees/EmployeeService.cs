@@ -161,9 +161,16 @@ namespace ESMS.BackendAPI.Services.Employees
                     {
                         EmpID = empID,
                         CertificationID = certification.CertiID,
-                        DateTaken = certification.DateTaken,
-                        DateEnd = certification.DateEnd
+                        DateTaken = DateTime.Parse(certification.DateTaken)
                     };
+                    if (certification.DateEnd.Equals(""))
+                    {
+                        empCertification.DateEnd = null;
+                    }
+                    else
+                    {
+                        empCertification.DateEnd = DateTime.Parse(certification.DateEnd);
+                    }
                     _context.EmpCertifications.Add(empCertification);
                 }
             }
@@ -1007,15 +1014,29 @@ namespace ESMS.BackendAPI.Services.Employees
                                 {
                                     EmpID = empID,
                                     CertificationID = certi.CertiID,
-                                    DateTaken = certi.DateTaken,
-                                    DateEnd = certi.DateEnd
+                                    DateTaken = DateTime.Parse(certi.DateTaken),
                                 };
+                                if (certi.DateEnd.Equals(""))
+                                {
+                                    empCerti.DateEnd = null;
+                                }
+                                else
+                                {
+                                    empCerti.DateEnd = DateTime.Parse(certi.DateEnd);
+                                }
                                 _context.EmpCertifications.Add(empCerti);
                             }
                             else
                             {
-                                checkEmpCerti.DateTaken = certi.DateTaken;
-                                checkEmpCerti.DateEnd = certi.DateEnd;
+                                checkEmpCerti.DateTaken = DateTime.Parse(certi.DateTaken);
+                                if (certi.DateEnd.Equals(""))
+                                {
+                                    checkEmpCerti.DateEnd = null;
+                                }
+                                else
+                                {
+                                    checkEmpCerti.DateEnd = DateTime.Parse(certi.DateEnd);
+                                }
                                 _context.EmpCertifications.Update(checkEmpCerti);
                             }
                         }
@@ -1028,6 +1049,72 @@ namespace ESMS.BackendAPI.Services.Employees
                 }
             }
             return new ApiSuccessResult<bool>();
+        }
+
+        public async Task<ApiResult<AddEmpPositionRequest>> LoadEmpInfo(string empID)
+        {
+            AddEmpPositionRequest info = new AddEmpPositionRequest();
+            info.Languages = new List<EmpLanguageDetail>();
+            info.SoftSkills = new List<int>();
+            info.HardSkills = new List<EmpHardSkillDetail>();
+            var empPos = await _context.EmpPositions.Where(x => x.EmpID.Equals(empID) && x.DateOut == null)
+                .Select(x => new EmpPosition()
+                {
+                    PosID = x.PosID,
+                    PositionLevel = x.PositionLevel
+                }).FirstOrDefaultAsync();
+            if (empPos != null)
+            {
+                info.PosID = empPos.PosID;
+                info.PosLevel = (int)empPos.PositionLevel;
+            }
+            info.Languages = await _context.EmpLanguages.Where(x => x.EmpID.Equals(empID)).Select(x => new EmpLanguageDetail()
+            {
+                LangID = x.LangID,
+                LangLevel = x.LangLevel
+            }).ToListAsync();
+            var listSkill = await _context.EmpSkills.Where(x => x.EmpID.Equals(empID) && x.DateEnd == null)
+                .Select(x => new EmpSkill()
+                {
+                    SkillID = x.SkillID,
+                    SkillLevel = x.SkillLevel
+                }).ToListAsync();
+            var certiQuery = from ec in _context.EmpCertifications
+                             join c in _context.Certifications on ec.CertificationID equals c.CertificationID
+                             select new { ec, c };
+            foreach (var s in listSkill)
+            {
+                var skill = await _context.Skills.FindAsync(s.SkillID);
+                if (skill.SkillType == SkillType.SoftSkill)
+                {
+                    info.SoftSkills.Add(s.SkillID);
+                }
+                else
+                {
+                    var empCerti = certiQuery.Where(x => x.ec.EmpID.Equals(empID) && x.c.SkillID.Equals(s.SkillID))
+                        .Select(x => new EmpCertificationDetail()
+                        {
+                            CertiID = x.ec.CertificationID,
+                            DateEnd = x.ec.DateEnd.ToString(),
+                            DateTaken = x.ec.DateTaken.ToString()
+                        }).ToList();
+                    foreach (var c in empCerti)
+                    {
+                        if (c.DateEnd == null)
+                        {
+                            c.DateEnd = "";
+                        }
+                    }
+                    EmpHardSkillDetail hardSkill = new EmpHardSkillDetail()
+                    {
+                        SkillID = skill.SkillID,
+                        SkillLevel = (int)s.SkillLevel,
+                        EmpCertifications = empCerti
+                    };
+                    info.HardSkills.Add(hardSkill);
+                }
+            }
+            return new ApiSuccessResult<AddEmpPositionRequest>(info);
         }
     }
 }

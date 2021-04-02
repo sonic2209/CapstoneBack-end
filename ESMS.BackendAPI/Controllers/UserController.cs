@@ -114,6 +114,13 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(result);
         }
 
+        [HttpGet("loadEmpInfo/{empID}")]
+        public async Task<IActionResult> LoadEmpInfo(string empID)
+        {
+            var result = await _userService.LoadEmpInfo(empID);
+            return Ok(result);
+        }
+
         [HttpPost("updateEmpInfo/{empID}")]
         public async Task<IActionResult> UpdateEmpInfo(string empID, [FromBody] AddEmpPositionRequest request)
         {
