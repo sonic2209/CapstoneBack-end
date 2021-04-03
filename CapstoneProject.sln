@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESMS.Data", "ESMS.Data\ESMS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESMS.BackendAPI", "ESMS.BackendAPI\ESMS.BackendAPI.csproj", "{89EABEED-4830-49AF-AA37-D0A0A89259BE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ESMS.UnitTest", "ESMS.UnitTest\ESMS.UnitTest.csproj", "{154D599B-697C-4269-8694-B4E1A9A0457C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{89EABEED-4830-49AF-AA37-D0A0A89259BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89EABEED-4830-49AF-AA37-D0A0A89259BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89EABEED-4830-49AF-AA37-D0A0A89259BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{154D599B-697C-4269-8694-B4E1A9A0457C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{154D599B-697C-4269-8694-B4E1A9A0457C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{154D599B-697C-4269-8694-B4E1A9A0457C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{154D599B-697C-4269-8694-B4E1A9A0457C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
