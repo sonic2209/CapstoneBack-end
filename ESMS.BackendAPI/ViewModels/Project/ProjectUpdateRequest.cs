@@ -10,5 +10,6 @@ namespace ESMS.BackendAPI.ViewModels.Project
         public string Description { get; set; }
         public string Skateholder { get; set; }
         public DateTime DateEstimatedEnd { get; set; }
+        public int TypeID { get; set; }
     }
 }

@@ -7,6 +7,7 @@ namespace ESMS.BackendAPI.ViewModels.Project
 {
     public class EmployeeProjectViewModel
     {
+        public int ProjectID { get; set; }
         public string ProjectName { get; set; }
         public string PosName { get; set; }
         public DateTime? DateIn { get; set; }

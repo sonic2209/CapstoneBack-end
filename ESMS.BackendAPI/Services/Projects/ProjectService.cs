@@ -10,6 +10,7 @@ using ESMS.BackendAPI.ViewModels.Common;
 using ESMS.BackendAPI.ViewModels.Project;
 using ESMS.BackendAPI.ViewModels.Position;
 using ESMS.BackendAPI.ViewModels.Employees;
+using ESMS.BackendAPI.ViewModels.Project.Statistics;
 
 namespace ESMS.BackendAPI.Services.Projects
 {
@@ -56,11 +57,12 @@ namespace ESMS.BackendAPI.Services.Projects
             {
                 var projects = _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
                 .Select(x => new Project()).ToList();
-                if (projects.Count() != 0)
+                if (projects.Count() >= 5)
                 {
                     return new ApiErrorResult<int>("Cannot create more project");
                 }
-                var checkName = _context.Projects.Where(x => x.ProjectName.Equals(request.ProjectName)).Select(x => new Project()).FirstOrDefault();
+                var checkName = _context.Projects.Where(x => x.ProjectName.Equals(request.ProjectName))
+                    .Select(x => new Project()).FirstOrDefault();
                 if (checkName != null)
                 {
                     return new ApiErrorResult<int>("This project name is existed");
@@ -126,21 +128,24 @@ namespace ESMS.BackendAPI.Services.Projects
 
         public async Task<ApiResult<ProjectViewModel>> GetByID(int projectID)
         {
-            var project = await _context.Projects.FindAsync(projectID);
-            if (project == null) return new ApiErrorResult<ProjectViewModel>("Project does not exist");
-
-            var projectViewModel = new ProjectViewModel()
+            var query = from p in _context.Projects
+                        join pt in _context.ProjectTypes on p.ProjectTypeID equals pt.ID
+                        select new { p, pt };
+            var projectVM = await query.Where(x => x.p.ProjectID.Equals(projectID)).Select(x => new ProjectViewModel()
             {
-                ProjectID = project.ProjectID,
-                ProjectName = project.ProjectName,
-                Description = project.Description,
-                Skateholder = project.Skateholder,
-                DateBegin = project.DateBegin,
-                DateEstimatedEnd = project.DateEstimatedEnd,
-                Status = project.Status
-            };
-
-            return new ApiSuccessResult<ProjectViewModel>(projectViewModel);
+                ProjectID = x.p.ProjectID,
+                ProjectName = x.p.ProjectName,
+                Description = x.p.Description,
+                Skateholder = x.p.Skateholder,
+                DateBegin = x.p.DateBegin,
+                DateEstimatedEnd = x.p.DateEstimatedEnd,
+                Status = x.p.Status,
+                TypeID = x.p.ProjectTypeID,
+                TypeName = x.pt.Name,
+                DateEnd = x.p.DateEnd
+            }).FirstOrDefaultAsync();
+            if (projectVM == null) return new ApiErrorResult<ProjectViewModel>("Project does not exist");
+            return new ApiSuccessResult<ProjectViewModel>(projectVM);
         }
 
         public async Task<ApiResult<List<PositionInProject>>> GetEmpInProjectPaging(int projectID)
@@ -162,9 +167,17 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     EmpID = x.e.Id,
                     Name = x.e.Name,
+                    Email = x.e.Email,
+                    PhoneNumber = x.e.PhoneNumber,
                     Status = x.e.Status,
                     DateIn = x.ep.DateIn
                 }).ToListAsync();
+                foreach (var emp in employees)
+                {
+                    var projects = _context.EmpPositionInProjects.Where(x => x.EmpID.Equals(emp.EmpID) && x.ProjectID != projectID)
+                        .Select(x => new EmpPositionInProject()).ToList();
+                    emp.NumberOfProject = projects.Count();
+                }
                 var positionInProject = new PositionInProject()
                 {
                     PosID = pos.PosID,
@@ -179,14 +192,41 @@ namespace ESMS.BackendAPI.Services.Projects
         public async Task<ApiResult<ListProjectViewModel>> GetProjectByEmpID(string empID, GetProjectPagingRequest request)
         {
             bool check = true;
-            var projects = _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
-                .Select(x => new Project()).ToList();
+            var projects = await _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
+                .Select(x => new Project()
+                {
+                    ProjectID = x.ProjectID,
+                    Status = x.Status
+                }).ToListAsync();
             if (projects.Count() != 0)
             {
-                check = false;
+                foreach (var p in projects)
+                {
+                    if (p.Status == ProjectStatus.Pending)
+                    {
+                        var empInProject = _context.EmpPositionInProjects.Where(x => x.ProjectID.Equals(p.ProjectID))
+                            .Select(x => new EmpPositionInProject()).ToList();
+                        if (empInProject.Count() == 0)
+                        {
+                            var project = await _context.Projects.FindAsync(p.ProjectID);
+                            project.Status = ProjectStatus.NoEmployee;
+                            _context.Projects.Update(project);
+                            var result = await _context.SaveChangesAsync();
+                            if (result == 0)
+                            {
+                                return new ApiErrorResult<ListProjectViewModel>("Update project " + project.ProjectName + " failed");
+                            }
+                        }
+                    }
+                }
+                if (projects.Count() >= 5)
+                {
+                    check = false;
+                }
             }
             var query = from p in _context.Projects
-                        select new { p };
+                        join pt in _context.ProjectTypes on p.ProjectTypeID equals pt.ID
+                        select new { p, pt };
             query = query.Where(x => x.p.ProjectManagerID.Equals(empID));
             if (!string.IsNullOrEmpty(request.Keyword))
             {
@@ -196,7 +236,7 @@ namespace ESMS.BackendAPI.Services.Projects
             //Paging
             int totalRow = await query.CountAsync();
 
-            var data = await query.OrderByDescending(x => x.p.DateCreated)
+            var data = await query.OrderBy(x => x.p.Status)
                 .Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .Select(x => new ProjectViewModel()
@@ -207,7 +247,10 @@ namespace ESMS.BackendAPI.Services.Projects
                     Skateholder = x.p.Skateholder,
                     DateBegin = x.p.DateBegin,
                     DateEstimatedEnd = x.p.DateEstimatedEnd,
-                    Status = x.p.Status
+                    Status = x.p.Status,
+                    TypeID = x.p.ProjectTypeID,
+                    TypeName = x.pt.Name,
+                    DateEnd = x.p.DateEnd
                 }).ToListAsync();
 
             //Select and projection
@@ -228,26 +271,34 @@ namespace ESMS.BackendAPI.Services.Projects
 
         public async Task<ApiResult<PagedResult<AdminProjectViewModel>>> GetProjectPaging(GetProjectPagingRequest request)
         {
-            var list = _context.Projects.Select(x => x.ProjectID).ToList();
-            foreach (var id in list)
+            var list = await _context.Projects.Select(x => new Project()
             {
-                var empInProject = _context.EmpPositionInProjects.Where(x => x.ProjectID.Equals(id))
-                    .Select(x => new EmpPositionInProject()).ToList();
-                if (empInProject.Count() == 0)
+                ProjectID = x.ProjectID,
+                Status = x.Status
+            }).ToListAsync();
+            foreach (var p in list)
+            {
+                if (p.Status == ProjectStatus.Pending)
                 {
-                    var project = await _context.Projects.FindAsync(id);
-                    project.Status = ProjectStatus.NoEmployee;
-                    _context.Projects.Update(project);
+                    var empInProject = _context.EmpPositionInProjects.Where(x => x.ProjectID.Equals(p.ProjectID))
+                        .Select(x => new EmpPositionInProject()).ToList();
+                    if (empInProject.Count() == 0)
+                    {
+                        var project = await _context.Projects.FindAsync(p.ProjectID);
+                        project.Status = ProjectStatus.NoEmployee;
+                        _context.Projects.Update(project);
+                        var result = await _context.SaveChangesAsync();
+                        if (result == 0)
+                        {
+                            return new ApiErrorResult<PagedResult<AdminProjectViewModel>>("Update project " + project.ProjectName + " failed");
+                        }
+                    }
                 }
             }
-            var result = await _context.SaveChangesAsync();
-            if (result == 0)
-            {
-                return new ApiErrorResult<PagedResult<AdminProjectViewModel>>("Update project failed");
-            }
-            var query = from p in _context.Projects
+            var query = from pt in _context.ProjectTypes
+                        join p in _context.Projects on pt.ID equals p.ProjectTypeID
                         join e in _context.Employees on p.ProjectManagerID equals e.Id
-                        select new { p, e };
+                        select new { pt, p, e };
             if (!string.IsNullOrEmpty(request.Keyword))
             {
                 query = query.Where(x => x.p.ProjectName.Contains(request.Keyword));
@@ -267,11 +318,27 @@ namespace ESMS.BackendAPI.Services.Projects
                     Skateholder = x.p.Skateholder,
                     DateBegin = x.p.DateBegin,
                     DateEstimatedEnd = x.p.DateEstimatedEnd,
+                    DateCreated = x.p.DateCreated,
+                    DateEnd = x.p.DateEnd,
                     Status = x.p.Status,
                     EmpID = x.p.ProjectManagerID,
                     Name = x.e.Name,
-                    ProjectTypeID = x.p.ProjectTypeID
+                    TypeID = x.p.ProjectTypeID,
+                    TypeName = x.pt.Name,
+                    IsAddNewCandidate = false
                 }).ToListAsync();
+            foreach (var p in data)
+            {
+                if (p.Status == ProjectStatus.OnGoing)
+                {
+                    var listEmp = await _context.EmpPositionInProjects.Where(x => x.ProjectID.Equals(p.ProjectID) && x.DateIn == null)
+                        .Select(x => new EmpPositionInProject()).ToListAsync();
+                    if (listEmp.Count() != 0)
+                    {
+                        p.IsAddNewCandidate = true;
+                    }
+                }
+            }
 
             //Select and projection
             var pagedResult = new PagedResult<AdminProjectViewModel>()
@@ -293,6 +360,7 @@ namespace ESMS.BackendAPI.Services.Projects
             project.Description = request.Description;
             project.Skateholder = request.Skateholder;
             project.DateEstimatedEnd = request.DateEstimatedEnd;
+            project.ProjectTypeID = request.TypeID;
 
             var result = await _context.SaveChangesAsync();
             if (result == 0)
@@ -378,11 +446,6 @@ namespace ESMS.BackendAPI.Services.Projects
             project.Status = ProjectStatus.Finished;
             project.DateEnd = DateTime.Now;
             _context.Projects.Update(project);
-            var result = await _context.SaveChangesAsync();
-            if (result == 0)
-            {
-                return new ApiErrorResult<int>("Update project failed");
-            }
             var empInProject = await _context.EmpPositionInProjects.Where(x => x.ProjectID.Equals(projectID)).Select(x => new EmpPositionInProject()
             {
                 EmpID = x.EmpID,
@@ -392,11 +455,18 @@ namespace ESMS.BackendAPI.Services.Projects
             }).ToListAsync();
             foreach (var emp in empInProject)
             {
-                var employee = await _context.Employees.FindAsync(emp.EmpID);
-                employee.Status = EmployeeStatus.Pending;
-                _context.Employees.Update(employee);
+                if (emp.DateIn != null)
+                {
+                    var employee = await _context.Employees.FindAsync(emp.EmpID);
+                    employee.Status = EmployeeStatus.Pending;
+                    _context.Employees.Update(employee);
+                }
+                else
+                {
+                    _context.EmpPositionInProjects.Remove(emp);
+                }
             }
-            result = await _context.SaveChangesAsync();
+            var result = await _context.SaveChangesAsync();
             if (result == 0)
             {
                 return new ApiErrorResult<int>("Update project failed");
@@ -406,6 +476,13 @@ namespace ESMS.BackendAPI.Services.Projects
 
         public async Task<ApiResult<bool>> AddCandidate(int projectID, AddCandidateRequest request)
         {
+            var project = await _context.Projects.FindAsync(projectID);
+            if (project == null) return new ApiErrorResult<bool>("Project does not exist");
+            if (project.Status == ProjectStatus.NoEmployee)
+            {
+                project.Status = ProjectStatus.Pending;
+                _context.Projects.Update(project);
+            }
             foreach (var candidate in request.Candidates)
             {
                 foreach (var emp in candidate.EmpIDs)
@@ -456,15 +533,12 @@ namespace ESMS.BackendAPI.Services.Projects
             {
                 return new ApiErrorResult<bool>("confirm candidate failed");
             }
-            var query = from ep in _context.EmpPositionInProjects
-                        join e in _context.Employees on ep.EmpID equals e.Id
-                        select new { ep, e };
-            var data = await query.Where(x => x.ep.ProjectID.Equals(projectID) && x.e.Status.Equals(EmployeeStatus.Pending)).Select(x => new EmpPositionInProject()
+            var data = await _context.EmpPositionInProjects.Where(x => x.ProjectID.Equals(projectID) && x.DateIn == null).Select(x => new EmpPositionInProject()
             {
-                EmpID = x.ep.EmpID,
-                PosID = x.ep.PosID,
-                ProjectID = x.ep.ProjectID,
-                DateIn = x.ep.DateIn
+                EmpID = x.EmpID,
+                PosID = x.PosID,
+                ProjectID = x.ProjectID,
+                DateIn = x.DateIn
             }).ToListAsync();
             if (data.Count() != 0)
             {
@@ -472,11 +546,11 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     _context.EmpPositionInProjects.Remove(emp);
                 }
-            }
-            result = await _context.SaveChangesAsync();
-            if (result == 0)
-            {
-                return new ApiErrorResult<bool>("Remove unchecked candidate failed");
+                result = await _context.SaveChangesAsync();
+                if (result == 0)
+                {
+                    return new ApiErrorResult<bool>("Remove unchecked candidate failed");
+                }
             }
             return new ApiSuccessResult<bool>();
         }
@@ -501,6 +575,7 @@ namespace ESMS.BackendAPI.Services.Projects
                 .Take(request.PageSize)
                 .Select(x => new EmployeeProjectViewModel()
                 {
+                    ProjectID = x.p.ProjectID,
                     ProjectName = x.p.ProjectName,
                     PosName = x.po.Name,
                     DateIn = x.ep.DateIn
@@ -569,67 +644,126 @@ namespace ESMS.BackendAPI.Services.Projects
             return new ApiSuccessResult<string>(message);
         }
 
-        public async Task<ApiResult<AddEmpPositionRequest>> GetEmpInfo(string empID)
+        public async Task<ApiResult<StatisticViewModel>> GetStatistics()
         {
-            AddEmpPositionRequest info = new AddEmpPositionRequest();
-            info.Languages = new List<EmpLanguageDetail>();
-            info.SoftSkills = new List<int>();
-            info.HardSkills = new List<EmpHardSkillDetail>();
-            var empPos = await _context.EmpPositions.Where(x => x.EmpID.Equals(empID) && x.DateOut == null)
-                .Select(x => new EmpPosition()
-                {
-                    PosID = x.PosID,
-                    PositionLevel = x.PositionLevel
-                }).FirstOrDefaultAsync();
-            if (empPos != null)
+            var projectByTypes = new List<ProjectByType>();
+            var employeeByProjects = new List<EmployeeByProject>();
+            var employeeByPositions = new List<EmployeeByPosition>();
+            var employeeByHardSkills = new List<EmployeeByHardSkill>();
+            var projectTypes = await _context.ProjectTypes.Select(x => new ProjectType()
             {
-                info.PosID = empPos.PosID;
-                info.PosLevel = (int)empPos.PositionLevel;
-            }
-            info.Languages = await _context.EmpLanguages.Where(x => x.EmpID.Equals(empID)).Select(x => new EmpLanguageDetail()
-            {
-                LangID = x.LangID,
-                LangLevel = x.LangLevel
+                ID = x.ID,
+                Name = x.Name
             }).ToListAsync();
-            var listSkill = await _context.EmpSkills.Where(x => x.EmpID.Equals(empID) && x.DateEnd == null)
-                .Select(x => new EmpSkill()
+            foreach (var type in projectTypes)
+            {
+                var listProject = await _context.Projects.Where(x => x.ProjectTypeID.Equals(type.ID))
+                    .Select(x => new Project()).ToListAsync();
+                var projectByType = new ProjectByType()
+                {
+                    Name = type.Name,
+                    Nop = listProject.Count()
+                };
+                projectByTypes.Add(projectByType);
+            }
+            var projects = await _context.Projects.Select(x => new Project()
+            {
+                ProjectID = x.ProjectID,
+                ProjectName = x.ProjectName
+            }).ToListAsync();
+            foreach (var p in projects)
+            {
+                var listEmp = await _context.EmpPositionInProjects.Where(x => x.ProjectID.Equals(p.ProjectID))
+                    .Select(x => new EmpPositionInProject()).ToListAsync();
+                var employeeByProject = new EmployeeByProject()
+                {
+                    Name = p.ProjectName,
+                    Noe = listEmp.Count()
+                };
+                employeeByProjects.Add(employeeByProject);
+            }
+            var positions = await _context.Positions.Select(x => new Position()
+            {
+                PosID = x.PosID,
+                Name = x.Name,
+            }).ToListAsync();
+            foreach (var p in positions)
+            {
+                var listEmp = await _context.EmpPositions.Where(x => x.PosID.Equals(p.PosID))
+                    .Select(x => new EmpPosition()).ToListAsync();
+                var employeeByPosition = new EmployeeByPosition()
+                {
+                    Name = p.Name,
+                    Noe = listEmp.Count()
+                };
+                employeeByPositions.Add(employeeByPosition);
+            }
+            var hardSkills = await _context.Skills.Where(x => x.SkillType.Equals(SkillType.HardSkill))
+                .Select(x => new Skill()
                 {
                     SkillID = x.SkillID,
-                    SkillLevel = x.SkillLevel
+                    SkillName = x.SkillName
                 }).ToListAsync();
-            var query = from ec in _context.EmpCertifications
-                        join c in _context.Certifications on ec.CertificationID equals c.CertificationID
-                        select new { ec, c };
-            foreach (var s in listSkill)
+            foreach (var s in hardSkills)
             {
-                var skill = await _context.Skills.FindAsync(s.SkillID);
-                if (skill.SkillType == SkillType.SoftSkill)
+                var listEmp = await _context.EmpSkills.Where(x => x.SkillID.Equals(s.SkillID))
+                    .Select(x => new EmpSkill()).ToListAsync();
+                var employeeByHardSkill = new EmployeeByHardSkill()
                 {
-                    info.SoftSkills.Add(s.SkillID);
-                }
-                else
-                {
-                    var empCerti = query.Where(x => x.ec.EmpID.Equals(empID) && x.c.SkillID.Equals(s.SkillID))
-                        .Select(x => new EmpCertificationDetail()
-                        {
-                            CertiID = x.ec.CertificationID,
-                            DateEnd = x.ec.DateEnd,
-                            DateTaken = x.ec.DateTaken
-                        }).ToList();
-                    EmpHardSkillDetail empHardSkill = new EmpHardSkillDetail()
-                    {
-                        SkillID = s.SkillID,
-                        SkillLevel = (int)s.SkillLevel,
-                        EmpCertifications = empCerti
-                    };
-                    if (empHardSkill == null)
-                    {
-                        return new ApiErrorResult<AddEmpPositionRequest>("hard skill is null");
-                    }
-                    info.HardSkills.Add(empHardSkill);
-                }
+                    Name = s.SkillName,
+                    Noe = listEmp.Count()
+                };
+                employeeByHardSkills.Add(employeeByHardSkill);
             }
-            return new ApiSuccessResult<AddEmpPositionRequest>(info);
+            var statisticVM = new StatisticViewModel()
+            {
+                ProjectByTypes = projectByTypes,
+                EmployeeByProjects = employeeByProjects,
+                EmployeeByPositions = employeeByPositions,
+                EmployeeByHardSkills = employeeByHardSkills
+            };
+            return new ApiSuccessResult<StatisticViewModel>(statisticVM);
+        }
+
+        public async Task<ApiResult<List<PositionInProject>>> GetCandidates(int projectID)
+        {
+            var query = from e in _context.Employees
+                        join ep in _context.EmpPositionInProjects on e.Id equals ep.EmpID
+                        join po in _context.Positions on ep.PosID equals po.PosID
+                        select new { e, ep, po };
+            query = query.Where(x => x.ep.ProjectID == projectID);
+            var positions = await query.Select(x => new ListPositionViewModel()
+            {
+                PosID = x.po.PosID,
+                Name = x.po.Name
+            }).Distinct().ToListAsync();
+            var list = new List<PositionInProject>();
+            foreach (var pos in positions)
+            {
+                var employees = await query.Where(x => x.ep.PosID == pos.PosID && x.ep.DateIn == null).Select(x => new EmpInProject()
+                {
+                    EmpID = x.e.Id,
+                    Name = x.e.Name,
+                    Email = x.e.Email,
+                    PhoneNumber = x.e.PhoneNumber,
+                    Status = x.e.Status,
+                    DateIn = x.ep.DateIn
+                }).ToListAsync();
+                foreach (var emp in employees)
+                {
+                    var projects = _context.EmpPositionInProjects.Where(x => x.EmpID.Equals(emp.EmpID) && x.ProjectID != projectID)
+                        .Select(x => new EmpPositionInProject()).ToList();
+                    emp.NumberOfProject = projects.Count();
+                }
+                var positionInProject = new PositionInProject()
+                {
+                    PosID = pos.PosID,
+                    PosName = pos.Name,
+                    Employees = employees
+                };
+                list.Add(positionInProject);
+            }
+            return new ApiSuccessResult<List<PositionInProject>>(list);
         }
     }
 }

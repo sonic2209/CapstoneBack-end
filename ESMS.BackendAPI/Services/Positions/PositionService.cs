@@ -70,7 +70,8 @@ namespace ESMS.BackendAPI.Services.Positions
             {
                 PosID = positionID,
                 Name = position.Name,
-                Description = position.Description
+                Description = position.Description,
+                Status = position.Status
             };
 
             return new ApiSuccessResult<PositionViewModel>(positionViewModel);
@@ -123,8 +124,19 @@ namespace ESMS.BackendAPI.Services.Positions
         {
             var position = await _context.Positions.FindAsync(positionID);
             if (position == null) new ApiErrorResult<bool>("Position does not exist");
-
-            position.Name = request.Name;
+            if (!position.Name.Equals(request.Name))
+            {
+                var checkName = _context.Positions.Where(x => x.Name.Equals(request.Name))
+                 .Select(x => new Position()).FirstOrDefault();
+                if (checkName != null)
+                {
+                    return new ApiErrorResult<bool>("This position name is existed");
+                }
+                else
+                {
+                    position.Name = request.Name;
+                }
+            }
             position.Description = request.Description;
 
             _context.Positions.Update(position);

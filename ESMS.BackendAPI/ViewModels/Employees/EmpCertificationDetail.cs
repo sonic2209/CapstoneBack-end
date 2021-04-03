@@ -8,7 +8,7 @@ namespace ESMS.BackendAPI.ViewModels.Employees
     public class EmpCertificationDetail
     {
         public int CertiID { get; set; }
-        public DateTime DateTaken { get; set; }
-        public DateTime? DateEnd { get; set; }
+        public string DateTaken { get; set; }
+        public string DateEnd { get; set; }
     }
 }

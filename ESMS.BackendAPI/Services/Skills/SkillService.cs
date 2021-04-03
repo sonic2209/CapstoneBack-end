@@ -72,7 +72,8 @@ namespace ESMS.BackendAPI.Services.Skills
             {
                 SkillID = skillID,
                 SkillName = skill.SkillName,
-                SkillType = skill.SkillType
+                SkillType = skill.SkillType,
+                Status = skill.Status
             };
 
             return new ApiSuccessResult<SkillViewModel>(skillViewModel);
@@ -127,7 +128,19 @@ namespace ESMS.BackendAPI.Services.Skills
         {
             var skill = _context.Skills.Find(skillID);
             if (skill == null) return new ApiErrorResult<bool>("Skill does not exist");
-            skill.SkillName = request.SkillName;
+            if (!skill.SkillName.Equals(request.SkillName))
+            {
+                var checkName = _context.Skills.Where(x => x.SkillName.Equals(request.SkillName))
+                .Select(x => new Skill()).FirstOrDefault();
+                if (checkName != null)
+                {
+                    return new ApiErrorResult<bool>("This skill name is existed");
+                }
+                else
+                {
+                    skill.SkillName = request.SkillName;
+                }
+            }
             skill.SkillType = (SkillType)request.SkillType;
             _context.Skills.Update(skill);
             var result = await _context.SaveChangesAsync();

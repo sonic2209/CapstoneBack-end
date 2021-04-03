@@ -102,7 +102,7 @@ namespace ESMS.BackendAPI.Services.Employees
                 UserName = request.UserName,
                 PhoneNumber = request.PhoneNumber,
             };
-            var result = await _userManager.CreateAsync(user, request.Password);            
+            var result = await _userManager.CreateAsync(user, request.Password);
             if (result.Succeeded)
             {
                 if (await _userManager.IsInRoleAsync(user, request.RoleName) == false)
@@ -113,7 +113,7 @@ namespace ESMS.BackendAPI.Services.Employees
                 string empID = user.Id;
                 return new ApiSuccessResult<string>(empID);
             }
-            
+
             return new ApiErrorResult<string>("Register failed");
         }
 
@@ -165,9 +165,16 @@ namespace ESMS.BackendAPI.Services.Employees
                     {
                         EmpID = empID,
                         CertificationID = certification.CertiID,
-                        DateTaken = certification.DateTaken,
-                        DateEnd = certification.DateEnd
+                        DateTaken = DateTime.Parse(certification.DateTaken)
                     };
+                    if (certification.DateEnd.Equals(""))
+                    {
+                        empCertification.DateEnd = null;
+                    }
+                    else
+                    {
+                        empCertification.DateEnd = DateTime.Parse(certification.DateEnd);
+                    }
                     _context.EmpCertifications.Add(empCertification);
                 }
             }
@@ -204,8 +211,9 @@ namespace ESMS.BackendAPI.Services.Employees
             }
             var roles = await _userManager.GetRolesAsync(user);
             string currentRole = null;
-            if (roles.Count> 0) { 
-            currentRole = roles[0];
+            if (roles.Count > 0)
+            {
+                currentRole = roles[0];
             }
             var empVm = new EmpVm()
             {
@@ -277,12 +285,11 @@ namespace ESMS.BackendAPI.Services.Employees
                 var dicCandidate = new Dictionary<string, double>();
                 if (requiredPosition.SoftSkillIDs != null)
                 {
-                   
                     //Get List Emp Theo Position
                     List<MatchViewModel> listMatchDetail = new List<MatchViewModel>();
                     var Position = _context.Positions.Where(x => x.PosID == requiredPosition.PosID).Select(x => x.Name).FirstOrDefault();
                     var PosId = _context.Positions.Where(x => x.PosID == requiredPosition.PosID).Select(x => x.PosID).FirstOrDefault();
-                                     
+
                     var ListEmpPosquery = from ep in _context.EmpPositions
                                           join p in _context.Positions on ep.PosID equals p.PosID
                                           join e in _context.Employees on ep.EmpID equals e.Id
@@ -290,134 +297,134 @@ namespace ESMS.BackendAPI.Services.Employees
                     foreach (var posLevel in requiredPosition.PosLevel)
                     {
                         var ListEmpInPos = await ListEmpPosquery.Where(x => x.ep.PosID == requiredPosition.PosID && x.ep.DateOut == null && x.ep.PositionLevel == (PositionLevel)posLevel).Select(x => new EmpInPos()
-                    {
-                        EmpId = x.ep.EmpID,
-                        DateIn = x.ep.DateIn,
-                        NameExp = x.ep.PositionLevel,
-                        EmpName = x.e.Name,
-                        Position = x.p.Name,
-                    }).ToListAsync();
-                    if (ListEmpInPos != null)
-                    {
-                        foreach (EmpInPos emp in ListEmpInPos)
                         {
-                            double match = 60;
-                            double Languagematch = 0;
-                            double Softskillmatch = 0;
-                            double Hardskillmatch = 0;
-                            double ProjectTypeMatch = 0;
-                            MatchViewModel matchDetail = new MatchViewModel();
-
-                            //add match theo kinh nghiem
-                            //dicCandidate.Add(emp.EmpId, 60);
-                            //switch (emp.NameExp)
-                            //{
-                            //    case PositionLevel.Intern:
-                            //        match += (10 / 5) * 1;
-                            //        break;
-
-                            //    case PositionLevel.Fresher:
-                            //        match += (10 / 5) * 2;
-                            //        break;
-
-                            //    case PositionLevel.Junior:
-                            //        match += (10 / 5) * 3;
-                            //        break;
-
-                            //    case PositionLevel.Senior:
-                            //        match += (10 / 5) * 4;
-                            //        break;
-
-                            //    case PositionLevel.Master:
-                            //        match += (10 / 5) * 5;
-                            //        break;
-                            //}
-                            //add match theo ngon ngu
-                            var query = from ep in _context.EmpPositions
-                                        join el in _context.EmpLanguages on ep.EmpID equals el.EmpID
-                                        select new { ep, el };
-
-                            foreach (LanguageDetail language in requiredPosition.Language)
+                            EmpId = x.ep.EmpID,
+                            DateIn = x.ep.DateIn,
+                            NameExp = x.ep.PositionLevel,
+                            EmpName = x.e.Name,
+                            Position = x.p.Name,
+                        }).ToListAsync();
+                        if (ListEmpInPos != null)
+                        {
+                            foreach (EmpInPos emp in ListEmpInPos)
                             {
-                                var ListEmpInLang = await _context.EmpLanguages.Where(x => x.EmpID.Equals(emp.EmpId) && x.LangID == language.LangID).Select(x => new EmpInLang()
-                                {
-                                    EmpId = x.EmpID,
-                                    LangLevel = x.LangLevel,
-                                }).ToListAsync();
-                                //var ListEmpInLang = await query.Where(x => x.el.EmpID.Equals(emp.EmpId) && x.el.LangID == language.LangID).Select(x => new EmpInLang()
+                                double match = 60;
+                                double Languagematch = 0;
+                                double Softskillmatch = 0;
+                                double Hardskillmatch = 0;
+                                double ProjectTypeMatch = 0;
+                                MatchViewModel matchDetail = new MatchViewModel();
+
+                                //add match theo kinh nghiem
+                                //dicCandidate.Add(emp.EmpId, 60);
+                                //switch (emp.NameExp)
                                 //{
-                                //    EmpId = x.el.EmpID,
-                                //    LangLevel = x.el.LangLevel,
-                                //}).ToListAsync();
-                                //match += (langlevel1*prio/10)/tong so requiredlang
+                                //    case PositionLevel.Intern:
+                                //        match += (10 / 5) * 1;
+                                //        break;
 
-                                if (ListEmpInLang != null)
+                                //    case PositionLevel.Fresher:
+                                //        match += (10 / 5) * 2;
+                                //        break;
+
+                                //    case PositionLevel.Junior:
+                                //        match += (10 / 5) * 3;
+                                //        break;
+
+                                //    case PositionLevel.Senior:
+                                //        match += (10 / 5) * 4;
+                                //        break;
+
+                                //    case PositionLevel.Master:
+                                //        match += (10 / 5) * 5;
+                                //        break;
+                                //}
+                                //add match theo ngon ngu
+                                var query = from ep in _context.EmpPositions
+                                            join el in _context.EmpLanguages on ep.EmpID equals el.EmpID
+                                            select new { ep, el };
+
+                                foreach (LanguageDetail language in requiredPosition.Language)
                                 {
-                                    foreach (EmpInLang empl in ListEmpInLang)
+                                    var ListEmpInLang = await _context.EmpLanguages.Where(x => x.EmpID.Equals(emp.EmpId) && x.LangID == language.LangID).Select(x => new EmpInLang()
                                     {
-                                        Languagematch += (empl.LangLevel * language.Priority * 0.1) / requiredPosition.Language.Count;
-                                    }
-                                    match += Math.Round(Languagematch, 2);
-                                }
-                            }
-                            //Add theo softskill
-                            var listEmpSkillquery = from es in _context.EmpSkills
-                                                    join s in _context.Skills on es.SkillID equals s.SkillID
-                                                    select new { es, s };
-                            var listEmpSoftSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.SoftSkill && x.es.EmpID.Equals(emp.EmpId));
-                            var listEmpSoftSkill = await listEmpSoftSkillquery.Select(x => x.es.SkillID).ToListAsync();
-                            foreach (int softskillId in requiredPosition.SoftSkillIDs)
-                            {
-                                foreach (var softSkill in listEmpSoftSkill)
-                                {
-                                    if (softSkill.Equals(softskillId))
+                                        EmpId = x.EmpID,
+                                        LangLevel = x.LangLevel,
+                                    }).ToListAsync();
+                                    //var ListEmpInLang = await query.Where(x => x.el.EmpID.Equals(emp.EmpId) && x.el.LangID == language.LangID).Select(x => new EmpInLang()
+                                    //{
+                                    //    EmpId = x.el.EmpID,
+                                    //    LangLevel = x.el.LangLevel,
+                                    //}).ToListAsync();
+                                    //match += (langlevel1*prio/10)/tong so requiredlang
+
+                                    if (ListEmpInLang != null)
                                     {
-                                        Softskillmatch += 10 / (requiredPosition.SoftSkillIDs.Count);
-                                    }
-                                }
-                                match += Math.Round(Softskillmatch, 2);
-                            }
-                            //add match vao hardskill
-                            var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.HardSkill && x.es.EmpID.Equals(emp.EmpId));
-                            var listEmpHardSkill = await listEmpHardSkillquery.Select(x => new EmpInHardSkill()
-                            {
-                                EmpID = emp.EmpId,
-                                SkillID = x.s.SkillID,
-                                SkillLevel = x.es.SkillLevel,
-                            }).ToListAsync();
-                            foreach (HardSkillDetail hardskill in requiredPosition.HardSkills)
-                            {
-                                foreach (EmpInHardSkill emphs in listEmpHardSkill)
-                                {
-                                    if (emphs.SkillID.Equals(hardskill.HardSkillID))
-                                    {
-                                        var certiquery = from c in _context.Certifications
-                                                         join ec in _context.EmpCertifications on c.CertificationID equals ec.CertificationID
-                                                         select new { c, ec };
-                                        var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID).Select(x => new CertiInSkill
+                                        foreach (EmpInLang empl in ListEmpInLang)
                                         {
-                                            CertiID = x.c.CertificationID,
-                                            SkillID = x.c.SkillID,
-                                            CertiLevel = x.c.CertiLevel
-                                        }).ToListAsync();
-                                        var HighestCerti = new EmpHighestCerti()
-                                        {
-                                            EmpID = emphs.EmpID,
-                                            HighestCertiLevel = listCertiSkill.Any() ? listCertiSkill.Max(x => x.CertiLevel) : 0,
-                                        };
-                                        if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
-                                        {
-                                            Hardskillmatch = (((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel) * 0.5) + ((int)emphs.SkillLevel * 2 * 0.5)) * hardskill.Priority / 10 * requiredPosition.HardSkills.Count;
-                                            match += Math.Round(Hardskillmatch, 2);
+                                            Languagematch += (empl.LangLevel * language.Priority * 0.1) / requiredPosition.Language.Count;
                                         }
-                                        else
+                                        match += Math.Round(Languagematch, 2);
+                                    }
+                                }
+                                //Add theo softskill
+                                var listEmpSkillquery = from es in _context.EmpSkills
+                                                        join s in _context.Skills on es.SkillID equals s.SkillID
+                                                        select new { es, s };
+                                var listEmpSoftSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.SoftSkill && x.es.EmpID.Equals(emp.EmpId));
+                                var listEmpSoftSkill = await listEmpSoftSkillquery.Select(x => x.es.SkillID).ToListAsync();
+                                foreach (int softskillId in requiredPosition.SoftSkillIDs)
+                                {
+                                    foreach (var softSkill in listEmpSoftSkill)
+                                    {
+                                        if (softSkill.Equals(softskillId))
                                         {
-                                            Hardskillmatch = (((int)emphs.SkillLevel * 2 * 0.5)) * hardskill.Priority / 10 * requiredPosition.HardSkills.Count;
-                                            match += Math.Round(Hardskillmatch, 2);
+                                            Softskillmatch += 10 / (requiredPosition.SoftSkillIDs.Count);
                                         }
                                     }
+                                    match += Math.Round(Softskillmatch, 2);
                                 }
-                            }
+                                //add match vao hardskill
+                                var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.HardSkill && x.es.EmpID.Equals(emp.EmpId));
+                                var listEmpHardSkill = await listEmpHardSkillquery.Select(x => new EmpInHardSkill()
+                                {
+                                    EmpID = emp.EmpId,
+                                    SkillID = x.s.SkillID,
+                                    SkillLevel = x.es.SkillLevel,
+                                }).ToListAsync();
+                                foreach (HardSkillDetail hardskill in requiredPosition.HardSkills)
+                                {
+                                    foreach (EmpInHardSkill emphs in listEmpHardSkill)
+                                    {
+                                        if (emphs.SkillID.Equals(hardskill.HardSkillID))
+                                        {
+                                            var certiquery = from c in _context.Certifications
+                                                             join ec in _context.EmpCertifications on c.CertificationID equals ec.CertificationID
+                                                             select new { c, ec };
+                                            var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID).Select(x => new CertiInSkill
+                                            {
+                                                CertiID = x.c.CertificationID,
+                                                SkillID = x.c.SkillID,
+                                                CertiLevel = x.c.CertiLevel
+                                            }).ToListAsync();
+                                            var HighestCerti = new EmpHighestCerti()
+                                            {
+                                                EmpID = emphs.EmpID,
+                                                HighestCertiLevel = listCertiSkill.Any() ? listCertiSkill.Max(x => x.CertiLevel) : 0,
+                                            };
+                                            if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
+                                            {
+                                                Hardskillmatch = (((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel) * 0.5) + ((int)emphs.SkillLevel * 2 * 0.5)) * hardskill.Priority / 10 * requiredPosition.HardSkills.Count;
+                                                match += Math.Round(Hardskillmatch, 2);
+                                            }
+                                            else
+                                            {
+                                                Hardskillmatch = (((int)emphs.SkillLevel * 2 * 0.5)) * hardskill.Priority / 10 * requiredPosition.HardSkills.Count;
+                                                match += Math.Round(Hardskillmatch, 2);
+                                            }
+                                        }
+                                    }
+                                }
                                 //Add match theo projecttype
                                 var projectquery = from p in _context.Projects
                                                    join epip in _context.EmpPositionInProjects on p.ProjectID equals epip.ProjectID
@@ -427,13 +434,13 @@ namespace ESMS.BackendAPI.Services.Employees
                                 if (numberOfProjectWithType == 0)
                                 {
                                     ProjectTypeMatch = 0;
-                                } 
-                                if (numberOfProjectWithType >2 && numberOfProjectWithType < 5)
+                                }
+                                if (numberOfProjectWithType > 2 && numberOfProjectWithType < 5)
                                 {
                                     ProjectTypeMatch = 3;
                                     match += ProjectTypeMatch;
                                 }
-                                if (numberOfProjectWithType >5 && numberOfProjectWithType < 10)
+                                if (numberOfProjectWithType > 5 && numberOfProjectWithType < 10)
                                 {
                                     ProjectTypeMatch = 6;
                                     match += ProjectTypeMatch;
@@ -443,27 +450,27 @@ namespace ESMS.BackendAPI.Services.Employees
                                     ProjectTypeMatch = 10;
                                     match += ProjectTypeMatch;
                                 }
-                            matchDetail = new MatchViewModel()
-                            {
-                                EmpID = emp.EmpId,
-                                EmpName = emp.EmpName,
-                                PosLevel = emp.NameExp,
-                                LanguageMatch = Languagematch,
-                                SoftSkillMatch = Softskillmatch,
-                                HardSkillMatch = Hardskillmatch,
-                                ProjectTypeMatch = ProjectTypeMatch,
-                                OverallMatch = match,
-                            };
-                            listMatchDetail.Add(matchDetail);
-                        }
+                                matchDetail = new MatchViewModel()
+                                {
+                                    EmpID = emp.EmpId,
+                                    EmpName = emp.EmpName,
+                                    PosLevel = emp.NameExp,
+                                    LanguageMatch = Languagematch,
+                                    SoftSkillMatch = Softskillmatch,
+                                    HardSkillMatch = Hardskillmatch,
+                                    ProjectTypeMatch = ProjectTypeMatch,
+                                    OverallMatch = match,
+                                };
+                                listMatchDetail.Add(matchDetail);
+                            }
                         }
                     }
                     result.Add(new CandidateViewModel()
-                        {
-                            Position = Position,
-                            PosId = PosId,
-                            MatchDetail = listMatchDetail,
-                        });     
+                    {
+                        Position = Position,
+                        PosId = PosId,
+                        MatchDetail = listMatchDetail,
+                    });
                 }
             }
             return result;
@@ -634,6 +641,496 @@ namespace ESMS.BackendAPI.Services.Employees
                 return new ApiSuccessResult<bool>();
             }
             return new ApiErrorResult<bool>("Update user failed");
+        }
+
+        public async Task<ApiResult<EmpInfoViewModel>> GetEmpInfo(string empID)
+        {
+            EmpInfoViewModel info = new EmpInfoViewModel();
+            info.Languages = new List<LanguageInfo>();
+            info.SoftSkills = new List<SoftSkillInfo>();
+            info.HardSkills = new List<HardSkillInfo>();
+            var empPos = await _context.EmpPositions.Where(x => x.EmpID.Equals(empID) && x.DateOut == null)
+                .Select(x => new EmpPosition()
+                {
+                    PosID = x.PosID,
+                    PositionLevel = x.PositionLevel
+                }).FirstOrDefaultAsync();
+            if (empPos != null)
+            {
+                info.PosID = empPos.PosID;
+                var position = await _context.Positions.FindAsync(empPos.PosID);
+                info.PosName = position.Name;
+                info.PosLevel = (int)empPos.PositionLevel;
+            }
+            var langQuery = from el in _context.EmpLanguages
+                            join l in _context.Languages on el.LangID equals l.LangID
+                            select new { el, l };
+            info.Languages = await langQuery.Where(x => x.el.EmpID.Equals(empID)).Select(x => new LanguageInfo()
+            {
+                LangID = x.el.LangID,
+                LangName = x.l.LangName,
+                LangLevel = x.el.LangLevel
+            }).ToListAsync();
+            var listSkill = await _context.EmpSkills.Where(x => x.EmpID.Equals(empID) && x.DateEnd == null)
+                .Select(x => new EmpSkill()
+                {
+                    SkillID = x.SkillID,
+                    SkillLevel = x.SkillLevel
+                }).ToListAsync();
+            var certiQuery = from ec in _context.EmpCertifications
+                             join c in _context.Certifications on ec.CertificationID equals c.CertificationID
+                             select new { ec, c };
+            foreach (var s in listSkill)
+            {
+                var skill = await _context.Skills.FindAsync(s.SkillID);
+                if (skill.SkillType == SkillType.SoftSkill)
+                {
+                    var softSkill = new SoftSkillInfo()
+                    {
+                        SkillID = skill.SkillID,
+                        SkillName = skill.SkillName
+                    };
+                    info.SoftSkills.Add(softSkill);
+                }
+                else
+                {
+                    var empCerti = certiQuery.Where(x => x.ec.EmpID.Equals(empID) && x.c.SkillID.Equals(s.SkillID))
+                        .Select(x => new CertiInfo()
+                        {
+                            CertiID = x.ec.CertificationID,
+                            CertiName = x.c.CertificationName,
+                            DateEnd = x.ec.DateEnd,
+                            DateTaken = x.ec.DateTaken,
+                            CertiLevel = x.c.CertiLevel
+                        }).ToList();
+                    HardSkillInfo hardSkill = new HardSkillInfo()
+                    {
+                        SkillID = skill.SkillID,
+                        SkillName = skill.SkillName,
+                        SkillLevel = (int)s.SkillLevel,
+                        Certifications = empCerti
+                    };
+                    info.HardSkills.Add(hardSkill);
+                }
+            }
+            return new ApiSuccessResult<EmpInfoViewModel>(info);
+        }
+
+        public async Task<ApiResult<bool>> UpdateEmpInfo(string empID, AddEmpPositionRequest request)
+        {
+            //Update Position
+            var position = await _context.EmpPositions.FindAsync(empID, request.PosID);
+            var empPos = await _context.EmpPositions.Where(x => x.EmpID.Equals(empID) && x.DateOut == null)
+                .Select(x => new EmpPosition()
+                {
+                    EmpID = x.EmpID,
+                    PosID = x.PosID,
+                    DateIn = x.DateIn,
+                    DateOut = x.DateOut,
+                    PositionLevel = x.PositionLevel
+                }).FirstOrDefaultAsync();
+            if (position == null)
+            {
+                empPos.DateOut = DateTime.Now;
+                _context.EmpPositions.Update(empPos);
+                var empNewPos = new EmpPosition()
+                {
+                    EmpID = empID,
+                    PosID = request.PosID,
+                    DateIn = DateTime.Now,
+                    PositionLevel = (PositionLevel)request.PosLevel
+                };
+                _context.EmpPositions.Add(empNewPos);
+            }
+            else
+            {
+                position.PositionLevel = (PositionLevel)request.PosLevel;
+                if (!empPos.PosID.Equals(position.PosID) && empPos.EmpID.Equals(position.EmpID))
+                {
+                    empPos.DateOut = DateTime.Now;
+                    _context.EmpPositions.Update(empPos);
+                    position.DateOut = null;
+                }
+                _context.EmpPositions.Update(position);
+            }
+
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                return new ApiErrorResult<bool>("Update Position Info failed");
+            }
+
+            //Update Language
+            var listLanguage = await _context.EmpLanguages.Where(x => x.EmpID.Equals(empID)).Select(x => new EmpLanguage()
+            {
+                EmpID = x.EmpID,
+                LangID = x.LangID,
+                LangLevel = x.LangLevel
+            }).ToListAsync();
+            if (request.Languages == null)
+            {
+                if (listLanguage.Count() != 0)
+                {
+                    foreach (var lang in listLanguage)
+                    {
+                        _context.EmpLanguages.Remove(lang);
+                    }
+                    result = await _context.SaveChangesAsync();
+                    if (result == 0)
+                    {
+                        return new ApiErrorResult<bool>("Update Language Info failed");
+                    }
+                }
+            }
+            else
+            {
+                if (listLanguage.Count() != 0)
+                {
+                    foreach (var lang in listLanguage)
+                    {
+                        var check = false;
+                        foreach (var l in request.Languages)
+                        {
+                            if (lang.LangID.Equals(l.LangID))
+                            {
+                                check = true;
+                            }
+                        }
+                        if (check == false)
+                        {
+                            _context.EmpLanguages.Remove(lang);
+                        }
+                    }
+                }
+                foreach (var el in request.Languages)
+                {
+                    var empLang = new EmpLanguage()
+                    {
+                        EmpID = empID,
+                        LangID = el.LangID,
+                        LangLevel = el.LangLevel
+                    };
+                    var checkEmpLang = await _context.EmpLanguages.FindAsync(empID, empLang.LangID);
+                    if (checkEmpLang == null)
+                    {
+                        _context.EmpLanguages.Add(empLang);
+                    }
+                    else
+                    {
+                        checkEmpLang.LangLevel = empLang.LangLevel;
+                        _context.EmpLanguages.Update(checkEmpLang);
+                    }
+                }
+                result = await _context.SaveChangesAsync();
+                if (result == 0)
+                {
+                    return new ApiErrorResult<bool>("Update Language Info failed");
+                }
+            }
+
+            var query = from es in _context.EmpSkills
+                        join s in _context.Skills on es.SkillID equals s.SkillID
+                        select new { es, s };
+
+            // Update SoftSkill
+            var listSoftSkill = await query.Where(x => x.es.EmpID.Equals(empID) && x.s.SkillType.Equals(SkillType.SoftSkill))
+                .Select(x => new EmpSkill()
+                {
+                    EmpID = x.es.EmpID,
+                    SkillID = x.es.SkillID,
+                    SkillLevel = x.es.SkillLevel,
+                    DateStart = x.es.DateStart,
+                    DateEnd = x.es.DateEnd
+                }).ToListAsync();
+            if (request.SoftSkills == null)
+            {
+                if (listSoftSkill.Count != 0)
+                {
+                    foreach (var skill in listSoftSkill)
+                    {
+                        _context.EmpSkills.Remove(skill);
+                    }
+                    result = await _context.SaveChangesAsync();
+                    if (result == 0)
+                    {
+                        return new ApiErrorResult<bool>("Update SoftSkill Info failed");
+                    }
+                }
+            }
+            else
+            {
+                if (listSoftSkill.Count != 0)
+                {
+                    foreach (var skill in listSoftSkill)
+                    {
+                        var check = false;
+                        foreach (var sk in request.SoftSkills)
+                        {
+                            if (skill.SkillID.Equals(sk))
+                            {
+                                check = true;
+                            }
+                        }
+                        if (check == false)
+                        {
+                            _context.EmpSkills.Remove(skill);
+                        }
+                    }
+                }
+                foreach (var sk in request.SoftSkills)
+                {
+                    var checkEmpSkill = await _context.EmpSkills.FindAsync(empID, sk);
+                    if (checkEmpSkill == null)
+                    {
+                        var empSkill = new EmpSkill()
+                        {
+                            EmpID = empID,
+                            SkillID = sk
+                        };
+                        _context.EmpSkills.Add(empSkill);
+                    }
+                    else
+                    {
+                        _context.EmpSkills.Update(checkEmpSkill);
+                    }
+                }
+                result = await _context.SaveChangesAsync();
+                if (result == 0)
+                {
+                    return new ApiErrorResult<bool>("Update SoftSkill Info failed");
+                }
+            }
+
+            //Update HardSkill
+            var listHardSkill = await query.Where(x => x.es.EmpID.Equals(empID) && x.s.SkillType.Equals(SkillType.HardSkill))
+                .Select(x => new EmpSkill()
+                {
+                    EmpID = x.es.EmpID,
+                    SkillID = x.es.SkillID,
+                    SkillLevel = x.es.SkillLevel,
+                    DateStart = x.es.DateStart,
+                    DateEnd = x.es.DateEnd
+                }).ToListAsync();
+            if (request.HardSkills == null)
+            {
+                if (listHardSkill.Count != 0)
+                {
+                    foreach (var skill in listHardSkill)
+                    {
+                        skill.DateEnd = DateTime.Now;
+                        _context.EmpSkills.Update(skill);
+                    }
+                    result = await _context.SaveChangesAsync();
+                    if (result == 0)
+                    {
+                        return new ApiErrorResult<bool>("Update Skill Info failed");
+                    }
+                }
+            }
+            else
+            {
+                var certiQuery = from ec in _context.EmpCertifications
+                                 join c in _context.Certifications on ec.CertificationID equals c.CertificationID
+                                 select new { ec, c };
+                foreach (var skill in listHardSkill)
+                {
+                    var check = false;
+                    foreach (var sk in request.HardSkills)
+                    {
+                        if (skill.SkillID.Equals(sk))
+                        {
+                            check = true;
+                        }
+                    }
+                    if (check == false)
+                    {
+                        skill.DateEnd = DateTime.Now;
+                        _context.EmpSkills.Update(skill);
+                    }
+                }
+                foreach (var sk in request.HardSkills)
+                {
+                    var checkEmpSkill = await _context.EmpSkills.FindAsync(empID, sk.SkillID);
+                    if (checkEmpSkill == null)
+                    {
+                        var empSkill = new EmpSkill()
+                        {
+                            EmpID = empID,
+                            SkillID = sk.SkillID,
+                            SkillLevel = (SkillLevel)sk.SkillLevel,
+                            DateStart = DateTime.Now
+                        };
+                        _context.EmpSkills.Add(empSkill);
+                    }
+                    else
+                    {
+                        if (checkEmpSkill.DateEnd != null)
+                        {
+                            checkEmpSkill.DateEnd = null;
+                        }
+                        checkEmpSkill.SkillLevel = (SkillLevel)sk.SkillLevel;
+                        _context.EmpSkills.Update(checkEmpSkill);
+                    }
+                    result = await _context.SaveChangesAsync();
+                    if (result == 0)
+                    {
+                        return new ApiErrorResult<bool>("Update Skill Info failed");
+                    }
+
+                    //Update Certification
+                    var listCerti = await certiQuery.Where(x => x.ec.EmpID.Equals(empID) && x.c.SkillID.Equals(sk.SkillID))
+                            .Select(x => new EmpCertification()
+                            {
+                                EmpID = x.ec.EmpID,
+                                CertificationID = x.ec.CertificationID,
+                                DateTaken = x.ec.DateTaken,
+                                DateEnd = x.ec.DateEnd
+                            }).ToListAsync();
+                    if (sk.EmpCertifications == null)
+                    {
+                        if (listCerti.Count() != 0)
+                        {
+                            foreach (var c in listCerti)
+                            {
+                                _context.EmpCertifications.Remove(c);
+                            }
+                            result = await _context.SaveChangesAsync();
+                            if (result == 0)
+                            {
+                                return new ApiErrorResult<bool>("Update Certification Info failed");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (listCerti.Count() != 0)
+                        {
+                            foreach (var c in listCerti)
+                            {
+                                var check = false;
+                                foreach (var certi in sk.EmpCertifications)
+                                {
+                                    if (c.CertificationID.Equals(certi.CertiID))
+                                    {
+                                        check = true;
+                                    }
+                                }
+                                if (check == false)
+                                {
+                                    _context.EmpCertifications.Remove(c);
+                                }
+                            }
+                        }
+                        foreach (var certi in sk.EmpCertifications)
+                        {
+                            var checkEmpCerti = await _context.EmpCertifications.FindAsync(empID, certi.CertiID);
+                            if (checkEmpCerti == null)
+                            {
+                                var empCerti = new EmpCertification()
+                                {
+                                    EmpID = empID,
+                                    CertificationID = certi.CertiID,
+                                    DateTaken = DateTime.Parse(certi.DateTaken),
+                                };
+                                if (certi.DateEnd.Equals(""))
+                                {
+                                    empCerti.DateEnd = null;
+                                }
+                                else
+                                {
+                                    empCerti.DateEnd = DateTime.Parse(certi.DateEnd);
+                                }
+                                _context.EmpCertifications.Add(empCerti);
+                            }
+                            else
+                            {
+                                checkEmpCerti.DateTaken = DateTime.Parse(certi.DateTaken);
+                                if (certi.DateEnd.Equals(""))
+                                {
+                                    checkEmpCerti.DateEnd = null;
+                                }
+                                else
+                                {
+                                    checkEmpCerti.DateEnd = DateTime.Parse(certi.DateEnd);
+                                }
+                                _context.EmpCertifications.Update(checkEmpCerti);
+                            }
+                        }
+                        result = await _context.SaveChangesAsync();
+                        if (result == 0)
+                        {
+                            return new ApiErrorResult<bool>("Update Certification Info failed");
+                        }
+                    }
+                }
+            }
+            return new ApiSuccessResult<bool>();
+        }
+
+        public async Task<ApiResult<AddEmpPositionRequest>> LoadEmpInfo(string empID)
+        {
+            AddEmpPositionRequest info = new AddEmpPositionRequest();
+            info.Languages = new List<EmpLanguageDetail>();
+            info.SoftSkills = new List<int>();
+            info.HardSkills = new List<EmpHardSkillDetail>();
+            var empPos = await _context.EmpPositions.Where(x => x.EmpID.Equals(empID) && x.DateOut == null)
+                .Select(x => new EmpPosition()
+                {
+                    PosID = x.PosID,
+                    PositionLevel = x.PositionLevel
+                }).FirstOrDefaultAsync();
+            if (empPos != null)
+            {
+                info.PosID = empPos.PosID;
+                info.PosLevel = (int)empPos.PositionLevel;
+            }
+            info.Languages = await _context.EmpLanguages.Where(x => x.EmpID.Equals(empID)).Select(x => new EmpLanguageDetail()
+            {
+                LangID = x.LangID,
+                LangLevel = x.LangLevel
+            }).ToListAsync();
+            var listSkill = await _context.EmpSkills.Where(x => x.EmpID.Equals(empID) && x.DateEnd == null)
+                .Select(x => new EmpSkill()
+                {
+                    SkillID = x.SkillID,
+                    SkillLevel = x.SkillLevel
+                }).ToListAsync();
+            var certiQuery = from ec in _context.EmpCertifications
+                             join c in _context.Certifications on ec.CertificationID equals c.CertificationID
+                             select new { ec, c };
+            foreach (var s in listSkill)
+            {
+                var skill = await _context.Skills.FindAsync(s.SkillID);
+                if (skill.SkillType == SkillType.SoftSkill)
+                {
+                    info.SoftSkills.Add(s.SkillID);
+                }
+                else
+                {
+                    var empCerti = certiQuery.Where(x => x.ec.EmpID.Equals(empID) && x.c.SkillID.Equals(s.SkillID))
+                        .Select(x => new EmpCertificationDetail()
+                        {
+                            CertiID = x.ec.CertificationID,
+                            DateEnd = x.ec.DateEnd.ToString(),
+                            DateTaken = x.ec.DateTaken.ToString()
+                        }).ToList();
+                    foreach (var c in empCerti)
+                    {
+                        if (c.DateEnd == null)
+                        {
+                            c.DateEnd = "";
+                        }
+                    }
+                    EmpHardSkillDetail hardSkill = new EmpHardSkillDetail()
+                    {
+                        SkillID = skill.SkillID,
+                        SkillLevel = (int)s.SkillLevel,
+                        EmpCertifications = empCerti
+                    };
+                    info.HardSkills.Add(hardSkill);
+                }
+            }
+            return new ApiSuccessResult<AddEmpPositionRequest>(info);
         }
     }
 }
