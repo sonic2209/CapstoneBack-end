@@ -778,10 +778,9 @@ namespace ESMS.BackendAPI.Services.Projects
             return new ApiSuccessResult<List<PositionInProject>>(list);
         }
 
-        public async Task<ApiResult<PMStatisticViewModel>> GetStatisticsByEmpID(string empID)
+        public async Task<ApiResult<List<PosInProject>>> GetStatisticsByEmpID(string empID)
         {
             var posInProjects = new List<PosInProject>();
-            var posLevelInProjects = new List<PosLevelInProject>();
             var listPosLevel = Enum.GetValues(typeof(PositionLevel));
             var listProject = await _context.Projects.Where(x => x.ProjectManagerID.Equals(empID))
                 .Select(x => new Project()
@@ -836,23 +835,12 @@ namespace ESMS.BackendAPI.Services.Projects
                 var posInProject = new PosInProject()
                 {
                     Name = p.ProjectName,
-                    EmployeeByPositions = listEmpByPos
+                    EmployeeByPositions = listEmpByPos,
+                    EmployeeByPosLevels = listEmpByPosLevel
                 };
                 posInProjects.Add(posInProject);
-
-                var posLevelInProject = new PosLevelInProject()
-                {
-                    Name = p.ProjectName,
-                    EmployeeByPositionLevels = listEmpByPosLevel
-                };
-                posLevelInProjects.Add(posLevelInProject);
             }
-            var vm = new PMStatisticViewModel()
-            {
-                PosInProjects = posInProjects,
-                PosLevelInProjects = posLevelInProjects
-            };
-            return new ApiSuccessResult<PMStatisticViewModel>(vm);
+            return new ApiSuccessResult<List<PosInProject>>(posInProjects);
         }
     }
 }
