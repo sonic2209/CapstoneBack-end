@@ -251,7 +251,6 @@ namespace ESMS.BackendAPI.Services.Employees
                         Id = x.Id,
                         UserName = x.UserName,                       
                     }).ToListAsync();
-                List<EmpVm> result= new List<EmpVm>();
                 foreach (var empUser in data)
                 {
                     var user = await _userManager.FindByIdAsync(empUser.Id.ToString());
@@ -261,8 +260,7 @@ namespace ESMS.BackendAPI.Services.Employees
                     {
                         currentRole = roles[0];
                     }
-                    empUser.RoleName = currentRole;
-                    result.Add(empUser);
+                    empUser.RoleName = currentRole;         
                 }
                 //4.Select and projection
                 var pagedResult = new PagedResult<EmpVm>()
@@ -270,7 +268,7 @@ namespace ESMS.BackendAPI.Services.Employees
                     TotalRecords = totalRow,
                     PageIndex = request.PageIndex,
                     PageSize = request.PageSize,
-                    Items = result
+                    Items = data
                 };
                 return new ApiSuccessResult<PagedResult<EmpVm>>(pagedResult);
             }
