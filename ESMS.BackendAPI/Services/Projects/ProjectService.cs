@@ -141,7 +141,8 @@ namespace ESMS.BackendAPI.Services.Projects
                 DateEstimatedEnd = x.p.DateEstimatedEnd,
                 Status = x.p.Status,
                 TypeID = x.p.ProjectTypeID,
-                TypeName = x.pt.Name
+                TypeName = x.pt.Name,
+                DateEnd = x.p.DateEnd
             }).FirstOrDefaultAsync();
             if (projectVM == null) return new ApiErrorResult<ProjectViewModel>("Project does not exist");
             return new ApiSuccessResult<ProjectViewModel>(projectVM);
@@ -191,11 +192,37 @@ namespace ESMS.BackendAPI.Services.Projects
         public async Task<ApiResult<ListProjectViewModel>> GetProjectByEmpID(string empID, GetProjectPagingRequest request)
         {
             bool check = true;
-            var projects = _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
-                .Select(x => new Project()).ToList();
-            if (projects.Count() >= 5)
+            var projects = await _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
+                .Select(x => new Project()
+                {
+                    ProjectID = x.ProjectID,
+                    Status = x.Status
+                }).ToListAsync();
+            if (projects.Count() != 0)
             {
-                check = false;
+                foreach (var p in projects)
+                {
+                    if (p.Status == ProjectStatus.Pending)
+                    {
+                        var empInProject = _context.EmpPositionInProjects.Where(x => x.ProjectID.Equals(p.ProjectID))
+                            .Select(x => new EmpPositionInProject()).ToList();
+                        if (empInProject.Count() == 0)
+                        {
+                            var project = await _context.Projects.FindAsync(p.ProjectID);
+                            project.Status = ProjectStatus.NoEmployee;
+                            _context.Projects.Update(project);
+                            var result = await _context.SaveChangesAsync();
+                            if (result == 0)
+                            {
+                                return new ApiErrorResult<ListProjectViewModel>("Update project " + project.ProjectName + " failed");
+                            }
+                        }
+                    }
+                }
+                if (projects.Count() >= 5)
+                {
+                    check = false;
+                }
             }
             var query = from p in _context.Projects
                         join pt in _context.ProjectTypes on p.ProjectTypeID equals pt.ID
@@ -209,7 +236,7 @@ namespace ESMS.BackendAPI.Services.Projects
             //Paging
             int totalRow = await query.CountAsync();
 
-            var data = await query.OrderByDescending(x => x.p.DateCreated)
+            var data = await query.OrderBy(x => x.p.Status)
                 .Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .Select(x => new ProjectViewModel()
@@ -222,7 +249,8 @@ namespace ESMS.BackendAPI.Services.Projects
                     DateEstimatedEnd = x.p.DateEstimatedEnd,
                     Status = x.p.Status,
                     TypeID = x.p.ProjectTypeID,
-                    TypeName = x.pt.Name
+                    TypeName = x.pt.Name,
+                    DateEnd = x.p.DateEnd
                 }).ToListAsync();
 
             //Select and projection
@@ -547,6 +575,7 @@ namespace ESMS.BackendAPI.Services.Projects
                 .Take(request.PageSize)
                 .Select(x => new EmployeeProjectViewModel()
                 {
+                    ProjectID = x.p.ProjectID,
                     ProjectName = x.p.ProjectName,
                     PosName = x.po.Name,
                     DateIn = x.ep.DateIn

@@ -16,5 +16,6 @@ namespace ESMS.BackendAPI.ViewModels.Project
         public ProjectStatus Status { get; set; }
         public int? TypeID { get; set; }
         public string TypeName { get; set; }
+        public DateTime? DateEnd { get; set; }
     }
 }
