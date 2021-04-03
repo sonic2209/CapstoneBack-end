@@ -480,7 +480,7 @@ namespace ESMS.BackendAPI.Services.Projects
             if (project == null) return new ApiErrorResult<bool>("Project does not exist");
             if (project.Status == ProjectStatus.NoEmployee)
             {
-                project.Status = ProjectStatus.OnGoing;
+                project.Status = ProjectStatus.Pending;
                 _context.Projects.Update(project);
             }
             foreach (var candidate in request.Candidates)
