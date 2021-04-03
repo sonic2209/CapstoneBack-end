@@ -38,6 +38,10 @@ namespace ESMS.BackendAPI.Services.Employees
             _context = context;
         }
 
+        public EmployeeService()
+        {
+        }
+
         public async Task<ApiResult<LoginVm>> Authenticate(LoginRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
@@ -228,7 +232,7 @@ namespace ESMS.BackendAPI.Services.Employees
         public async Task<ApiResult<PagedResult<EmpVm>>> GetEmpsPaging(GetEmpPagingRequest request)
         {
             {
-                var query = _userManager.Users;
+                var query = _userManager.Users;                       
                 if (!string.IsNullOrEmpty(request.Keyword))
                 {
                     query = query.Where(x => x.UserName.Contains(request.Keyword) || x.PhoneNumber.Contains(request.Keyword)
@@ -245,9 +249,19 @@ namespace ESMS.BackendAPI.Services.Employees
                         PhoneNumber = x.PhoneNumber,
                         Name = x.Name,
                         Id = x.Id,
-                        UserName = x.UserName
+                        UserName = x.UserName,                       
                     }).ToListAsync();
-
+                foreach (var empUser in data)
+                {
+                    var user = await _userManager.FindByIdAsync(empUser.Id.ToString());
+                    var roles = await _userManager.GetRolesAsync(user);
+                    string currentRole = null;
+                    if (roles.Count > 0)
+                    {
+                        currentRole = roles[0];
+                    }
+                    empUser.RoleName = currentRole;         
+                }
                 //4.Select and projection
                 var pagedResult = new PagedResult<EmpVm>()
                 {
