@@ -224,13 +224,11 @@ namespace ESMS.BackendAPI.Services.Employees
         public async Task<ApiResult<PagedResult<EmpVm>>> GetEmpsPaging(GetEmpPagingRequest request)
         {
             {
-                var query = from u in _userManager.Users
-                            join ur in _context.UserRoles on u.Id equals ur.UserId
-                            select new { u, ur };
+                var query = _userManager.Users;                       
                 if (!string.IsNullOrEmpty(request.Keyword))
                 {
-                    query = query.Where(x => x.u.UserName.Contains(request.Keyword) || x.u.PhoneNumber.Contains(request.Keyword)
-                    || x.u.Email.Contains(request.Keyword));
+                    query = query.Where(x => x.UserName.Contains(request.Keyword) || x.PhoneNumber.Contains(request.Keyword)
+                    || x.Email.Contains(request.Keyword));
                 }
                 //3.Paging
                 int totalRow = await query.CountAsync();
@@ -239,11 +237,11 @@ namespace ESMS.BackendAPI.Services.Employees
                     .Take(request.PageSize)
                     .Select(x => new EmpVm()
                     {
-                        Email = x.u.Email,
-                        PhoneNumber = x.u.PhoneNumber,
-                        Name = x.u.Name,
-                        Id = x.u.Id,
-                        UserName = x.u.UserName,                       
+                        Email = x.Email,
+                        PhoneNumber = x.PhoneNumber,
+                        Name = x.Name,
+                        Id = x.Id,
+                        UserName = x.UserName,                       
                     }).ToListAsync();
                 List<EmpVm> result= new List<EmpVm>();
                 foreach (var empUser in data)
