@@ -180,5 +180,12 @@ namespace ESMS.BackendAPI.Controllers
             var result = await _projectService.GetStatistics();
             return Ok(result);
         }
+
+        [HttpGet("getStatistics/{empID}")]
+        public async Task<IActionResult> GetStatisticsByEmpID(string empID)
+        {
+            var result = await _projectService.GetStatisticsByEmpID(empID);
+            return Ok(result);
+        }
     }
 }

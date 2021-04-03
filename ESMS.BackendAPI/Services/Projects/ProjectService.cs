@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using ESMS.BackendAPI.ViewModels.Common;
 using ESMS.BackendAPI.ViewModels.Project;
 using ESMS.BackendAPI.ViewModels.Position;
-using ESMS.BackendAPI.ViewModels.Employees;
 using ESMS.BackendAPI.ViewModels.Project.Statistics;
 
 namespace ESMS.BackendAPI.Services.Projects
@@ -650,6 +649,8 @@ namespace ESMS.BackendAPI.Services.Projects
             var employeeByProjects = new List<EmployeeByProject>();
             var employeeByPositions = new List<EmployeeByPosition>();
             var employeeByHardSkills = new List<EmployeeByHardSkill>();
+            var projectByStatuses = new List<ProjectByStatus>();
+            var listStatus = Enum.GetValues(typeof(ProjectStatus));
             var projectTypes = await _context.ProjectTypes.Select(x => new ProjectType()
             {
                 ID = x.ID,
@@ -715,12 +716,23 @@ namespace ESMS.BackendAPI.Services.Projects
                 };
                 employeeByHardSkills.Add(employeeByHardSkill);
             }
+            foreach (var status in listStatus)
+            {
+                var listProject = await _context.Projects.Where(x => x.Status.Equals((ProjectStatus)status)).Select(x => new Project()).ToListAsync();
+                ProjectByStatus projectByStatus = new ProjectByStatus()
+                {
+                    Status = (int)status,
+                    Nop = listProject.Count()
+                };
+                projectByStatuses.Add(projectByStatus);
+            }
             var statisticVM = new StatisticViewModel()
             {
                 ProjectByTypes = projectByTypes,
                 EmployeeByProjects = employeeByProjects,
                 EmployeeByPositions = employeeByPositions,
-                EmployeeByHardSkills = employeeByHardSkills
+                EmployeeByHardSkills = employeeByHardSkills,
+                ProjectByStatuses = projectByStatuses
             };
             return new ApiSuccessResult<StatisticViewModel>(statisticVM);
         }
@@ -764,6 +776,83 @@ namespace ESMS.BackendAPI.Services.Projects
                 list.Add(positionInProject);
             }
             return new ApiSuccessResult<List<PositionInProject>>(list);
+        }
+
+        public async Task<ApiResult<PMStatisticViewModel>> GetStatisticsByEmpID(string empID)
+        {
+            var posInProjects = new List<PosInProject>();
+            var posLevelInProjects = new List<PosLevelInProject>();
+            var listPosLevel = Enum.GetValues(typeof(PositionLevel));
+            var listProject = await _context.Projects.Where(x => x.ProjectManagerID.Equals(empID))
+                .Select(x => new Project()
+                {
+                    ProjectID = x.ProjectID,
+                    ProjectName = x.ProjectName
+                }).ToListAsync();
+            var query = from rp in _context.RequiredPositions
+                        join po in _context.Positions on rp.PositionID equals po.PosID
+                        select new { rp, po };
+            foreach (var p in listProject)
+            {
+                var listEmpByPos = new List<EmployeeByPosition>();
+                var listEmpByPosLevel = new List<EmployeeByPosLevel>();
+                foreach (var level in listPosLevel)
+                {
+                    var empByPosLevel = new EmployeeByPosLevel()
+                    {
+                        PositionLevel = (int)level,
+                        Noe = 0
+                    };
+                    listEmpByPosLevel.Add(empByPosLevel);
+                }
+                var listPosition = await query.Where(x => x.rp.ProjectID.Equals(p.ProjectID))
+                    .Select(x => new Position()
+                    {
+                        PosID = x.rp.PositionID,
+                        Name = x.po.Name
+                    }).Distinct().ToListAsync();
+                foreach (var pos in listPosition)
+                {
+                    var listEmp = await _context.EmpPositionInProjects.Where(x => x.ProjectID.Equals(p.ProjectID) && x.PosID.Equals(pos.PosID))
+                        .Select(x => x.EmpID).ToListAsync();
+                    var empByPos = new EmployeeByPosition()
+                    {
+                        Name = pos.Name,
+                        Noe = listEmp.Count()
+                    };
+                    listEmpByPos.Add(empByPos);
+                    foreach (var emp in listEmp)
+                    {
+                        var empPos = await _context.EmpPositions.FindAsync(emp, pos.PosID);
+                        foreach (var level in listEmpByPosLevel)
+                        {
+                            if (empPos.PositionLevel.Equals((PositionLevel)level.PositionLevel))
+                            {
+                                level.Noe += 1;
+                            }
+                        }
+                    }
+                }
+                var posInProject = new PosInProject()
+                {
+                    Name = p.ProjectName,
+                    EmployeeByPositions = listEmpByPos
+                };
+                posInProjects.Add(posInProject);
+
+                var posLevelInProject = new PosLevelInProject()
+                {
+                    Name = p.ProjectName,
+                    EmployeeByPositionLevels = listEmpByPosLevel
+                };
+                posLevelInProjects.Add(posLevelInProject);
+            }
+            var vm = new PMStatisticViewModel()
+            {
+                PosInProjects = posInProjects,
+                PosLevelInProjects = posLevelInProjects
+            };
+            return new ApiSuccessResult<PMStatisticViewModel>(vm);
         }
     }
 }
