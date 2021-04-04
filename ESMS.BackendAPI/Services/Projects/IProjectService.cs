@@ -1,12 +1,8 @@
 ﻿using ESMS.BackendAPI.ViewModels.Common;
-using ESMS.BackendAPI.ViewModels.Employees;
 using ESMS.BackendAPI.ViewModels.Position;
 using ESMS.BackendAPI.ViewModels.Project;
 using ESMS.BackendAPI.ViewModels.Project.Statistics;
-using ESMS.Data.Entities;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ESMS.BackendAPI.Services.Projects
@@ -29,9 +25,9 @@ namespace ESMS.BackendAPI.Services.Projects
 
         Task<ApiResult<PagedResult<EmployeeProjectViewModel>>> GetEmployeeProjects(string empID, GetProjectPagingRequest request);
 
-        Task<ApiResult<List<PositionInProject>>> GetEmpInProjectPaging(int projectID);
+        Task<ApiResult<List<ViewModels.Project.PositionInProject>>> GetEmpInProjectPaging(int projectID);
 
-        Task<ApiResult<List<PositionInProject>>> GetCandidates(int projectID);
+        Task<ApiResult<List<ViewModels.Project.PositionInProject>>> GetCandidates(int projectID);
 
         Task<ApiResult<bool>> AddRequiredPosition(int projectID, AddRequiredPositionRequest request);
 
@@ -44,5 +40,7 @@ namespace ESMS.BackendAPI.Services.Projects
         Task<ApiResult<string>> CheckStatus(AddRequiredPositionRequest request);
 
         Task<ApiResult<StatisticViewModel>> GetStatistics();
+
+        Task<ApiResult<List<PosInProject>>> GetStatisticsByEmpID(string empID);
     }
 }

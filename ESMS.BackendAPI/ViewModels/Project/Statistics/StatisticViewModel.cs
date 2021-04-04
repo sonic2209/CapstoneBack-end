@@ -11,5 +11,6 @@ namespace ESMS.BackendAPI.ViewModels.Project.Statistics
         public List<EmployeeByProject> EmployeeByProjects { get; set; }
         public List<EmployeeByPosition> EmployeeByPositions { get; set; }
         public List<EmployeeByHardSkill> EmployeeByHardSkills { get; set; }
+        public List<ProjectByStatus> ProjectByStatuses { get; set; }
     }
 }
