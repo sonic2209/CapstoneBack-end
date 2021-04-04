@@ -699,6 +699,9 @@ namespace ESMS.BackendAPI.Services.Projects
                 };
                 employeeByPositions.Add(employeeByPosition);
             }
+            var topPositions = (from po in employeeByPositions
+                                orderby po.Noe descending
+                                select po).Take(10).ToList();
             var hardSkills = await _context.Skills.Where(x => x.SkillType.Equals(SkillType.HardSkill))
                 .Select(x => new Skill()
                 {
@@ -716,6 +719,9 @@ namespace ESMS.BackendAPI.Services.Projects
                 };
                 employeeByHardSkills.Add(employeeByHardSkill);
             }
+            var topHardSkills = (from hs in employeeByHardSkills
+                                 orderby hs.Noe descending
+                                 select hs).Take(10).ToList();
             foreach (var status in listStatus)
             {
                 var listProject = await _context.Projects.Where(x => x.Status.Equals((ProjectStatus)status)).Select(x => new Project()).ToListAsync();
@@ -730,8 +736,8 @@ namespace ESMS.BackendAPI.Services.Projects
             {
                 ProjectByTypes = projectByTypes,
                 EmployeeByProjects = employeeByProjects,
-                EmployeeByPositions = employeeByPositions,
-                EmployeeByHardSkills = employeeByHardSkills,
+                EmployeeByPositions = topPositions,
+                EmployeeByHardSkills = topHardSkills,
                 ProjectByStatuses = projectByStatuses
             };
             return new ApiSuccessResult<StatisticViewModel>(statisticVM);
