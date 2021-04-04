@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ESMS.BackendAPI.ViewModels.Notifications;
 using FirebaseAdmin.Messaging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,16 +14,16 @@ namespace ESMS.BackendAPI.Controllers
     public class NotificationController : ControllerBase
     {
         [HttpPost]
-        public async Task<IActionResult> SendMessage()
+        public async Task<IActionResult> SendMessage(string topic, [FromBody] NotificationContent noti)
         {
             var message = new Message()
             {
                 Notification = new Notification
                 {
-                    Title = "Message Title",
-                    Body = "Message Body"
+                    Title = noti.Title,
+                    Body = noti.Body
                 },
-                Topic = "news"
+                Topic = topic
             };
                 // Send a message to the devices subscribed to the provided topic.
             string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
