@@ -7,7 +7,7 @@ namespace ESMS.BackendAPI.ViewModels.Notifications
 {
     public class NotificationContent
     {
-        public string Title;
-        public string Body;
+        public string Title { get; set; }
+        public string Body { get; set; }
     }
 }
