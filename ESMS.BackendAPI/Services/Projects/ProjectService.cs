@@ -141,7 +141,8 @@ namespace ESMS.BackendAPI.Services.Projects
                 Status = x.p.Status,
                 TypeID = x.p.ProjectTypeID,
                 TypeName = x.pt.Name,
-                DateEnd = x.p.DateEnd
+                DateEnd = x.p.DateEnd,
+                PmID = x.p.ProjectManagerID
             }).FirstOrDefaultAsync();
             if (projectVM == null) return new ApiErrorResult<ProjectViewModel>("Project does not exist");
             return new ApiSuccessResult<ProjectViewModel>(projectVM);
@@ -249,7 +250,8 @@ namespace ESMS.BackendAPI.Services.Projects
                     Status = x.p.Status,
                     TypeID = x.p.ProjectTypeID,
                     TypeName = x.pt.Name,
-                    DateEnd = x.p.DateEnd
+                    DateEnd = x.p.DateEnd,
+                    PmID = x.p.ProjectManagerID
                 }).ToListAsync();
 
             //Select and projection
