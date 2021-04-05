@@ -794,7 +794,9 @@ namespace ESMS.BackendAPI.Services.Projects
                 .Select(x => new Project()
                 {
                     ProjectID = x.ProjectID,
-                    ProjectName = x.ProjectName
+                    ProjectName = x.ProjectName,
+                    DateCreated = x.DateCreated,
+                    DateEnd = x.DateEnd
                 }).ToListAsync();
             var query = from rp in _context.RequiredPositions
                         join po in _context.Positions on rp.PositionID equals po.PosID
@@ -843,6 +845,8 @@ namespace ESMS.BackendAPI.Services.Projects
                 var posInProject = new PosInProject()
                 {
                     Name = p.ProjectName,
+                    DateCreated = p.DateCreated,
+                    DateEnd = p.DateEnd,
                     EmployeeByPositions = listEmpByPos,
                     EmployeeByPosLevels = listEmpByPosLevel
                 };
