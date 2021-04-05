@@ -8,6 +8,7 @@ namespace ESMS.Data.Enums
     {
         Pending,
         NoEmployee,
+        Confirmed,
         OnGoing,
         Finished
     }

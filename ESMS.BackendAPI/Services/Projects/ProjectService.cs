@@ -484,10 +484,23 @@ namespace ESMS.BackendAPI.Services.Projects
                 project.Status = ProjectStatus.Pending;
                 _context.Projects.Update(project);
             }
+            var query = from ep in _context.EmpPositionInProjects
+                        join e in _context.Employees on ep.EmpID equals e.Id
+                        select new { ep, e };
             foreach (var candidate in request.Candidates)
             {
+                var pos = await _context.Positions.FindAsync(candidate.PosID);
+                if (pos == null) return new ApiErrorResult<bool>("Position not found");
+                if (pos.Status == false) return new ApiErrorResult<bool>("Position:" + pos.Name + " is disable");
                 foreach (var emp in candidate.EmpIDs)
                 {
+                    var checkEmp = query.Where(x => x.ep.EmpID.Equals(emp) && x.ep.ProjectID.Equals(projectID))
+                        .Select(x => new Employee()
+                        {
+                            Id = emp,
+                            Name = x.e.Name
+                        }).FirstOrDefault();
+                    if (checkEmp != null) return new ApiErrorResult<bool>("Employee:" + checkEmp.Name + " is existed in this project");
                     var employee = new EmpPositionInProject()
                     {
                         EmpID = emp,
@@ -505,55 +518,113 @@ namespace ESMS.BackendAPI.Services.Projects
             return new ApiSuccessResult<bool>();
         }
 
-        public async Task<ApiResult<bool>> ConfirmCandidate(int projectID, ConfirmCandidateRequest request)
+        public async Task<ApiResult<List<string>>> ConfirmCandidate(int projectID, ConfirmCandidateRequest request)
         {
             var project = await _context.Projects.FindAsync(projectID);
-            if (project == null) return new ApiErrorResult<bool>("Project does not exist");
-            project.Status = ProjectStatus.OnGoing;
-            _context.Projects.Update(project);
-            foreach (var position in request.Candidates)
+            if (project == null) return new ApiErrorResult<List<string>>("Project does not exist");
+            List<string> listEmp = new List<string>();
+            string message = "";
+            if (request.IsAccept)
             {
-                foreach (var id in position.EmpIDs)
+                message = "These employee already removed in this project: ";
+                foreach (var position in request.Candidates)
                 {
-                    var employee = _context.Employees.Find(id);
-                    employee.Status = EmployeeStatus.OnGoing;
-                    _context.Employees.Update(employee);
-                    var empInProject = _context.EmpPositionInProjects.Where(x => x.EmpID.Equals(id)
-                    && x.PosID.Equals(position.PosID) && x.ProjectID.Equals(projectID)).Select(x => new EmpPositionInProject()
+                    var pos = await _context.Positions.FindAsync(position.PosID);
+                    if (pos == null) return new ApiErrorResult<List<string>>("Position not found");
+                    if (pos.Status == false) return new ApiErrorResult<List<string>>("Position:" + pos.Name + " is disable");
+                    foreach (var id in position.EmpIDs)
                     {
-                        EmpID = x.EmpID,
-                        PosID = x.PosID,
-                        ProjectID = x.ProjectID,
-                        DateIn = DateTime.Now
-                    }).FirstOrDefault();
-                    _context.EmpPositionInProjects.Update(empInProject);
+                        var employee = _context.Employees.Find(id);
+                        var empInProject = _context.EmpPositionInProjects.Where(x => x.EmpID.Equals(id)
+                        && x.PosID.Equals(position.PosID) && x.ProjectID.Equals(projectID)).Select(x => new EmpPositionInProject()
+                        {
+                            EmpID = x.EmpID,
+                            PosID = x.PosID,
+                            ProjectID = x.ProjectID,
+                            DateIn = x.DateIn
+                        }).FirstOrDefault();
+                        if (empInProject == null)
+                        {
+                            listEmp.Add(id);
+                            message += employee.Name + ",";
+                        }
+                        else
+                        {
+                            empInProject.DateIn = DateTime.Now;
+                            _context.EmpPositionInProjects.Update(empInProject);
+                        }
+                    }
+                    if (listEmp.Count() != 0)
+                    {
+                        return new ApiResult<List<string>>()
+                        {
+                            IsSuccessed = false,
+                            Message = message,
+                            ResultObj = listEmp
+                        };
+                    }
                 }
-            }
-            var result = await _context.SaveChangesAsync();
-            if (result == 0)
-            {
-                return new ApiErrorResult<bool>("confirm candidate failed");
-            }
-            var data = await _context.EmpPositionInProjects.Where(x => x.ProjectID.Equals(projectID) && x.DateIn == null).Select(x => new EmpPositionInProject()
-            {
-                EmpID = x.EmpID,
-                PosID = x.PosID,
-                ProjectID = x.ProjectID,
-                DateIn = x.DateIn
-            }).ToListAsync();
-            if (data.Count() != 0)
-            {
-                foreach (var emp in data)
+                if (DateTime.Compare(DateTime.Today, project.DateBegin) >= 0)
                 {
-                    _context.EmpPositionInProjects.Remove(emp);
+                    project.Status = ProjectStatus.OnGoing;
                 }
-                result = await _context.SaveChangesAsync();
+                else
+                {
+                    project.Status = ProjectStatus.Confirmed;
+                }
+                _context.Projects.Update(project);
+                var result = await _context.SaveChangesAsync();
                 if (result == 0)
                 {
-                    return new ApiErrorResult<bool>("Remove unchecked candidate failed");
+                    return new ApiErrorResult<List<string>>("confirm candidate failed");
                 }
             }
-            return new ApiSuccessResult<bool>();
+            else
+            {
+                message = "These employee already added in this project: ";
+                foreach (var position in request.Candidates)
+                {
+                    var pos = await _context.Positions.FindAsync(position.PosID);
+                    if (pos == null) return new ApiErrorResult<List<string>>("Position not found");
+                    if (pos.Status == false) return new ApiErrorResult<List<string>>("Position:" + pos.Name + " is disable");
+                    foreach (var id in position.EmpIDs)
+                    {
+                        var employee = _context.Employees.Find(id);
+                        var empInProject = _context.EmpPositionInProjects.Where(x => x.EmpID.Equals(id)
+                        && x.PosID.Equals(position.PosID) && x.ProjectID.Equals(projectID)).Select(x => new EmpPositionInProject()
+                        {
+                            EmpID = x.EmpID,
+                            PosID = x.PosID,
+                            ProjectID = x.ProjectID,
+                            DateIn = x.DateIn
+                        }).FirstOrDefault();
+                        if (empInProject.DateIn != null)
+                        {
+                            listEmp.Add(id);
+                            message += employee.Name + ",";
+                        }
+                        else
+                        {
+                            _context.EmpPositionInProjects.Remove(empInProject);
+                        }
+                    }
+                    if (listEmp.Count() != 0)
+                    {
+                        return new ApiResult<List<string>>()
+                        {
+                            IsSuccessed = false,
+                            Message = message,
+                            ResultObj = listEmp
+                        };
+                    }
+                    var result = await _context.SaveChangesAsync();
+                    if (result == 0)
+                    {
+                        return new ApiErrorResult<List<string>>("confirm candidate failed");
+                    }
+                }
+            }
+            return new ApiSuccessResult<List<string>>();
         }
 
         public async Task<ApiResult<PagedResult<EmployeeProjectViewModel>>> GetEmployeeProjects(string empID, GetProjectPagingRequest request)

@@ -25,15 +25,15 @@ namespace ESMS.BackendAPI.Services.Projects
 
         Task<ApiResult<PagedResult<EmployeeProjectViewModel>>> GetEmployeeProjects(string empID, GetProjectPagingRequest request);
 
-        Task<ApiResult<List<ViewModels.Project.PositionInProject>>> GetEmpInProjectPaging(int projectID);
+        Task<ApiResult<List<PositionInProject>>> GetEmpInProjectPaging(int projectID);
 
-        Task<ApiResult<List<ViewModels.Project.PositionInProject>>> GetCandidates(int projectID);
+        Task<ApiResult<List<PositionInProject>>> GetCandidates(int projectID);
 
         Task<ApiResult<bool>> AddRequiredPosition(int projectID, AddRequiredPositionRequest request);
 
         Task<ApiResult<bool>> AddCandidate(int projectID, AddCandidateRequest request);
 
-        Task<ApiResult<bool>> ConfirmCandidate(int projectID, ConfirmCandidateRequest request);
+        Task<ApiResult<List<string>>> ConfirmCandidate(int projectID, ConfirmCandidateRequest request);
 
         Task<ApiResult<List<ProjectTypeViewModel>>> GetProjectTypes();
 
