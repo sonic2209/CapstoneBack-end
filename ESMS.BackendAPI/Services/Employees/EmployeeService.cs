@@ -302,10 +302,23 @@ namespace ESMS.BackendAPI.Services.Employees
                             EmpName = x.e.Name,
                             Position = x.p.Name,
                         }).ToListAsync();
-                        if (ListEmpInPos != null)
+                        if (ListEmpInPos.Count > 0)
                         {
                             foreach (EmpInPos emp in ListEmpInPos)
                             {
+                                var user = await _userManager.FindByIdAsync(emp.EmpId.ToString());
+                                var roles = await _userManager.GetRolesAsync(user);
+                                string currentRole = null;
+                                if (roles.Count > 0)
+                                {
+                                    currentRole = roles[0];
+                                    if (!currentRole.Equals("Employee"))
+                                    {
+                                        break;
+                                    }
+                                }
+                                else
+                                    break;
                                 double match = 60;
                                 double Languagematch = 0;
                                 double Softskillmatch = 0;
@@ -423,10 +436,20 @@ namespace ESMS.BackendAPI.Services.Employees
                                         }
                                     }
                                 }
-                                //Add match theo projecttype
+                                //Loc nhung nhan vien ko available dua theo thoi gian ket thuc du an dang tien hanh
                                 var projectquery = from p in _context.Projects
                                                    join epip in _context.EmpPositionInProjects on p.ProjectID equals epip.ProjectID
                                                    select new { p, epip };
+                                var currentProjectBeginDate = await _context.Projects.Where(x => x.ProjectID == projectID).Select(x => x.DateBegin).FirstOrDefaultAsync();
+                                var projectOnGoingDateEnd = await projectquery.Where(x => x.p.Status == ProjectStatus.OnGoing && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.DateEstimatedEnd).ToListAsync();
+                                if (projectOnGoingDateEnd.Count > 0)
+                                {
+                                    if (projectOnGoingDateEnd[0] > currentProjectBeginDate)
+                                    {
+                                        break;
+                                    }
+                                }
+                                //Add match theo projecttype
                                 var listProjectWithType = await projectquery.Where(x => x.p.ProjectTypeID == ProjectTypeID && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.ProjectID).ToListAsync();
                                 var numberOfProjectWithType = listProjectWithType.Count();
                                 if (numberOfProjectWithType == 0)
