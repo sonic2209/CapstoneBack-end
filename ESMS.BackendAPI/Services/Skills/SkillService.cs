@@ -82,14 +82,12 @@ namespace ESMS.BackendAPI.Services.Skills
         public async Task<ApiResult<List<ListSkillViewModel>>> GetSkill(string skillType)
         {
             SkillType st = (SkillType)Enum.Parse(typeof(SkillType), skillType);
-            var query = from s in _context.Skills
-                        select new { s };
-            query = query.Where(x => x.s.SkillType == st);
-            var data = await query.Select(x => new ListSkillViewModel()
-            {
-                SkillID = x.s.SkillID,
-                SkillName = x.s.SkillName
-            }).ToListAsync();
+            var data = await _context.Skills.Where(x => x.SkillType.Equals(st) && x.Status.Equals(true))
+                .Select(x => new ListSkillViewModel()
+                {
+                    SkillID = x.SkillID,
+                    SkillName = x.SkillName
+                }).ToListAsync();
 
             return new ApiSuccessResult<List<ListSkillViewModel>>(data);
         }

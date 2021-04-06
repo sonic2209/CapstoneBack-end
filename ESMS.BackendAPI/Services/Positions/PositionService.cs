@@ -109,13 +109,12 @@ namespace ESMS.BackendAPI.Services.Positions
 
         public async Task<ApiResult<List<ListPositionViewModel>>> GetPositions()
         {
-            var query = from p in _context.Positions
-                        select new { p };
-            var data = await query.Select(x => new ListPositionViewModel()
-            {
-                PosID = x.p.PosID,
-                Name = x.p.Name,
-            }).ToListAsync();
+            var data = await _context.Positions.Where(x => x.Status.Equals(true))
+                .Select(x => new ListPositionViewModel()
+                {
+                    PosID = x.PosID,
+                    Name = x.Name,
+                }).ToListAsync();
 
             return new ApiSuccessResult<List<ListPositionViewModel>>(data);
         }

@@ -118,14 +118,12 @@ namespace ESMS.BackendAPI.Services.Certifications
 
         public async Task<ApiResult<List<ListCertificationViewModel>>> GetCertifications(int skillID)
         {
-            var query = from c in _context.Certifications
-                        select new { c };
-            query = query.Where(x => x.c.SkillID.Equals(skillID));
-            var data = await query.Select(x => new ListCertificationViewModel()
-            {
-                CertificationID = x.c.CertificationID,
-                CertificationName = x.c.CertificationName
-            }).ToListAsync();
+            var data = await _context.Certifications.Where(x => x.SkillID.Equals(skillID) && x.Status.Equals(true))
+                .Select(x => new ListCertificationViewModel()
+                {
+                    CertificationID = x.CertificationID,
+                    CertificationName = x.CertificationName
+                }).ToListAsync();
 
             return new ApiSuccessResult<List<ListCertificationViewModel>>(data);
         }
