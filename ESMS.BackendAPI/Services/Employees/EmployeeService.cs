@@ -119,14 +119,20 @@ namespace ESMS.BackendAPI.Services.Employees
 
         public async Task<ApiResult<bool>> AddEmpPosition(string empID, AddEmpPositionRequest request)
         {
-            var empPosition = new EmpPosition()
+            if (request.PosID != 0)
             {
-                EmpID = empID,
-                PosID = request.PosID,
-                PositionLevel = (PositionLevel)request.PosLevel,
-                DateIn = DateTime.Now
-            };
-            _context.EmpPositions.Add(empPosition);
+                var position = await _context.Positions.FindAsync(request.PosID);
+                if (position == null) return new ApiErrorResult<bool>("Position:" + position.Name + " not found");
+                if (position.Status == false) return new ApiErrorResult<bool>("Position:" + position.Name + " is disable");
+                var empPosition = new EmpPosition()
+                {
+                    EmpID = empID,
+                    PosID = request.PosID,
+                    PositionLevel = (PositionLevel)request.PosLevel,
+                    DateIn = DateTime.Now
+                };
+                _context.EmpPositions.Add(empPosition);
+            }
             foreach (var language in request.Languages)
             {
                 var empLanguage = new EmpLanguage()
@@ -141,6 +147,9 @@ namespace ESMS.BackendAPI.Services.Employees
             {
                 foreach (var softSkill in request.SoftSkills)
                 {
+                    var skill = await _context.Skills.FindAsync(softSkill);
+                    if (skill == null) return new ApiErrorResult<bool>("Skill:" + skill.SkillName + " not found");
+                    if (skill.Status == false) return new ApiErrorResult<bool>("Skill:" + skill.SkillName + " is disable");
                     var empSoftSkill = new EmpSkill()
                     {
                         EmpID = empID,
@@ -151,6 +160,9 @@ namespace ESMS.BackendAPI.Services.Employees
             }
             foreach (var hardSkill in request.HardSkills)
             {
+                var skill = await _context.Skills.FindAsync(hardSkill.SkillID);
+                if (skill == null) return new ApiErrorResult<bool>("Skill:" + skill.SkillName + " not found");
+                if (skill.Status == false) return new ApiErrorResult<bool>("Skill:" + skill.SkillName + " is disable");
                 var empHardSkill = new EmpSkill()
                 {
                     EmpID = empID,
@@ -161,6 +173,9 @@ namespace ESMS.BackendAPI.Services.Employees
                 _context.EmpSkills.Add(empHardSkill);
                 foreach (var certification in hardSkill.EmpCertifications)
                 {
+                    var certi = await _context.Certifications.FindAsync(certification.CertiID);
+                    if (certi == null) return new ApiErrorResult<bool>("Certification:" + certi.CertificationName + " not found");
+                    if (certi.Status == false) return new ApiErrorResult<bool>("Certification:" + certi.CertificationName + " is disable");
                     var empCertification = new EmpCertification()
                     {
                         EmpID = empID,
@@ -232,7 +247,7 @@ namespace ESMS.BackendAPI.Services.Employees
         public async Task<ApiResult<PagedResult<EmpVm>>> GetEmpsPaging(GetEmpPagingRequest request)
         {
             {
-                var query = _userManager.Users;                       
+                var query = _userManager.Users;
                 if (!string.IsNullOrEmpty(request.Keyword))
                 {
                     query = query.Where(x => x.UserName.Contains(request.Keyword) || x.PhoneNumber.Contains(request.Keyword)
@@ -249,7 +264,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         PhoneNumber = x.PhoneNumber,
                         Name = x.Name,
                         Id = x.Id,
-                        UserName = x.UserName,                       
+                        UserName = x.UserName,
                     }).ToListAsync();
                 foreach (var empUser in data)
                 {
@@ -260,7 +275,7 @@ namespace ESMS.BackendAPI.Services.Employees
                     {
                         currentRole = roles[0];
                     }
-                    empUser.RoleName = currentRole;         
+                    empUser.RoleName = currentRole;
                 }
                 //4.Select and projection
                 var pagedResult = new PagedResult<EmpVm>()
