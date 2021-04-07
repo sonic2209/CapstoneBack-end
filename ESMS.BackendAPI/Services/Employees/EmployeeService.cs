@@ -143,7 +143,7 @@ namespace ESMS.BackendAPI.Services.Employees
                 };
                 _context.EmpLanguages.Add(empLanguage);
             }
-            if (request.SoftSkills != null)
+            if (request.SoftSkills.Count() != 0)
             {
                 foreach (var softSkill in request.SoftSkills)
                 {
@@ -171,26 +171,29 @@ namespace ESMS.BackendAPI.Services.Employees
                     DateStart = DateTime.Now
                 };
                 _context.EmpSkills.Add(empHardSkill);
-                foreach (var certification in hardSkill.EmpCertifications)
+                if (hardSkill.EmpCertifications.Count() != 0)
                 {
-                    var certi = await _context.Certifications.FindAsync(certification.CertiID);
-                    if (certi == null) return new ApiErrorResult<bool>("Certification:" + certi.CertificationName + " not found");
-                    if (certi.Status == false) return new ApiErrorResult<bool>("Certification:" + certi.CertificationName + " is disable");
-                    var empCertification = new EmpCertification()
+                    foreach (var certification in hardSkill.EmpCertifications)
                     {
-                        EmpID = empID,
-                        CertificationID = certification.CertiID,
-                        DateTaken = DateTime.Parse(certification.DateTaken)
-                    };
-                    if (certification.DateEnd.Equals(""))
-                    {
-                        empCertification.DateEnd = null;
+                        var certi = await _context.Certifications.FindAsync(certification.CertiID);
+                        if (certi == null) return new ApiErrorResult<bool>("Certification:" + certi.CertificationName + " not found");
+                        if (certi.Status == false) return new ApiErrorResult<bool>("Certification:" + certi.CertificationName + " is disable");
+                        var empCertification = new EmpCertification()
+                        {
+                            EmpID = empID,
+                            CertificationID = certification.CertiID,
+                            DateTaken = DateTime.Parse(certification.DateTaken)
+                        };
+                        if (certification.DateEnd.Equals(""))
+                        {
+                            empCertification.DateEnd = null;
+                        }
+                        else
+                        {
+                            empCertification.DateEnd = DateTime.Parse(certification.DateEnd);
+                        }
+                        _context.EmpCertifications.Add(empCertification);
                     }
-                    else
-                    {
-                        empCertification.DateEnd = DateTime.Parse(certification.DateEnd);
-                    }
-                    _context.EmpCertifications.Add(empCertification);
                 }
             }
             var result = await _context.SaveChangesAsync();
@@ -755,47 +758,49 @@ namespace ESMS.BackendAPI.Services.Employees
         public async Task<ApiResult<bool>> UpdateEmpInfo(string empID, AddEmpPositionRequest request)
         {
             //Update Position
-            var position = await _context.EmpPositions.FindAsync(empID, request.PosID);
-            var empPos = await _context.EmpPositions.Where(x => x.EmpID.Equals(empID) && x.DateOut == null)
-                .Select(x => new EmpPosition()
-                {
-                    EmpID = x.EmpID,
-                    PosID = x.PosID,
-                    DateIn = x.DateIn,
-                    DateOut = x.DateOut,
-                    PositionLevel = x.PositionLevel
-                }).FirstOrDefaultAsync();
-            if (position == null)
+            if (request.PosID != 0)
             {
-                empPos.DateOut = DateTime.Now;
-                _context.EmpPositions.Update(empPos);
-                var empNewPos = new EmpPosition()
-                {
-                    EmpID = empID,
-                    PosID = request.PosID,
-                    DateIn = DateTime.Now,
-                    PositionLevel = (PositionLevel)request.PosLevel
-                };
-                _context.EmpPositions.Add(empNewPos);
-            }
-            else
-            {
-                position.PositionLevel = (PositionLevel)request.PosLevel;
-                if (!empPos.PosID.Equals(position.PosID) && empPos.EmpID.Equals(position.EmpID))
+                var position = await _context.EmpPositions.FindAsync(empID, request.PosID);
+                var empPos = await _context.EmpPositions.Where(x => x.EmpID.Equals(empID) && x.DateOut == null)
+                    .Select(x => new EmpPosition()
+                    {
+                        EmpID = x.EmpID,
+                        PosID = x.PosID,
+                        DateIn = x.DateIn,
+                        DateOut = x.DateOut,
+                        PositionLevel = x.PositionLevel
+                    }).FirstOrDefaultAsync();
+                if (position == null)
                 {
                     empPos.DateOut = DateTime.Now;
                     _context.EmpPositions.Update(empPos);
-                    position.DateOut = null;
+                    var empNewPos = new EmpPosition()
+                    {
+                        EmpID = empID,
+                        PosID = request.PosID,
+                        DateIn = DateTime.Now,
+                        PositionLevel = (PositionLevel)request.PosLevel
+                    };
+                    _context.EmpPositions.Add(empNewPos);
                 }
-                _context.EmpPositions.Update(position);
-            }
+                else
+                {
+                    position.PositionLevel = (PositionLevel)request.PosLevel;
+                    if (!empPos.PosID.Equals(position.PosID) && empPos.EmpID.Equals(position.EmpID))
+                    {
+                        empPos.DateOut = DateTime.Now;
+                        _context.EmpPositions.Update(empPos);
+                        position.DateOut = null;
+                    }
+                    _context.EmpPositions.Update(position);
+                }
 
-            var result = await _context.SaveChangesAsync();
-            if (result == 0)
-            {
-                return new ApiErrorResult<bool>("Update Position Info failed");
+                var result = await _context.SaveChangesAsync();
+                if (result == 0)
+                {
+                    return new ApiErrorResult<bool>("Update Position Info failed");
+                }
             }
-
             //Update Language
             var listLanguage = await _context.EmpLanguages.Where(x => x.EmpID.Equals(empID)).Select(x => new EmpLanguage()
             {
@@ -811,7 +816,7 @@ namespace ESMS.BackendAPI.Services.Employees
                     {
                         _context.EmpLanguages.Remove(lang);
                     }
-                    result = await _context.SaveChangesAsync();
+                    var result = await _context.SaveChangesAsync();
                     if (result == 0)
                     {
                         return new ApiErrorResult<bool>("Update Language Info failed");
@@ -857,7 +862,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         _context.EmpLanguages.Update(checkEmpLang);
                     }
                 }
-                result = await _context.SaveChangesAsync();
+                var result = await _context.SaveChangesAsync();
                 if (result == 0)
                 {
                     return new ApiErrorResult<bool>("Update Language Info failed");
@@ -886,7 +891,7 @@ namespace ESMS.BackendAPI.Services.Employees
                     {
                         _context.EmpSkills.Remove(skill);
                     }
-                    result = await _context.SaveChangesAsync();
+                    var result = await _context.SaveChangesAsync();
                     if (result == 0)
                     {
                         return new ApiErrorResult<bool>("Update SoftSkill Info failed");
@@ -930,7 +935,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         _context.EmpSkills.Update(checkEmpSkill);
                     }
                 }
-                result = await _context.SaveChangesAsync();
+                var result = await _context.SaveChangesAsync();
                 if (result == 0)
                 {
                     return new ApiErrorResult<bool>("Update SoftSkill Info failed");
@@ -956,7 +961,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         skill.DateEnd = DateTime.Now;
                         _context.EmpSkills.Update(skill);
                     }
-                    result = await _context.SaveChangesAsync();
+                    var result = await _context.SaveChangesAsync();
                     if (result == 0)
                     {
                         return new ApiErrorResult<bool>("Update Skill Info failed");
@@ -1007,7 +1012,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         checkEmpSkill.SkillLevel = (SkillLevel)sk.SkillLevel;
                         _context.EmpSkills.Update(checkEmpSkill);
                     }
-                    result = await _context.SaveChangesAsync();
+                    var result = await _context.SaveChangesAsync();
                     if (result == 0)
                     {
                         return new ApiErrorResult<bool>("Update Skill Info failed");

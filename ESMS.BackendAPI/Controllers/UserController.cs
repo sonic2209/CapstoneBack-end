@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using ESMS.BackendAPI.Services.Employees;
 using ESMS.BackendAPI.ViewModels.Employees;
 using ESMS.ViewModels.System.Employees;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ESMS.BackendAPI.Controllers
