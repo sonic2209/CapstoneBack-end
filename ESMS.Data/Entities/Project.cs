@@ -22,5 +22,6 @@ namespace ESMS.Data.Entities
         public ProjectType ProjectType { get; set; }
         public List<EmpPositionInProject> EmpPosInProjects { get; set; }
         public List<RequiredPosition> RequiredPositions { get; set; }
+        public bool EmailStatus { get; set; }
     }
 }
