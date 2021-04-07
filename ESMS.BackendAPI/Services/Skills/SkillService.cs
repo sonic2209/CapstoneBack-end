@@ -26,6 +26,18 @@ namespace ESMS.BackendAPI.Services.Skills
             if (skill == null) return new ApiErrorResult<bool>("Skill does not exist");
             if (skill.Status)
             {
+                var empSkill = await _context.EmpSkills.Where(x => x.SkillID.Equals(skillID) && x.DateEnd == null)
+                    .Select(x => x.EmpID).ToListAsync();
+                if (empSkill.Count() != 0)
+                {
+                    return new ApiErrorResult<bool>("This skill is assigned to some employees");
+                }
+                var requiredSkill = await _context.RequiredSkills.Where(x => x.SkillID.Equals(skillID))
+                    .Select(x => new RequiredSkill()).ToListAsync();
+                if (requiredSkill.Count() != 0)
+                {
+                    return new ApiErrorResult<bool>("This skill is in project's requirement");
+                }
                 skill.Status = false;
             }
             else
