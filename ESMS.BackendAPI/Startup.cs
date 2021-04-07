@@ -5,6 +5,7 @@ using ESMS.BackendAPI.Services.Languages;
 using ESMS.BackendAPI.Services.Positions;
 using ESMS.BackendAPI.Services.Projects;
 using ESMS.BackendAPI.Services.Skills;
+using ESMS.BackendAPI.ViewModels.Common;
 using ESMS.BackendAPI.ViewModels.Employees;
 using ESMS.Data.EF;
 using ESMS.Data.Entities;
@@ -27,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ESMS.BackendAPI
@@ -80,6 +82,7 @@ namespace ESMS.BackendAPI
             services.AddTransient<UserManager<Employee>, UserManager<Employee>>();
             services.AddTransient<SignInManager<Employee>, SignInManager<Employee>>();
             services.AddTransient<RoleManager<Role>, RoleManager<Role>>();
+
 
             services.AddControllersWithViews();
 
@@ -148,7 +151,7 @@ namespace ESMS.BackendAPI
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public async void Configure(IApplicationBuilder app, IWebHostEnvironment env, IEmployeeService userService)
         {
             FirebaseApp.Create(new AppOptions()
             {
@@ -193,6 +196,31 @@ namespace ESMS.BackendAPI
             {
                 endpoints.MapControllers();
             });
+            EmpCreateRequest emp = new EmpCreateRequest()
+            {
+                Address = "test",
+                ConfirmPassword = "Abcd1234$",
+                Email = "nguoitest123@gmail.com",
+                IdentityNumber = "123456789",
+                Name = "nguoi test",
+                Password = "Abcd1234$",
+                PhoneNumber = "1234567890",
+                RoleName = "Employee",
+                UserName = "nguoitest123"
+            };
+            //var result =  await userService.Create(emp); 
+        new Thread(() =>
+            {
+                while (true) { 
+                Thread.CurrentThread.IsBackground = true;
+                /* run your code here */
+             //   Console.WriteLine("Hello, world");
+                /* */
+                Thread.Sleep(TimeSpan.FromMinutes(0.1));
+                }
+            }).Start();
+                
+            }
         }
-    }
-}
+        }
+    
