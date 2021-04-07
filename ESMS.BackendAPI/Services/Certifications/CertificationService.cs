@@ -24,6 +24,12 @@ namespace ESMS.BackendAPI.Services.Certifications
             if (certification == null) return new ApiErrorResult<bool>("Certification does not exist");
             if (certification.Status)
             {
+                var empCertification = await _context.EmpCertifications.Where(x => x.CertificationID.Equals(certificationID))
+                    .Select(x => x.EmpID).ToListAsync();
+                if (empCertification.Count() != 0)
+                {
+                    return new ApiErrorResult<bool>("This certification is assigned to some employees");
+                }
                 certification.Status = false;
             }
             else

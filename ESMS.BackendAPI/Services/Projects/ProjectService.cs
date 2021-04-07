@@ -840,19 +840,22 @@ namespace ESMS.BackendAPI.Services.Projects
                     Status = x.e.Status,
                     DateIn = x.ep.DateIn
                 }).ToListAsync();
-                foreach (var emp in employees)
+                if (employees.Count() != 0)
                 {
-                    var projects = _context.EmpPositionInProjects.Where(x => x.EmpID.Equals(emp.EmpID) && x.ProjectID != projectID)
-                        .Select(x => new EmpPositionInProject()).ToList();
-                    emp.NumberOfProject = projects.Count();
+                    foreach (var emp in employees)
+                    {
+                        var projects = _context.EmpPositionInProjects.Where(x => x.EmpID.Equals(emp.EmpID) && x.ProjectID != projectID)
+                            .Select(x => new EmpPositionInProject()).ToList();
+                        emp.NumberOfProject = projects.Count();
+                    }
+                    var positionInProject = new PositionInProject()
+                    {
+                        PosID = pos.PosID,
+                        PosName = pos.Name,
+                        Employees = employees
+                    };
+                    list.Add(positionInProject);
                 }
-                var positionInProject = new PositionInProject()
-                {
-                    PosID = pos.PosID,
-                    PosName = pos.Name,
-                    Employees = employees
-                };
-                list.Add(positionInProject);
             }
             return new ApiSuccessResult<List<PositionInProject>>(list);
         }
