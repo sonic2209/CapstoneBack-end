@@ -128,7 +128,8 @@ namespace ESMS.BackendAPI.Services.Certifications
                 .Select(x => new ListCertificationViewModel()
                 {
                     CertificationID = x.CertificationID,
-                    CertificationName = x.CertificationName
+                    CertificationName = x.CertificationName,
+                    CertiLevel = x.CertiLevel
                 }).ToListAsync();
 
             return new ApiSuccessResult<List<ListCertificationViewModel>>(data);

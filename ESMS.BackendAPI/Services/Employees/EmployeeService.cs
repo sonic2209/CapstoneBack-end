@@ -803,7 +803,7 @@ namespace ESMS.BackendAPI.Services.Employees
                 LangID = x.LangID,
                 LangLevel = x.LangLevel
             }).ToListAsync();
-            if (request.Languages == null)
+            if (request.Languages.Count() == 0)
             {
                 if (listLanguage.Count() != 0)
                 {
@@ -878,7 +878,7 @@ namespace ESMS.BackendAPI.Services.Employees
                     DateStart = x.es.DateStart,
                     DateEnd = x.es.DateEnd
                 }).ToListAsync();
-            if (request.SoftSkills == null)
+            if (request.SoftSkills.Count() == 0)
             {
                 if (listSoftSkill.Count != 0)
                 {
@@ -947,7 +947,7 @@ namespace ESMS.BackendAPI.Services.Employees
                     DateStart = x.es.DateStart,
                     DateEnd = x.es.DateEnd
                 }).ToListAsync();
-            if (request.HardSkills == null)
+            if (request.HardSkills.Count() == 0)
             {
                 if (listHardSkill.Count != 0)
                 {
@@ -1022,7 +1022,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 DateTaken = x.ec.DateTaken,
                                 DateEnd = x.ec.DateEnd
                             }).ToListAsync();
-                    if (sk.EmpCertifications == null)
+                    if (sk.EmpCertifications.Count() == 0)
                     {
                         if (listCerti.Count() != 0)
                         {
