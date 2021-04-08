@@ -150,8 +150,9 @@ namespace ESMS.BackendAPI
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IEmployeeService userService)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            //var userService = app.ApplicationServices.GetService<IEmployeeService>();
             FirebaseApp.Create(new AppOptions()
             {
                 Credential = GoogleCredential.FromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "capstone-esms-firebase-adminsdk-3z2td-a35a510cb1.json")),
@@ -207,15 +208,15 @@ namespace ESMS.BackendAPI
             //    RoleName = "Employee",
             //    UserName = "nguoitest123"
             //};
-            ////var result =  await userService.Create(emp);
+            //var result =  userService.Create(emp);
             //new Thread(() =>
             //    {
             //        while (true)
             //        {
             //            Thread.CurrentThread.IsBackground = true;
-            //        /* run your code here */
-            //        //   Console.WriteLine("Hello, world");
-            //        /* */
+            //            /* run your code here */
+            //            //   Console.WriteLine("Hello, world");
+            //            /* */
             //            Thread.Sleep(TimeSpan.FromMinutes(0.1));
             //        }
             //    }).Start();
