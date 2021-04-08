@@ -885,7 +885,7 @@ namespace ESMS.BackendAPI.Services.Employees
                 }).ToListAsync();
             if (request.SoftSkills.Count() == 0)
             {
-                if (listSoftSkill.Count != 0)
+                if (listSoftSkill.Count() != 0)
                 {
                     foreach (var skill in listSoftSkill)
                     {
@@ -900,7 +900,7 @@ namespace ESMS.BackendAPI.Services.Employees
             }
             else
             {
-                if (listSoftSkill.Count != 0)
+                if (listSoftSkill.Count() != 0)
                 {
                     foreach (var skill in listSoftSkill)
                     {
@@ -954,7 +954,7 @@ namespace ESMS.BackendAPI.Services.Employees
                 }).ToListAsync();
             if (request.HardSkills.Count() == 0)
             {
-                if (listHardSkill.Count != 0)
+                if (listHardSkill.Count() != 0)
                 {
                     foreach (var skill in listHardSkill)
                     {
