@@ -38,6 +38,13 @@ namespace ESMS.BackendAPI.Services.Projects
                 }
                 project.Description = request.Description;
                 project.Skateholder = request.Skateholder;
+                var checkDate = _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
+                    .OrderByDescending(x => x.DateEstimatedEnd)
+                    .Select(x => x.DateEstimatedEnd).FirstOrDefault();
+                if (DateTime.Compare(request.DateBegin, checkDate.AddDays(3)) < 0)
+                {
+                    return new ApiErrorResult<int>("Date begin must be after your current project's estimated end date(" + checkDate.ToShortDateString() + ") at least 3 days");
+                }
                 project.DateBegin = request.DateBegin;
                 if (DateTime.Compare(request.DateBegin, request.DateEstimatedEnd) > 0)
                 {
@@ -55,7 +62,7 @@ namespace ESMS.BackendAPI.Services.Projects
             else
             {
                 var projects = _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
-                .Select(x => new Project()).ToList();
+                    .Select(x => new Project()).ToList();
                 if (projects.Count() >= 5)
                 {
                     return new ApiErrorResult<int>("Cannot create more project");
@@ -65,6 +72,13 @@ namespace ESMS.BackendAPI.Services.Projects
                 if (checkName != null)
                 {
                     return new ApiErrorResult<int>("This project name is existed");
+                }
+                var checkDate = _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
+                    .OrderByDescending(x => x.DateEstimatedEnd)
+                    .Select(x => x.DateEstimatedEnd).FirstOrDefault();
+                if (DateTime.Compare(request.DateBegin, checkDate.AddDays(3)) < 0)
+                {
+                    return new ApiErrorResult<int>("Date begin must be after your current project's estimated end date(" + checkDate.ToShortDateString() + ") at least 3 days");
                 }
                 if (DateTime.Compare(request.DateBegin, request.DateEstimatedEnd) > 0)
                 {
@@ -484,9 +498,6 @@ namespace ESMS.BackendAPI.Services.Projects
                 project.Status = ProjectStatus.Pending;
                 _context.Projects.Update(project);
             }
-            var query = from ep in _context.EmpPositionInProjects
-                        join e in _context.Employees on ep.EmpID equals e.Id
-                        select new { ep, e };
             foreach (var candidate in request.Candidates)
             {
                 var pos = await _context.Positions.FindAsync(candidate.PosID);
@@ -494,20 +505,40 @@ namespace ESMS.BackendAPI.Services.Projects
                 if (pos.Status == false) return new ApiErrorResult<bool>("Position:" + pos.Name + " is disable");
                 foreach (var emp in candidate.EmpIDs)
                 {
-                    var checkEmp = query.Where(x => x.ep.EmpID.Equals(emp) && x.ep.ProjectID.Equals(projectID))
-                        .Select(x => new Employee()
-                        {
-                            Id = emp,
-                            Name = x.e.Name
-                        }).FirstOrDefault();
-                    if (checkEmp != null) return new ApiErrorResult<bool>("Employee:" + checkEmp.Name + " is existed in this project");
-                    var employee = new EmpPositionInProject()
+                    var checkEmp = _context.EmpPositionInProjects.Where(x => x.EmpID.Equals(emp) && x.DateIn != null && x.DateOut == null && x.ProjectID != projectID)
+                        .Select(x => x.EmpID).FirstOrDefault();
+                    if (checkEmp != null)
                     {
-                        EmpID = emp,
-                        PosID = candidate.PosID,
-                        ProjectID = projectID
-                    };
-                    _context.EmpPositionInProjects.Add(employee);
+                        var empName = _context.Employees.Find(emp).Name;
+                        return new ApiErrorResult<bool>("Employee:" + empName + " already in other project");
+                    }
+                    var employee = _context.EmpPositionInProjects.Where(x => x.EmpID.Equals(emp) && x.ProjectID.Equals(projectID))
+                        .Select(x => new EmpPositionInProject()
+                        {
+                            EmpID = emp,
+                            ProjectID = projectID,
+                            PosID = x.PosID,
+                            DateIn = x.DateIn,
+                            DateOut = x.DateOut
+                        }).FirstOrDefault();
+                    if (employee != null)
+                    {
+                        if (employee.DateOut == null)
+                        {
+                            var empName = _context.Employees.Find(employee.EmpID).Name;
+                            return new ApiErrorResult<bool>("Employee:" + empName + " already added in this project");
+                        }
+                    }
+                    else
+                    {
+                        employee = new EmpPositionInProject()
+                        {
+                            EmpID = emp,
+                            PosID = candidate.PosID,
+                            ProjectID = projectID
+                        };
+                        _context.EmpPositionInProjects.Add(employee);
+                    }
                 }
             }
             var result = await _context.SaveChangesAsync();
