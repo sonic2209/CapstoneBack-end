@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 
 namespace ESMS.BackendAPI.ViewModels.Position
 {
-    public class LanguageDetail
+    public class SoftSkillDetail
     {
-        public int LangID { get; set; }
-        public string LangName { get; set; }
-        public int Priority { get; set; }
+        public int SoftSkillID { get; set; }
+        public string SoftSkillName { get; set; }
     }
 }

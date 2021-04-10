@@ -1019,33 +1019,43 @@ namespace ESMS.BackendAPI.Services.Projects
             var skillQuery = from rs in _context.RequiredSkills
                              join s in _context.Skills on rs.SkillID equals s.SkillID
                              select new { rs, s };
+            var languageQuery = from l in _context.Languages
+                                join rl in _context.RequiredLanguages on l.LangID equals rl.LangID
+                                select new { l, rl };
             var positions = await query.Where(x => x.rp.ProjectID.Equals(projectID))
                 .Select(x => new RequiredPositionVM()
                 {
                     RequiredPosID = x.rp.ID,
                     PosID = x.rp.PositionID,
+                    PosName = x.po.Name,
                     CandidateNeeded = x.rp.CandidateNeeded
                 }).ToListAsync();
             if (positions.Count() == 0)
             {
-                return new ApiErrorResult<List<RequiredPositionVM>>("This project don't have required position");
+                return new ApiErrorResult<List<RequiredPositionVM>>("This project doesn't have any required position");
             }
             foreach (var p in positions)
             {
-                p.Language = await _context.RequiredLanguages.Where(x => x.RequiredPositionID.Equals(p.RequiredPosID))
+                p.Language = await languageQuery.Where(x => x.rl.RequiredPositionID.Equals(p.RequiredPosID))
                     .Select(x => new LanguageDetail()
                     {
-                        LangID = x.LangID,
-                        Priority = x.Priority
+                        LangID = x.rl.LangID,
+                        LangName = x.l.LangName,
+                        Priority = x.rl.Priority
                     }).ToListAsync();
 
                 p.SoftSkillIDs = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(p.RequiredPosID)
-                && x.s.SkillType.Equals(SkillType.SoftSkill)).Select(x => x.rs.SkillID).ToListAsync();
+                && x.s.SkillType.Equals(SkillType.SoftSkill)).Select(x => new SoftSkillDetail()
+                {
+                    SoftSkillID = x.rs.SkillID,
+                    SoftSkillName = x.s.SkillName
+                }).ToListAsync();
 
                 p.HardSkills = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(p.RequiredPosID)
                 && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => new HardSkillDetail()
                 {
                     HardSkillID = x.rs.SkillID,
+                    HardSkillName = x.s.SkillName,
                     SkillLevel = (int)x.rs.SkillLevel,
                     CertificationLevel = (int)x.rs.CertificationLevel,
                     Priority = (int)x.rs.Priority

@@ -310,13 +310,13 @@ namespace ESMS.BackendAPI.Services.Employees
                                           join p in _context.Positions on ep.PosID equals p.PosID
                                           join e in _context.Employees on ep.EmpID equals e.Id
                                           select new { ep, p, e };
-                    foreach (var posLevel in requiredPosition.PosLevel)
-                    {
-                        var ListEmpInPos = await ListEmpPosquery.Where(x => x.ep.PosID == requiredPosition.PosID && x.ep.DateOut == null && x.ep.PositionLevel == (PositionLevel)posLevel).Select(x => new EmpInPos()
+                  //  foreach (var posLevel in requiredPosition.PosLevel)
+                  //  {
+                        var ListEmpInPos = await ListEmpPosquery.Where(x => x.ep.PosID == requiredPosition.PosID && x.ep.DateOut == null).Select(x => new EmpInPos()
                         {
                             EmpId = x.ep.EmpID,
                             DateIn = x.ep.DateIn,
-                            NameExp = x.ep.PositionLevel,
+                        //    NameExp = x.ep.PositionLevel,
                             EmpName = x.e.Name,
                             Position = x.p.Name,
                         }).ToListAsync();
@@ -504,7 +504,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 listMatchDetail.Add(matchDetail);
                             }
                         }
-                    }
+                    //}
                     result.Add(new CandidateViewModel()
                     {
                         Position = Position,
