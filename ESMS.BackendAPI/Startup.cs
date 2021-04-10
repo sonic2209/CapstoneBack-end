@@ -153,6 +153,8 @@ namespace ESMS.BackendAPI
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             //var userService = app.ApplicationServices.GetService<IEmployeeService>();
+            var scope = app.ApplicationServices.CreateScope();
+            var userService = scope.ServiceProvider.GetService<IEmployeeService>();
             FirebaseApp.Create(new AppOptions()
             {
                 Credential = GoogleCredential.FromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "capstone-esms-firebase-adminsdk-3z2td-a35a510cb1.json")),
@@ -196,30 +198,31 @@ namespace ESMS.BackendAPI
             {
                 endpoints.MapControllers();
             });
-            //EmpCreateRequest emp = new EmpCreateRequest()
-            //{
-            //    Address = "test",
-            //    ConfirmPassword = "Abcd1234$",
-            //    Email = "nguoitest123@gmail.com",
-            //    IdentityNumber = "123456789",
-            //    Name = "nguoi test",
-            //    Password = "Abcd1234$",
-            //    PhoneNumber = "1234567890",
-            //    RoleName = "Employee",
-            //    UserName = "nguoitest123"
-            //};
-            //var result =  userService.Create(emp);
-            //new Thread(() =>
-            //    {
-            //        while (true)
-            //        {
-            //            Thread.CurrentThread.IsBackground = true;
-            //            /* run your code here */
-            //            //   Console.WriteLine("Hello, world");
-            //            /* */
-            //            Thread.Sleep(TimeSpan.FromMinutes(0.1));
-            //        }
-            //    }).Start();
+            EmpCreateRequest emp = new EmpCreateRequest()
+            {
+                Address = "test",
+                ConfirmPassword = "Abcd1234$",
+                Email = "nguoitest123@gmail.com",
+                IdentityNumber = "123456789",
+                Name = "nguoi test",
+                Password = "Abcd1234$",
+                PhoneNumber = "1234567890",
+                RoleName = "Employee",
+                UserName = "nguoitest123"
+            };
+            
+            new Thread(() =>
+                {
+                    while (true)
+                    {
+                        Thread.CurrentThread.IsBackground = true;
+                        /* run your code here */
+                        //   Console.WriteLine("Hello, world");
+                        var result = userService.GetById("064535f6-61c5-4968-93a3-fc22172640a3");
+                        /* */
+                        Thread.Sleep(TimeSpan.FromMinutes(30));
+                    }
+                }).Start();
         }
     }
 }

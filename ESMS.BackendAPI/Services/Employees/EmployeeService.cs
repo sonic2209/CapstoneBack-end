@@ -458,6 +458,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 var projectquery = from p in _context.Projects
                                                    join epip in _context.EmpPositionInProjects on p.ProjectID equals epip.ProjectID
                                                    select new { p, epip };
+                                
                                 var currentProjectBeginDate = await _context.Projects.Where(x => x.ProjectID == projectID).Select(x => x.DateBegin).FirstOrDefaultAsync();
                                 var projectOnGoingDateEnd = await projectquery.Where(x => x.p.Status == ProjectStatus.OnGoing && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.DateEstimatedEnd).ToListAsync();
                                 if (projectOnGoingDateEnd.Count > 0)
