@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ESMS.BackendAPI.ViewModels.Position
 {
-    public class SoftSkillDetail
+    public class RequiredSoftSkillVM
     {
         public int SoftSkillID { get; set; }
         public string SoftSkillName { get; set; }

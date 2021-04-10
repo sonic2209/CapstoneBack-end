@@ -37,14 +37,17 @@ namespace ESMS.BackendAPI.Services.Projects
                     project.ProjectName = request.ProjectName;
                 }
                 project.Description = request.Description;
-                var checkDate = _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
-                    .OrderByDescending(x => x.DateEstimatedEnd)
-                    .Select(x => x.DateEstimatedEnd).FirstOrDefault();
-                if (DateTime.Compare(request.DateBegin, checkDate.AddDays(3)) < 0)
+                if (DateTime.Compare(project.DateBegin.Date, request.DateBegin.Date) != 0)
                 {
-                    return new ApiErrorResult<int>("Date begin must be after your current project's estimated end date(" + checkDate.ToShortDateString() + ") at least 3 days");
+                    var checkDate = _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished
+                    && x.ProjectID != project.ProjectID).OrderByDescending(x => x.DateEstimatedEnd)
+                    .Select(x => x.DateEstimatedEnd).FirstOrDefault();
+                    if (DateTime.Compare(request.DateBegin, checkDate.AddDays(3)) < 0)
+                    {
+                        return new ApiErrorResult<int>("Date begin must be after your current project's estimated end date(" + checkDate.ToString("dd/MM/yyyy") + ") at least 3 days");
+                    }
+                    project.DateBegin = request.DateBegin;
                 }
-                project.DateBegin = request.DateBegin;
                 if (DateTime.Compare(request.DateBegin, request.DateEstimatedEnd) > 0)
                 {
                     return new ApiErrorResult<int>("Date estimated end is earlier than date begin");
@@ -78,7 +81,7 @@ namespace ESMS.BackendAPI.Services.Projects
                     .Select(x => x.DateEstimatedEnd).FirstOrDefault();
                 if (DateTime.Compare(request.DateBegin, checkDate.AddDays(3)) < 0)
                 {
-                    return new ApiErrorResult<int>("Date begin must be after your current project's estimated end date(" + checkDate.ToShortDateString() + ") at least 3 days");
+                    return new ApiErrorResult<int>("Date begin must be after your current project's estimated end date(" + checkDate.ToString("dd/MM/yyyy") + ") at least 3 days");
                 }
                 if (DateTime.Compare(request.DateBegin, request.DateEstimatedEnd) > 0)
                 {
@@ -1037,7 +1040,7 @@ namespace ESMS.BackendAPI.Services.Projects
             foreach (var p in positions)
             {
                 p.Language = await languageQuery.Where(x => x.rl.RequiredPositionID.Equals(p.RequiredPosID))
-                    .Select(x => new LanguageDetail()
+                    .Select(x => new RequiredLanguageVM()
                     {
                         LangID = x.rl.LangID,
                         LangName = x.l.LangName,
@@ -1045,14 +1048,14 @@ namespace ESMS.BackendAPI.Services.Projects
                     }).ToListAsync();
 
                 p.SoftSkillIDs = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(p.RequiredPosID)
-                && x.s.SkillType.Equals(SkillType.SoftSkill)).Select(x => new SoftSkillDetail()
+                && x.s.SkillType.Equals(SkillType.SoftSkill)).Select(x => new RequiredSoftSkillVM()
                 {
                     SoftSkillID = x.rs.SkillID,
                     SoftSkillName = x.s.SkillName
                 }).ToListAsync();
 
                 p.HardSkills = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(p.RequiredPosID)
-                && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => new HardSkillDetail()
+                && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => new RequiredHardSkillVM()
                 {
                     HardSkillID = x.rs.SkillID,
                     HardSkillName = x.s.SkillName,
