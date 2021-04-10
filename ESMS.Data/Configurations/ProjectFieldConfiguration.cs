@@ -7,11 +7,11 @@ using System.Text;
 
 namespace ESMS.Data.Configurations
 {
-    public class ProjectTypeConfiguration : IEntityTypeConfiguration<ProjectType>
+    public class ProjectFieldConfiguration : IEntityTypeConfiguration<ProjectField>
     {
-        public void Configure(EntityTypeBuilder<ProjectType> builder)
+        public void Configure(EntityTypeBuilder<ProjectField> builder)
         {
-            builder.ToTable("ProjectTypes");
+            builder.ToTable("ProjectFields");
             builder.HasKey(x => x.ID);
             builder.Property(x => x.Name).HasMaxLength(200).IsRequired();
         }

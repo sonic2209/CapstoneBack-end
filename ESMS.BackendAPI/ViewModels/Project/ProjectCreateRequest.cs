@@ -13,5 +13,6 @@ namespace ESMS.BackendAPI.ViewModels.Project
         public DateTime DateBegin { get; set; }
         public DateTime DateEstimatedEnd { get; set; }
         public int ProjectTypeID { get; set; }
+        public int ProjectFieldID { get; set; }
     }
 }

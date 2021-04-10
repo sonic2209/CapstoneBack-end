@@ -21,6 +21,8 @@ namespace ESMS.BackendAPI.ViewModels.Project
         public string Name { get; set; }
         public int? TypeID { get; set; }
         public string TypeName { get; set; }
+        public int? FieldID { get; set; }
+        public string FieldName { get; set; }
         public bool IsAddNewCandidate { get; set; }
     }
 }

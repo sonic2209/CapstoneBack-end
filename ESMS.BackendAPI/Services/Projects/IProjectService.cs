@@ -31,17 +31,20 @@ namespace ESMS.BackendAPI.Services.Projects
 
         Task<ApiResult<bool>> AddRequiredPosition(int projectID, AddRequiredPositionRequest request);
 
+        Task<ApiResult<List<RequiredPositionVM>>> GetRequiredPositions(int projectID);
+
         Task<ApiResult<bool>> AddCandidate(int projectID, AddCandidateRequest request);
 
         Task<ApiResult<List<string>>> ConfirmCandidate(int projectID, ConfirmCandidateRequest request);
 
         Task<ApiResult<List<ProjectTypeViewModel>>> GetProjectTypes();
 
+        Task<ApiResult<List<ProjectFieldViewModel>>> GetProjectFields();
+
         Task<ApiResult<string>> CheckStatus(AddRequiredPositionRequest request);
 
         Task<ApiResult<StatisticViewModel>> GetStatistics();
 
         Task<ApiResult<List<PosInProject>>> GetStatisticsByEmpID(string empID);
-        
     }
 }
