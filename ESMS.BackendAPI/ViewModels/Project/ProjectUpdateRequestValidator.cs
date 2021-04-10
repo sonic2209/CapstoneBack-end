@@ -11,8 +11,6 @@ namespace ESMS.BackendAPI.ViewModels.Project
         {
             RuleFor(x => x.Description).NotEmpty().WithMessage("Description cannot be empty")
                    .MaximumLength(200).WithMessage("Description cannot exceed 200 characters");
-            RuleFor(x => x.Skateholder).NotEmpty().WithMessage("Skateholder cannot be empty")
-                   .MaximumLength(200).WithMessage("Skateholder cannot exceed 200 characters");
         }
     }
 }
