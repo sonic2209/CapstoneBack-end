@@ -14,7 +14,6 @@ namespace ESMS.Data.Entities
         public DateTime DateEstimatedEnd { get; set; }
         public DateTime? DateEnd { get; set; }
         public string Description { get; set; }
-        public string Skateholder { get; set; }
         public ProjectStatus Status { get; set; }
         public string ProjectManagerID { get; set; }
         public int? ProjectTypeID { get; set; }

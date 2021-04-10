@@ -37,7 +37,6 @@ namespace ESMS.BackendAPI.Services.Projects
                     project.ProjectName = request.ProjectName;
                 }
                 project.Description = request.Description;
-                project.Skateholder = request.Skateholder;
                 var checkDate = _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
                     .OrderByDescending(x => x.DateEstimatedEnd)
                     .Select(x => x.DateEstimatedEnd).FirstOrDefault();
@@ -89,7 +88,6 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     ProjectName = request.ProjectName,
                     Description = request.Description,
-                    Skateholder = request.Skateholder,
                     DateCreated = DateTime.Now,
                     DateBegin = request.DateBegin,
                     DateEstimatedEnd = request.DateEstimatedEnd,
@@ -151,7 +149,6 @@ namespace ESMS.BackendAPI.Services.Projects
                 ProjectID = x.p.ProjectID,
                 ProjectName = x.p.ProjectName,
                 Description = x.p.Description,
-                Skateholder = x.p.Skateholder,
                 DateBegin = x.p.DateBegin,
                 DateEstimatedEnd = x.p.DateEstimatedEnd,
                 Status = x.p.Status,
@@ -267,7 +264,6 @@ namespace ESMS.BackendAPI.Services.Projects
                     ProjectID = x.p.ProjectID,
                     ProjectName = x.p.ProjectName,
                     Description = x.p.Description,
-                    Skateholder = x.p.Skateholder,
                     DateBegin = x.p.DateBegin,
                     DateEstimatedEnd = x.p.DateEstimatedEnd,
                     Status = x.p.Status,
@@ -343,7 +339,6 @@ namespace ESMS.BackendAPI.Services.Projects
                     ProjectID = x.p.ProjectID,
                     ProjectName = x.p.ProjectName,
                     Description = x.p.Description,
-                    Skateholder = x.p.Skateholder,
                     DateBegin = x.p.DateBegin,
                     DateEstimatedEnd = x.p.DateEstimatedEnd,
                     DateCreated = x.p.DateCreated,
@@ -388,7 +383,6 @@ namespace ESMS.BackendAPI.Services.Projects
             if (project == null) return new ApiErrorResult<bool>("Project does not exist");
 
             project.Description = request.Description;
-            project.Skateholder = request.Skateholder;
             project.DateEstimatedEnd = request.DateEstimatedEnd;
             project.ProjectTypeID = request.TypeID;
             project.ProjectFieldID = request.FieldID;
