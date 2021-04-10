@@ -74,6 +74,20 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(projectTypes);
         }
 
+        [HttpGet("getProjectFields")]
+        public async Task<IActionResult> GetProjectFields()
+        {
+            var result = await _projectService.GetProjectFields();
+            return Ok(result);
+        }
+
+        [HttpGet("getRequiredPositions/{projectID}")]
+        public async Task<IActionResult> GetRequiredPositions(int projectID)
+        {
+            var result = await _projectService.GetRequiredPositions(projectID);
+            return Ok(result);
+        }
+
         //http://localhost/api/project/empID
         [HttpPost("{empID}")]
         public async Task<IActionResult> Create(string empID, [FromBody] ProjectCreateRequest request)

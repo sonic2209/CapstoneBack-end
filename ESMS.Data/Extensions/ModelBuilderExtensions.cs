@@ -44,12 +44,17 @@ namespace ESMS.Data.Extensions
                 DateCreated = DateTime.Now
             });
 
-            modelBuilder.Entity<ProjectType>().HasData(
+            modelBuilder.Entity<ProjectField>().HasData(
                 new ProjectType { ID = 1, Name = "Community and social services" },
                 new ProjectType { ID = 2, Name = "Business, management and administration" },
                 new ProjectType { ID = 3, Name = "Education" },
                 new ProjectType { ID = 4, Name = "Health and medicine" },
                 new ProjectType { ID = 5, Name = "Sales" });
+
+            modelBuilder.Entity<ProjectType>().HasData(
+                new ProjectType { ID = 1, Name = "Web application" },
+                new ProjectType { ID = 2, Name = "Mobile application" },
+                new ProjectType { ID = 3, Name = "Desktop application" });
 
             modelBuilder.Entity<IdentityUserRole<string>>().HasData(new IdentityUserRole<string>
             {

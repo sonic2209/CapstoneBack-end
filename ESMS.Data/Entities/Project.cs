@@ -18,8 +18,10 @@ namespace ESMS.Data.Entities
         public ProjectStatus Status { get; set; }
         public string ProjectManagerID { get; set; }
         public int? ProjectTypeID { get; set; }
+        public int? ProjectFieldID { get; set; }
         public Employee Employee { get; set; }
         public ProjectType ProjectType { get; set; }
+        public ProjectField ProjectField { get; set; }
         public List<EmpPositionInProject> EmpPosInProjects { get; set; }
         public List<RequiredPosition> RequiredPositions { get; set; }
         public bool EmailStatus { get; set; }
