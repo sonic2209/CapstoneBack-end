@@ -7,7 +7,6 @@ namespace ESMS.BackendAPI.ViewModels.Position
     public class RequiredPositionDetail
     {
         public int PosID { get; set; }
-        public List<int> PosLevel { get; set; }
         public int CandidateNeeded { get; set; }
         public List<LanguageDetail> Language { get; set; }
         public List<int> SoftSkillIDs { get; set; }
