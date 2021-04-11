@@ -7,5 +7,6 @@ namespace ESMS.ViewModels.System.Employees
     {
         public List<RequiredPositionDetail> RequiredPositions { get; set; }
         public int ProjectTypeID { get; set; }
+        public int ProjectFieldID { get; set; }
     }
 }
