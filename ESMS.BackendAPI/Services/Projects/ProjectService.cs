@@ -64,12 +64,6 @@ namespace ESMS.BackendAPI.Services.Projects
             }
             else
             {
-                var projects = _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
-                    .Select(x => new Project()).ToList();
-                if (projects.Count() >= 5)
-                {
-                    return new ApiErrorResult<int>("Cannot create more project");
-                }
                 var checkName = _context.Projects.Where(x => x.ProjectName.Equals(request.ProjectName))
                     .Select(x => new Project()).FirstOrDefault();
                 if (checkName != null)
@@ -241,10 +235,6 @@ namespace ESMS.BackendAPI.Services.Projects
                             }
                         }
                     }
-                }
-                if (projects.Count() >= 5)
-                {
-                    check = false;
                 }
             }
             var query = from p in _context.Projects
