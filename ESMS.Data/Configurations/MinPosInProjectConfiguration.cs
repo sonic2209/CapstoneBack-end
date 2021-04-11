@@ -12,9 +12,10 @@ namespace ESMS.Data.Configurations
         public void Configure(EntityTypeBuilder<MinPosInProject> builder)
         {
             builder.ToTable("MinPosInProjects");
-            builder.HasKey(x => new { x.TypeID, x.PosID });
+            builder.HasKey(x => new { x.TypeID, x.PosID, x.SkillID });
             builder.HasOne(x => x.ProjectType).WithMany(x => x.MinPosInProjects).HasForeignKey(x => x.TypeID);
             builder.HasOne(x => x.Position).WithMany(x => x.MinPosInProjects).HasForeignKey(x => x.PosID);
+            builder.HasOne(x => x.Skill).WithMany(x => x.MinPosInProjects).HasForeignKey(x => x.SkillID);
         }
     }
 }
