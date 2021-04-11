@@ -139,6 +139,20 @@ namespace ESMS.BackendAPI.Services.Skills
             return new ApiSuccessResult<PagedResult<SkillViewModel>>(pagedResult);
         }
 
+        public async Task<ApiResult<List<ListSkillViewModel>>> GetSkills(int skillType)
+        {
+            var skills = await _context.Skills.Where(x => x.SkillType.Equals((SkillType)skillType)).Select(x => new ListSkillViewModel()
+            {
+                SkillID = x.SkillID,
+                SkillName = x.SkillName
+            }).ToListAsync();
+            if (skills.Count() == 0)
+            {
+                return new ApiErrorResult<List<ListSkillViewModel>>("List skill not found");
+            }
+            return new ApiSuccessResult<List<ListSkillViewModel>>(skills);
+        }
+
         public async Task<ApiResult<List<int>>> GetSoftSkills(int fieldID)
         {
             var query = from sp in _context.SkillInProjectFields

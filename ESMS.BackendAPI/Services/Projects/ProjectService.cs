@@ -376,7 +376,33 @@ namespace ESMS.BackendAPI.Services.Projects
             if (project == null) return new ApiErrorResult<bool>("Project does not exist");
 
             project.Description = request.Description;
-            project.DateEstimatedEnd = request.DateEstimatedEnd;
+            if (DateTime.Compare(project.DateEstimatedEnd.Date, request.DateEstimatedEnd.Date) != 0)
+            {
+                var projects = await _context.Projects.Where(x => x.ProjectManagerID.Equals(project.ProjectManagerID) && x.Status != ProjectStatus.Finished)
+                    .OrderBy(x => x.DateEstimatedEnd).Select(x => new Project()
+                    {
+                        DateBegin = x.DateBegin,
+                        DateEstimatedEnd = x.DateEstimatedEnd
+                    }).ToListAsync();
+                for (int i = 0; i < projects.Count(); i++)
+                {
+                    if (DateTime.Compare(projects[i].DateEstimatedEnd.Date, project.DateEstimatedEnd.Date) == 0)
+                    {
+                        if (i != (projects.Count() - 1))
+                        {
+                            if (DateTime.Compare(request.DateEstimatedEnd.Date, projects[i + 1].DateBegin.AddDays(-5)) > 0)
+                            {
+                                return new ApiErrorResult<bool>("Date Estimated End must be before your next project's begin date(" + projects[i + 1].DateBegin.ToString("dd/MM/yyyy") + ") at least 5 days");
+                            }
+                        }
+                    }
+                }
+                if (DateTime.Compare(project.DateBegin.Date, request.DateEstimatedEnd.Date) > 0)
+                {
+                    return new ApiErrorResult<bool>("Date estimated end is earlier than project's begin date");
+                }
+                project.DateEstimatedEnd = request.DateEstimatedEnd;
+            }
             project.ProjectTypeID = request.TypeID;
             project.ProjectFieldID = request.FieldID;
             _context.Projects.Update(project);
