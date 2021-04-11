@@ -91,17 +91,22 @@ namespace ESMS.BackendAPI.Services.Skills
             return new ApiSuccessResult<SkillViewModel>(skillViewModel);
         }
 
-        public async Task<ApiResult<List<ListSkillViewModel>>> GetSkill(string skillType)
+        public async Task<ApiResult<List<ListSkillViewModel>>> GetHardSkills(int typeID, int posID)
         {
-            SkillType st = (SkillType)Enum.Parse(typeof(SkillType), skillType);
-            var data = await _context.Skills.Where(x => x.SkillType.Equals(st) && x.Status.Equals(true))
+            var query = from mp in _context.MinPosInProjects
+                        join s in _context.Skills on mp.SkillID equals s.SkillID
+                        select new { mp, s };
+            var skills = await query.Where(x => x.mp.TypeID.Equals(typeID) && x.mp.PosID.Equals(posID))
                 .Select(x => new ListSkillViewModel()
                 {
-                    SkillID = x.SkillID,
-                    SkillName = x.SkillName
+                    SkillID = x.mp.SkillID,
+                    SkillName = x.s.SkillName
                 }).ToListAsync();
-
-            return new ApiSuccessResult<List<ListSkillViewModel>>(data);
+            if (skills.Count() == 0)
+            {
+                return new ApiErrorResult<List<ListSkillViewModel>>("List hard skill not found");
+            }
+            return new ApiSuccessResult<List<ListSkillViewModel>>(skills);
         }
 
         public async Task<ApiResult<PagedResult<SkillViewModel>>> GetSkillPaging(GetSkillPagingRequest request)
@@ -132,6 +137,20 @@ namespace ESMS.BackendAPI.Services.Skills
             };
 
             return new ApiSuccessResult<PagedResult<SkillViewModel>>(pagedResult);
+        }
+
+        public async Task<ApiResult<List<int>>> GetSoftSkills(int fieldID)
+        {
+            var query = from sp in _context.SkillInProjectFields
+                        join s in _context.Skills on sp.SkillID equals s.SkillID
+                        select new { sp, s };
+            var skills = await query.Where(x => x.sp.FieldID.Equals(fieldID))
+                .Select(x => x.sp.SkillID).ToListAsync();
+            if (skills.Count() == 0)
+            {
+                return new ApiErrorResult<List<int>>("List soft skill not found");
+            }
+            return new ApiSuccessResult<List<int>>(skills);
         }
 
         public async Task<ApiResult<bool>> Update(int skillID, SkillUpdateRequest request)
