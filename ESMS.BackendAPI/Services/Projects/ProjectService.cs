@@ -1018,12 +1018,19 @@ namespace ESMS.BackendAPI.Services.Projects
                     foreach (var emp in listEmp)
                     {
                         var empPos = await _context.EmpPositions.FindAsync(emp, pos.PosID);
-                        foreach (var level in listEmpByPosLevel)
+                        if (empPos != null)
                         {
-                            if (empPos.PositionLevel.Equals((PositionLevel)level.PositionLevel))
+                            foreach (var level in listEmpByPosLevel)
                             {
-                                level.Noe += 1;
+                                if (empPos.PositionLevel.Equals((PositionLevel)level.PositionLevel))
+                                {
+                                    level.Noe += 1;
+                                }
                             }
+                        }
+                        else
+                        {
+                            listEmpByPosLevel[0].Noe += 1;
                         }
                     }
                 }
@@ -1108,6 +1115,60 @@ namespace ESMS.BackendAPI.Services.Projects
                 return new ApiErrorResult<List<ProjectFieldViewModel>>("Project's field not found");
             }
             return new ApiSuccessResult<List<ProjectFieldViewModel>>(projectFields);
+        }
+
+        public async Task<ApiResult<RequiredPositionVM>> GetRequiredPosByID(int projectID, int posID)
+        {
+            var query = from rp in _context.RequiredPositions
+                        join po in _context.Positions on rp.PositionID equals po.PosID
+                        select new { rp, po };
+            var skillQuery = from rs in _context.RequiredSkills
+                             join s in _context.Skills on rs.SkillID equals s.SkillID
+                             select new { rs, s };
+            var languageQuery = from l in _context.Languages
+                                join rl in _context.RequiredLanguages on l.LangID equals rl.LangID
+                                select new { l, rl };
+            var requiredPos = await query.Where(x => x.rp.ProjectID.Equals(projectID) && x.rp.PositionID.Equals(posID)).OrderByDescending(x => x.rp.DateCreated)
+                .Select(x => new RequiredPositionVM()
+                {
+                    RequiredPosID = x.rp.ID,
+                    PosID = x.rp.PositionID,
+                    PosName = x.po.Name,
+                    CandidateNeeded = x.rp.CandidateNeeded,
+                    DateCreated = x.rp.DateCreated,
+                    MissingEmployee = x.rp.MissingEmployee,
+                    Status = x.rp.Status
+                }).FirstOrDefaultAsync();
+            if (requiredPos == null)
+            {
+                return new ApiErrorResult<RequiredPositionVM>("This project doesn't have any required position");
+            }
+            requiredPos.Language = await languageQuery.Where(x => x.rl.RequiredPositionID.Equals(requiredPos.RequiredPosID))
+                    .Select(x => new RequiredLanguageVM()
+                    {
+                        LangID = x.rl.LangID,
+                        LangName = x.l.LangName,
+                        Priority = x.rl.Priority
+                    }).ToListAsync();
+
+            requiredPos.SoftSkillIDs = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(requiredPos.RequiredPosID)
+            && x.s.SkillType.Equals(SkillType.SoftSkill)).Select(x => new RequiredSoftSkillVM()
+            {
+                SoftSkillID = x.rs.SkillID,
+                SoftSkillName = x.s.SkillName
+            }).ToListAsync();
+
+            requiredPos.HardSkills = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(requiredPos.RequiredPosID)
+            && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => new RequiredHardSkillVM()
+            {
+                HardSkillID = x.rs.SkillID,
+                HardSkillName = x.s.SkillName,
+                SkillLevel = (int)x.rs.SkillLevel,
+                CertificationLevel = (int)x.rs.CertificationLevel,
+                Priority = (int)x.rs.Priority
+            }).ToListAsync();
+
+            return new ApiSuccessResult<RequiredPositionVM>(requiredPos);
         }
     }
 }

@@ -33,6 +33,8 @@ namespace ESMS.BackendAPI.Services.Projects
 
         Task<ApiResult<List<RequiredPositionVM>>> GetRequiredPositions(int projectID);
 
+        Task<ApiResult<RequiredPositionVM>> GetRequiredPosByID(int projectID, int posID);
+
         Task<ApiResult<bool>> AddCandidate(int projectID, AddCandidateRequest request);
 
         Task<ApiResult<List<string>>> ConfirmCandidate(int projectID, ConfirmCandidateRequest request);
