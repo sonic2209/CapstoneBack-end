@@ -124,14 +124,16 @@ namespace ESMS.BackendAPI.Services.Skills
                                 SkillID = skill.SkillID
                             };
                             var checkSkill = await _context.MinPosInProjects.FindAsync(minPos.TypeID, minPos.PosID, minPos.SkillID);
-                            if (checkSkill != null) _context.MinPosInProjects.Update(checkSkill);
-                            else _context.MinPosInProjects.Add(minPos);
+                            if (checkSkill == null)
+                            {
+                                _context.MinPosInProjects.Add(minPos);
+                                result = await _context.SaveChangesAsync();
+                                if (result == 0)
+                                {
+                                    return new ApiErrorResult<bool>("Add project field failed");
+                                }
+                            }
                         }
-                    }
-                    result = await _context.SaveChangesAsync();
-                    if (result == 0)
-                    {
-                        return new ApiErrorResult<bool>("Add project type failed");
                     }
                 }
             }
@@ -147,13 +149,15 @@ namespace ESMS.BackendAPI.Services.Skills
                             SkillID = skill.SkillID
                         };
                         var checkSkill = await _context.SkillInProjectFields.FindAsync(skillField.FieldID, skillField.SkillID);
-                        if (checkSkill != null) _context.SkillInProjectFields.Update(checkSkill);
-                        else _context.SkillInProjectFields.Add(skillField);
-                    }
-                    result = await _context.SaveChangesAsync();
-                    if (result == 0)
-                    {
-                        return new ApiErrorResult<bool>("Add project field failed");
+                        if (checkSkill == null)
+                        {
+                            _context.SkillInProjectFields.Add(skillField);
+                            result = await _context.SaveChangesAsync();
+                            if (result == 0)
+                            {
+                                return new ApiErrorResult<bool>("Add project field failed");
+                            }
+                        }
                     }
                 }
             }
@@ -324,14 +328,16 @@ namespace ESMS.BackendAPI.Services.Skills
                                 SkillID = skill.SkillID
                             };
                             var checkSkill = await _context.MinPosInProjects.FindAsync(minPos.TypeID, minPos.PosID, minPos.SkillID);
-                            if (checkSkill != null) _context.MinPosInProjects.Update(checkSkill);
-                            else _context.MinPosInProjects.Add(minPos);
+                            if (checkSkill == null)
+                            {
+                                _context.MinPosInProjects.Add(minPos);
+                                result = await _context.SaveChangesAsync();
+                                if (result == 0)
+                                {
+                                    return new ApiErrorResult<bool>("Add project field failed");
+                                }
+                            }
                         }
-                    }
-                    result = await _context.SaveChangesAsync();
-                    if (result == 0)
-                    {
-                        return new ApiErrorResult<bool>("Add project type failed");
                     }
                 }
             }
@@ -347,13 +353,15 @@ namespace ESMS.BackendAPI.Services.Skills
                             SkillID = skill.SkillID
                         };
                         var checkSkill = await _context.SkillInProjectFields.FindAsync(skillField.FieldID, skillField.SkillID);
-                        if (checkSkill != null) _context.SkillInProjectFields.Update(checkSkill);
-                        else _context.SkillInProjectFields.Add(skillField);
-                    }
-                    result = await _context.SaveChangesAsync();
-                    if (result == 0)
-                    {
-                        return new ApiErrorResult<bool>("Add project field failed");
+                        if (checkSkill == null)
+                        {
+                            _context.SkillInProjectFields.Add(skillField);
+                            result = await _context.SaveChangesAsync();
+                            if (result == 0)
+                            {
+                                return new ApiErrorResult<bool>("Add project field failed");
+                            }
+                        }
                     }
                 }
             }

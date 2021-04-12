@@ -11,6 +11,9 @@ namespace ESMS.Data.Entities
         public int ProjectID { get; set; }
         public int PositionID { get; set; }
         public int CandidateNeeded { get; set; }
+        public int MissingEmployee { get; set; }
+        public RequirementStatus Status { get; set; }
+        public DateTime DateCreated { get; set; }
         public Project Project { get; set; }
         public Position Position { get; set; }
         public List<RequiredSkill> RequiredSkills { get; set; }
