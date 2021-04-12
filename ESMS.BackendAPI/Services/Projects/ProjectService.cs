@@ -1018,12 +1018,19 @@ namespace ESMS.BackendAPI.Services.Projects
                     foreach (var emp in listEmp)
                     {
                         var empPos = await _context.EmpPositions.FindAsync(emp, pos.PosID);
-                        foreach (var level in listEmpByPosLevel)
+                        if (empPos != null)
                         {
-                            if (empPos.PositionLevel.Equals((PositionLevel)level.PositionLevel))
+                            foreach (var level in listEmpByPosLevel)
                             {
-                                level.Noe += 1;
+                                if (empPos.PositionLevel.Equals((PositionLevel)level.PositionLevel))
+                                {
+                                    level.Noe += 1;
+                                }
                             }
+                        }
+                        else
+                        {
+                            listEmpByPosLevel[0].Noe += 1;
                         }
                     }
                 }
