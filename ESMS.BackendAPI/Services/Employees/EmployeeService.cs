@@ -332,11 +332,11 @@ namespace ESMS.BackendAPI.Services.Employees
                                     currentRole = roles[0];
                                     if (!currentRole.Equals("Employee"))
                                     {
-                               //         break;
+                                        continue;
                                     }
                                 }
-                              //  else
-                              //      break;
+                                else
+                                   continue;
                                 double match = 60;
                                 double Languagematch = 0;
                                 double Softskillmatch = 0;
@@ -459,15 +459,15 @@ namespace ESMS.BackendAPI.Services.Employees
                                                    join epip in _context.EmpPositionInProjects on p.ProjectID equals epip.ProjectID
                                                    select new { p, epip };
                                 
-                                //var currentProjectBeginDate = await _context.Projects.Where(x => x.ProjectID == projectID).Select(x => x.DateBegin).FirstOrDefaultAsync();
-                                //var projectOnGoingDateEnd = await projectquery.Where(x => x.p.Status == ProjectStatus.OnGoing && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.DateEstimatedEnd).ToListAsync();
-                                //if (projectOnGoingDateEnd.Count > 0)
-                                //{
-                                //    if (projectOnGoingDateEnd[0] > currentProjectBeginDate)
-                                //    {
-                                //        break;
-                                //    }
-                                //}
+                                var currentProjectBeginDate = await _context.Projects.Where(x => x.ProjectID == projectID).Select(x => x.DateBegin).FirstOrDefaultAsync();
+                                var projectOnGoingDateEnd = await projectquery.Where(x => x.p.Status == ProjectStatus.OnGoing && x.p.Status == ProjectStatus.Confirmed && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.DateEstimatedEnd).ToListAsync();
+                                if (projectOnGoingDateEnd.Count > 0)
+                                {
+                                    if (projectOnGoingDateEnd[0] > currentProjectBeginDate)
+                                    {
+                                        continue;
+                                    }
+                                }
                                 //Add match theo projecttype
                                 var listProjectWithType = await projectquery.Where(x => x.p.ProjectTypeID == ProjectTypeID && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.ProjectID).ToListAsync();
                                 var numberOfProjectWithType = listProjectWithType.Count();
