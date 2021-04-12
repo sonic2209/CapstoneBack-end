@@ -201,6 +201,12 @@ namespace ESMS.BackendAPI.Services.Projects
                     PosName = pos.Name,
                     Employees = employees
                 };
+                var listCandidateNeeds = await _context.RequiredPositions.Where(x => x.PositionID.Equals(pos.PosID)
+                && x.ProjectID.Equals(projectID)).Select(x => x.CandidateNeeded).ToListAsync();
+                foreach (var candidateNeed in listCandidateNeeds)
+                {
+                    positionInProject.CandidateNeeded += candidateNeed;
+                }
                 list.Add(positionInProject);
             }
             return new ApiSuccessResult<List<PositionInProject>>(list);
@@ -423,6 +429,7 @@ namespace ESMS.BackendAPI.Services.Projects
                     PositionID = position.PosID,
                     ProjectID = projectID,
                     CandidateNeeded = position.CandidateNeeded,
+                    MissingEmployee = position.CandidateNeeded,
                     DateCreated = DateTime.Now
                 };
                 _context.RequiredPositions.Add(requiredPosition);
@@ -549,6 +556,21 @@ namespace ESMS.BackendAPI.Services.Projects
                 if (pos.Status == false) return new ApiErrorResult<bool>("Position:" + pos.Name + " is disable");
                 if (candidate.EmpIDs.Count() != 0)
                 {
+                    var count = 0;
+                    var checkRequired = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectID)
+                    && x.PositionID.Equals(candidate.PosID)).OrderByDescending(x => x.DateCreated).Select(x => x.CandidateNeeded).ToListAsync();
+                    foreach (var cn in checkRequired)
+                    {
+                        count += cn;
+                    }
+                    var employees = await _context.EmpPositionInProjects.Where(x => x.ProjectID.Equals(projectID)
+                    && x.PosID.Equals(candidate.PosID)).Select(x => x.EmpID).ToListAsync();
+                    count -= employees.Count();
+                    if (candidate.EmpIDs.Count() > count)
+                    {
+                        var message = "Can only add equal or less than " + count + " employee for position " + pos.Name;
+                        return new ApiErrorResult<bool>(message);
+                    }
                     foreach (var emp in candidate.EmpIDs)
                     {
                         var checkEmp = _context.EmpPositionInProjects.Where(x => x.EmpID.Equals(emp) && x.DateIn != null && x.DateOut == null && x.ProjectID != projectID)
@@ -589,6 +611,7 @@ namespace ESMS.BackendAPI.Services.Projects
                     var requiredPos = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectID)
                     && x.PositionID.Equals(candidate.PosID)).Select(x => new RequiredPosition()
                     {
+                        ID = x.ID,
                         PositionID = x.PositionID,
                         ProjectID = x.ProjectID,
                         CandidateNeeded = x.CandidateNeeded,
@@ -661,14 +684,15 @@ namespace ESMS.BackendAPI.Services.Projects
                         };
                     }
                     var requiredPos = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectID)
-                    && x.PositionID.Equals(position.PosID)).Select(x => new RequiredPosition()
+                    && x.PositionID.Equals(position.PosID)).OrderByDescending(x => x.DateCreated).Select(x => new RequiredPosition()
                     {
+                        ID = x.ID,
                         PositionID = x.PositionID,
                         ProjectID = x.ProjectID,
                         CandidateNeeded = x.CandidateNeeded,
                         DateCreated = x.DateCreated,
                         Status = RequirementStatus.Finished,
-                        MissingEmployee = x.CandidateNeeded - position.EmpIDs.Count()
+                        MissingEmployee = x.MissingEmployee - position.EmpIDs.Count()
                     }).FirstOrDefaultAsync();
                     _context.RequiredPositions.Update(requiredPos);
                 }
@@ -966,6 +990,12 @@ namespace ESMS.BackendAPI.Services.Projects
                     PosName = pos.Name,
                     Employees = employees
                 };
+                var listCandidateNeeds = await _context.RequiredPositions.Where(x => x.PositionID.Equals(pos.PosID)
+                && x.ProjectID.Equals(projectID)).Select(x => x.CandidateNeeded).ToListAsync();
+                foreach (var candidateNeed in listCandidateNeeds)
+                {
+                    positionInProject.CandidateNeeded += candidateNeed;
+                }
                 list.Add(positionInProject);
             }
             return new ApiSuccessResult<List<PositionInProject>>(list);
@@ -1058,7 +1088,7 @@ namespace ESMS.BackendAPI.Services.Projects
             var languageQuery = from l in _context.Languages
                                 join rl in _context.RequiredLanguages on l.LangID equals rl.LangID
                                 select new { l, rl };
-            var positions = await query.Where(x => x.rp.ProjectID.Equals(projectID))
+            var positions = await query.Where(x => x.rp.ProjectID.Equals(projectID)).OrderByDescending(x => x.rp.DateCreated)
                 .Select(x => new RequiredPositionVM()
                 {
                     RequiredPosID = x.rp.ID,
