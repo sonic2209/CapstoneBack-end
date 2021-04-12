@@ -109,23 +109,90 @@ namespace ESMS.BackendAPI.Services.Skills
             {
                 return new ApiErrorResult<bool>("Create skill failed");
             }
+            if (request.SkillType.Equals((int)SkillType.HardSkill))
+            {
+                if (request.HardSkillOption.Count() != 0)
+                {
+                    foreach (var type in request.HardSkillOption)
+                    {
+                        foreach (var pos in type.Position)
+                        {
+                            var minPos = new MinPosInProject()
+                            {
+                                TypeID = type.ProjectType,
+                                PosID = pos,
+                                SkillID = skill.SkillID
+                            };
+                            var checkSkill = await _context.MinPosInProjects.FindAsync(minPos.TypeID, minPos.PosID, minPos.SkillID);
+                            if (checkSkill == null)
+                            {
+                                _context.MinPosInProjects.Add(minPos);
+                                result = await _context.SaveChangesAsync();
+                                if (result == 0)
+                                {
+                                    return new ApiErrorResult<bool>("Add project field failed");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (request.SkillType.Equals((int)SkillType.SoftSkill))
+            {
+                if (request.SoftSkillOption.Count() != 0)
+                {
+                    foreach (var field in request.SoftSkillOption)
+                    {
+                        var skillField = new SkillInProjectField()
+                        {
+                            FieldID = field,
+                            SkillID = skill.SkillID
+                        };
+                        var checkSkill = await _context.SkillInProjectFields.FindAsync(skillField.FieldID, skillField.SkillID);
+                        if (checkSkill == null)
+                        {
+                            _context.SkillInProjectFields.Add(skillField);
+                            result = await _context.SaveChangesAsync();
+                            if (result == 0)
+                            {
+                                return new ApiErrorResult<bool>("Add project field failed");
+                            }
+                        }
+                    }
+                }
+            }
             return new ApiSuccessResult<bool>();
         }
 
-        public async Task<ApiResult<SkillViewModel>> GetByID(int skillID)
+        public async Task<ApiResult<SkillDetailVM>> GetByID(int skillID)
         {
+            var skillVM = new SkillDetailVM();
             var skill = await _context.Skills.FindAsync(skillID);
-            if (skill == null) return new ApiErrorResult<SkillViewModel>("Skill does not exist");
-
-            var skillViewModel = new SkillViewModel()
+            if (skill == null) return new ApiErrorResult<SkillDetailVM>("Skill does not exist");
+            skillVM.SkillID = skillID;
+            skillVM.SkillName = skill.SkillName;
+            skillVM.SkillType = (int)skill.SkillType;
+            skillVM.HardSkillOption = new List<HardSkillOption>();
+            skillVM.SoftSkillOption = new List<int>();
+            if (skill.SkillType.Equals(SkillType.HardSkill))
             {
-                SkillID = skillID,
-                SkillName = skill.SkillName,
-                SkillType = skill.SkillType,
-                Status = skill.Status
-            };
-
-            return new ApiSuccessResult<SkillViewModel>(skillViewModel);
+                skillVM.HardSkillOption = await _context.MinPosInProjects.Where(x => x.SkillID.Equals(skillID))
+                    .Select(x => new HardSkillOption()
+                    {
+                        ProjectType = x.TypeID
+                    }).Distinct().ToListAsync();
+                foreach (var type in skillVM.HardSkillOption)
+                {
+                    type.Position = await _context.MinPosInProjects.Where(x => x.SkillID.Equals(skillID)
+                    && x.TypeID.Equals(type.ProjectType)).Select(x => x.PosID).ToListAsync();
+                }
+            }
+            if (skill.SkillType.Equals(SkillType.SoftSkill))
+            {
+                skillVM.SoftSkillOption = await _context.SkillInProjectFields.Where(x => x.SkillID.Equals(skillID))
+                    .Select(x => x.FieldID).ToListAsync();
+            }
+            return new ApiSuccessResult<SkillDetailVM>(skillVM);
         }
 
         public async Task<ApiResult<List<ListSkillViewModel>>> GetHardSkills(int typeID, int posID)
@@ -216,9 +283,27 @@ namespace ESMS.BackendAPI.Services.Skills
                 {
                     return new ApiErrorResult<bool>("This skill name is existed");
                 }
-                else
+                skill.SkillName = request.SkillName;
+            }
+            if (!skill.SkillType.Equals((SkillType)request.SkillType))
+            {
+                if (skill.SkillType.Equals(SkillType.HardSkill))
                 {
-                    skill.SkillName = request.SkillName;
+                    var checkSkill = await _context.MinPosInProjects.Where(x => x.SkillID.Equals(skill.SkillID))
+                         .Select(x => new MinPosInProject()).ToListAsync();
+                    if (checkSkill.Count() != 0)
+                    {
+                        return new ApiErrorResult<bool>("Cannot change skill type");
+                    }
+                }
+                if (skill.SkillType.Equals(SkillType.SoftSkill))
+                {
+                    var checkSkill = await _context.SkillInProjectFields.Where(x => x.SkillID.Equals(skill.SkillID))
+                         .Select(x => new SkillInProjectField()).ToListAsync();
+                    if (checkSkill.Count() != 0)
+                    {
+                        return new ApiErrorResult<bool>("Cannot change skill type");
+                    }
                 }
             }
             skill.SkillType = (SkillType)request.SkillType;
@@ -227,6 +312,58 @@ namespace ESMS.BackendAPI.Services.Skills
             if (result == 0)
             {
                 return new ApiErrorResult<bool>("Update skill failed");
+            }
+            if (request.SkillType.Equals((int)SkillType.HardSkill))
+            {
+                if (request.HardSkillOption.Count() != 0)
+                {
+                    foreach (var type in request.HardSkillOption)
+                    {
+                        foreach (var pos in type.Position)
+                        {
+                            var minPos = new MinPosInProject()
+                            {
+                                TypeID = type.ProjectType,
+                                PosID = pos,
+                                SkillID = skill.SkillID
+                            };
+                            var checkSkill = await _context.MinPosInProjects.FindAsync(minPos.TypeID, minPos.PosID, minPos.SkillID);
+                            if (checkSkill == null)
+                            {
+                                _context.MinPosInProjects.Add(minPos);
+                                result = await _context.SaveChangesAsync();
+                                if (result == 0)
+                                {
+                                    return new ApiErrorResult<bool>("Add project field failed");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (request.SkillType.Equals((int)SkillType.SoftSkill))
+            {
+                if (request.SoftSkillOption.Count() != 0)
+                {
+                    foreach (var field in request.SoftSkillOption)
+                    {
+                        var skillField = new SkillInProjectField()
+                        {
+                            FieldID = field,
+                            SkillID = skill.SkillID
+                        };
+                        var checkSkill = await _context.SkillInProjectFields.FindAsync(skillField.FieldID, skillField.SkillID);
+                        if (checkSkill == null)
+                        {
+                            _context.SkillInProjectFields.Add(skillField);
+                            result = await _context.SaveChangesAsync();
+                            if (result == 0)
+                            {
+                                return new ApiErrorResult<bool>("Add project field failed");
+                            }
+                        }
+                    }
+                }
             }
             return new ApiSuccessResult<bool>();
         }

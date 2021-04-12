@@ -422,60 +422,32 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     PositionID = position.PosID,
                     ProjectID = projectID,
-                    CandidateNeeded = position.CandidateNeeded
+                    CandidateNeeded = position.CandidateNeeded,
+                    DateCreated = DateTime.Now
                 };
-                var checkRequired = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectID)
-                && x.PositionID.Equals(position.PosID)).Select(x => new RequiredPosition()
-                {
-                    ID = x.ID,
-                    PositionID = x.PositionID,
-                    ProjectID = x.ProjectID,
-                    CandidateNeeded = x.CandidateNeeded
-                }).FirstOrDefaultAsync();
-                if (checkRequired != null)
-                {
-                    checkRequired.CandidateNeeded = position.CandidateNeeded;
-                    _context.RequiredPositions.Update(checkRequired);
-                    requiredPosition.ID = checkRequired.ID;
-                }
-                else
-                {
-                    _context.RequiredPositions.Add(requiredPosition);
-                }
+                _context.RequiredPositions.Add(requiredPosition);
                 var result = await _context.SaveChangesAsync();
                 if (result == 0)
                 {
                     return new ApiErrorResult<bool>("Add RequiredPosition failed");
                 }
-                foreach (var language in position.Language)
+                if (position.Language.Count() != 0)
                 {
-                    var requiredLanguage = new RequiredLanguage()
+                    foreach (var language in position.Language)
                     {
-                        LangID = language.LangID,
-                        RequiredPositionID = requiredPosition.ID,
-                        Priority = language.Priority
-                    };
-                    var checkLanguage = await _context.RequiredLanguages.Where(x => x.RequiredPositionID.Equals(requiredPosition.ID)
-                        && x.LangID.Equals(language.LangID)).Select(x => new RequiredLanguage()
+                        var requiredLanguage = new RequiredLanguage()
                         {
-                            RequiredPositionID = x.RequiredPositionID,
-                            LangID = x.LangID,
-                            Priority = x.Priority
-                        }).FirstOrDefaultAsync();
-                    if (checkLanguage == null)
-                    {
+                            LangID = language.LangID,
+                            RequiredPositionID = requiredPosition.ID,
+                            Priority = language.Priority
+                        };
                         _context.RequiredLanguages.Add(requiredLanguage);
                     }
-                    else
+                    result = await _context.SaveChangesAsync();
+                    if (result == 0)
                     {
-                        checkLanguage.Priority = language.Priority;
-                        _context.RequiredLanguages.Update(checkLanguage);
+                        return new ApiErrorResult<bool>("Add RequiredLanguage failed");
                     }
-                }
-                result = await _context.SaveChangesAsync();
-                if (result == 0)
-                {
-                    return new ApiErrorResult<bool>("Add RequiredLanguage failed");
                 }
                 RequiredSkill requiredSkill;
                 if (position.SoftSkillIDs.Count() != 0)
@@ -492,26 +464,34 @@ namespace ESMS.BackendAPI.Services.Projects
                         };
                         _context.RequiredSkills.Add(requiredSkill);
                     }
-                }
-                foreach (var hardSkill in position.HardSkills)
-                {
-                    var skill = await _context.Skills.FindAsync(hardSkill.HardSkillID);
-                    if (skill == null) return new ApiErrorResult<bool>("HardSkill not found");
-                    if (skill.Status == false) return new ApiErrorResult<bool>("HardSkill:" + skill.SkillName + " is disable");
-                    requiredSkill = new RequiredSkill()
+                    result = await _context.SaveChangesAsync();
+                    if (result == 0)
                     {
-                        RequiredPositionID = requiredPosition.ID,
-                        SkillID = hardSkill.HardSkillID,
-                        Priority = hardSkill.Priority,
-                        SkillLevel = (SkillLevel)hardSkill.SkillLevel,
-                        CertificationLevel = hardSkill.CertificationLevel
-                    };
-                    _context.RequiredSkills.Add(requiredSkill);
+                        return new ApiErrorResult<bool>("Add RequiredSoftSkill failed");
+                    }
                 }
-                result = await _context.SaveChangesAsync();
-                if (result == 0)
+                if (position.HardSkills.Count() != 0)
                 {
-                    return new ApiErrorResult<bool>("Add RequiredSkill failed");
+                    foreach (var hardSkill in position.HardSkills)
+                    {
+                        var skill = await _context.Skills.FindAsync(hardSkill.HardSkillID);
+                        if (skill == null) return new ApiErrorResult<bool>("HardSkill not found");
+                        if (skill.Status == false) return new ApiErrorResult<bool>("HardSkill:" + skill.SkillName + " is disable");
+                        requiredSkill = new RequiredSkill()
+                        {
+                            RequiredPositionID = requiredPosition.ID,
+                            SkillID = hardSkill.HardSkillID,
+                            Priority = hardSkill.Priority,
+                            SkillLevel = (SkillLevel)hardSkill.SkillLevel,
+                            CertificationLevel = hardSkill.CertificationLevel
+                        };
+                        _context.RequiredSkills.Add(requiredSkill);
+                    }
+                    result = await _context.SaveChangesAsync();
+                    if (result == 0)
+                    {
+                        return new ApiErrorResult<bool>("Add RequiredHardSkill failed");
+                    }
                 }
             }
             return new ApiSuccessResult<bool>();
@@ -606,6 +586,25 @@ namespace ESMS.BackendAPI.Services.Projects
                             _context.EmpPositionInProjects.Add(employee);
                         }
                     }
+                    var requiredPos = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectID)
+                    && x.PositionID.Equals(candidate.PosID)).Select(x => new RequiredPosition()
+                    {
+                        PositionID = x.PositionID,
+                        ProjectID = x.ProjectID,
+                        CandidateNeeded = x.CandidateNeeded,
+                        DateCreated = x.DateCreated,
+                        Status = x.Status,
+                        MissingEmployee = x.MissingEmployee
+                    }).FirstOrDefaultAsync();
+                    if (requiredPos.Status == RequirementStatus.Waiting)
+                    {
+                        requiredPos.Status = RequirementStatus.SuggestAgain;
+                    }
+                    else
+                    {
+                        requiredPos.Status = RequirementStatus.Waiting;
+                    }
+                    _context.RequiredPositions.Update(requiredPos);
                 }
             }
             var result = await _context.SaveChangesAsync();
@@ -661,6 +660,17 @@ namespace ESMS.BackendAPI.Services.Projects
                             ResultObj = listEmp
                         };
                     }
+                    var requiredPos = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectID)
+                    && x.PositionID.Equals(position.PosID)).Select(x => new RequiredPosition()
+                    {
+                        PositionID = x.PositionID,
+                        ProjectID = x.ProjectID,
+                        CandidateNeeded = x.CandidateNeeded,
+                        DateCreated = x.DateCreated,
+                        Status = RequirementStatus.Finished,
+                        MissingEmployee = x.CandidateNeeded - position.EmpIDs.Count()
+                    }).FirstOrDefaultAsync();
+                    _context.RequiredPositions.Update(requiredPos);
                 }
                 if (DateTime.Compare(DateTime.Today, project.DateBegin) >= 0)
                 {
@@ -1047,7 +1057,10 @@ namespace ESMS.BackendAPI.Services.Projects
                     RequiredPosID = x.rp.ID,
                     PosID = x.rp.PositionID,
                     PosName = x.po.Name,
-                    CandidateNeeded = x.rp.CandidateNeeded
+                    CandidateNeeded = x.rp.CandidateNeeded,
+                    DateCreated = x.rp.DateCreated,
+                    MissingEmployee = x.rp.MissingEmployee,
+                    Status = x.rp.Status
                 }).ToListAsync();
             if (positions.Count() == 0)
             {

@@ -9,5 +9,7 @@ namespace ESMS.BackendAPI.ViewModels.Skill
     {
         public string SkillName { get; set; }
         public int SkillType { get; set; }
+        public List<HardSkillOption> HardSkillOption { get; set; }
+        public List<int> SoftSkillOption { get; set; }
     }
 }

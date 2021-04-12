@@ -1,12 +1,13 @@
-﻿using ESMS.Data.Enums;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ESMS.BackendAPI.ViewModels.Skill
 {
-    public class SkillUpdateRequest
+    public class SkillDetailVM
     {
+        public int SkillID { get; set; }
         public string SkillName { get; set; }
         public int SkillType { get; set; }
         public List<HardSkillOption> HardSkillOption { get; set; }
