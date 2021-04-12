@@ -1,5 +1,6 @@
 using ESMS.BackendAPI.Constants;
 using ESMS.BackendAPI.Services.Certifications;
+using ESMS.BackendAPI.Services.Emails;
 using ESMS.BackendAPI.Services.Employees;
 using ESMS.BackendAPI.Services.Languages;
 using ESMS.BackendAPI.Services.Positions;
@@ -76,6 +77,7 @@ namespace ESMS.BackendAPI
             services.AddTransient<IProjectService, ProjectService>();
             services.AddTransient<IPositionService, PositionService>();
             services.AddTransient<IEmployeeService, EmployeeService>();
+            services.AddTransient<IEmailService, EmailService>();
             services.AddTransient<ICertificationService, CertificationService>();
             services.AddTransient<ISkillService, SkillService>();
             services.AddTransient<ILanguageService, LanguageService>();
@@ -155,6 +157,7 @@ namespace ESMS.BackendAPI
             //var userService = app.ApplicationServices.GetService<IEmployeeService>();
             var scope = app.ApplicationServices.CreateScope();
             var userService = scope.ServiceProvider.GetService<IEmployeeService>();
+            var emailService = scope.ServiceProvider.GetService<IEmailService>();
             FirebaseApp.Create(new AppOptions()
             {
                 Credential = GoogleCredential.FromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "capstone-esms-firebase-adminsdk-3z2td-a35a510cb1.json")),
