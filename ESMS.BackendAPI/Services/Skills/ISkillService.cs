@@ -23,7 +23,7 @@ namespace ESMS.BackendAPI.Services.Skills
 
         public Task<ApiResult<PagedResult<SkillViewModel>>> GetSkillPaging(GetSkillPagingRequest request);
 
-        public Task<ApiResult<SkillViewModel>> GetByID(int skillID);
+        public Task<ApiResult<SkillDetailVM>> GetByID(int skillID);
 
         public Task<ApiResult<bool>> AddType(AddTypeRequest request);
 
