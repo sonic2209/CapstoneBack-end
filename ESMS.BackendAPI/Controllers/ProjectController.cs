@@ -88,6 +88,13 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(result);
         }
 
+        [HttpGet("getRequiredPosByID/{projectID}&&{posID}")]
+        public async Task<IActionResult> GetRequiredPositions(int projectID, int posID)
+        {
+            var result = await _projectService.GetRequiredPosByID(projectID, posID);
+            return Ok(result);
+        }
+
         //http://localhost/api/project/empID
         [HttpPost("{empID}")]
         public async Task<IActionResult> Create(string empID, [FromBody] ProjectCreateRequest request)
