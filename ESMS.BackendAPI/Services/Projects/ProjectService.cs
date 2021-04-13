@@ -1246,5 +1246,38 @@ namespace ESMS.BackendAPI.Services.Projects
 
             return new ApiSuccessResult<RequiredPositionVM>(requiredPos);
         }
+
+        public async Task<ApiResult<bool>> CheckProject()
+        {
+            var projects = await _context.Projects.Where(x => x.Status.Equals(ProjectStatus.Confirmed))
+                .Select(x => new Project()
+                {
+                    ProjectID = x.ProjectID,
+                    ProjectName = x.ProjectName,
+                    Description = x.Description,
+                    DateBegin = x.DateBegin,
+                    DateEstimatedEnd = x.DateEstimatedEnd,
+                    Status = x.Status,
+                    DateEnd = x.DateEnd,
+                    DateCreated = x.DateCreated,
+                    ProjectFieldID = x.ProjectFieldID,
+                    ProjectTypeID = x.ProjectTypeID,
+                    ProjectManagerID = x.ProjectManagerID,
+                    EmailStatus = x.EmailStatus
+                }).ToListAsync();
+            if (projects.Count() != 0)
+            {
+                foreach (var p in projects)
+                {
+                    if (DateTime.Compare(p.DateBegin.Date, DateTime.Today) == 0)
+                    {
+                        p.Status = ProjectStatus.OnGoing;
+                        _context.Projects.Update(p);
+                    }
+                }
+                var result = await _context.SaveChangesAsync();
+            }
+            return new ApiSuccessResult<bool>();
+        }
     }
 }
