@@ -32,7 +32,7 @@ namespace ESMS.BackendAPI.Services.Projects
                     var checkName = _context.Projects.Where(x => x.ProjectName.Equals(request.ProjectName)).Select(x => new Project()).FirstOrDefault();
                     if (checkName != null)
                     {
-                        return new ApiErrorResult<int>("This project name is existed");
+                        return new ApiErrorResult<int>("projectName : This project name is existed");
                     }
                     project.ProjectName = request.ProjectName;
                 }
@@ -44,13 +44,13 @@ namespace ESMS.BackendAPI.Services.Projects
                     .Select(x => x.DateEstimatedEnd).FirstOrDefault();
                     if (DateTime.Compare(request.DateBegin, checkDate.AddDays(3)) < 0)
                     {
-                        return new ApiErrorResult<int>("Date begin must be after your current project's estimated end date(" + checkDate.ToString("dd/MM/yyyy") + ") at least 3 days");
+                        return new ApiErrorResult<int>("dateBegin : Date begin must be after your current project's estimated end date(" + checkDate.ToString("dd/MM/yyyy") + ") at least 3 days");
                     }
                     project.DateBegin = request.DateBegin;
                 }
                 if (DateTime.Compare(request.DateBegin, request.DateEstimatedEnd) > 0)
                 {
-                    return new ApiErrorResult<int>("Date estimated end is earlier than date begin");
+                    return new ApiErrorResult<int>("dateEstimatedEnd : Date estimated end is earlier than date begin");
                 }
                 project.DateEstimatedEnd = request.DateEstimatedEnd;
                 project.ProjectTypeID = request.ProjectTypeID;
@@ -68,18 +68,18 @@ namespace ESMS.BackendAPI.Services.Projects
                     .Select(x => new Project()).FirstOrDefault();
                 if (checkName != null)
                 {
-                    return new ApiErrorResult<int>("This project name is existed");
+                    return new ApiErrorResult<int>("projectName : This project name is existed");
                 }
                 var checkDate = _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
                     .OrderByDescending(x => x.DateEstimatedEnd)
                     .Select(x => x.DateEstimatedEnd).FirstOrDefault();
                 if (DateTime.Compare(request.DateBegin, checkDate.AddDays(3)) < 0)
                 {
-                    return new ApiErrorResult<int>("Date begin must be after your current project's estimated end date(" + checkDate.ToString("dd/MM/yyyy") + ") at least 3 days");
+                    return new ApiErrorResult<int>("dateBegin : Date begin must be after your current project's estimated end date(" + checkDate.ToString("dd/MM/yyyy") + ") at least 3 days");
                 }
                 if (DateTime.Compare(request.DateBegin, request.DateEstimatedEnd) > 0)
                 {
-                    return new ApiErrorResult<int>("Date estimated end is earlier than date begin");
+                    return new ApiErrorResult<int>("dateEstimatedEnd : Date estimated end is earlier than date begin");
                 }
                 project = new Project()
                 {
@@ -107,6 +107,53 @@ namespace ESMS.BackendAPI.Services.Projects
         {
             var project = await _context.Projects.FindAsync(projectID);
             if (project == null) return new ApiErrorResult<bool>("Project does not exist");
+            var requirePos = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectID))
+                .Select(x => new RequiredPosition()
+                {
+                    ID = x.ID,
+                    ProjectID = x.ProjectID,
+                    PositionID = x.PositionID,
+                    CandidateNeeded = x.CandidateNeeded,
+                    DateCreated = x.DateCreated,
+                    MissingEmployee = x.MissingEmployee
+                }).ToListAsync();
+            if (requirePos.Count() != 0)
+            {
+                foreach (var pos in requirePos)
+                {
+                    var requireSkill = await _context.RequiredSkills.Where(x => x.RequiredPositionID.Equals(pos.ID))
+                        .Select(x => new RequiredSkill()
+                        {
+                            SkillID = x.SkillID,
+                            RequiredPositionID = x.RequiredPositionID,
+                            CertificationLevel = x.CertificationLevel,
+                            SkillLevel = x.SkillLevel,
+                            Priority = x.Priority
+                        }).ToListAsync();
+                    if (requireSkill.Count() != 0)
+                    {
+                        foreach (var skill in requireSkill)
+                        {
+                            _context.RequiredSkills.Remove(skill);
+                        }
+                    }
+                    var requireLanguage = await _context.RequiredLanguages.Where(x => x.RequiredPositionID.Equals(pos.ID))
+                        .Select(x => new RequiredLanguage()
+                        {
+                            LangID = x.LangID,
+                            RequiredPositionID = x.RequiredPositionID,
+                            Priority = x.Priority
+                        }).ToListAsync();
+                    if (requireLanguage.Count() != 0)
+                    {
+                        foreach (var lang in requireLanguage)
+                        {
+                            _context.RequiredLanguages.Remove(lang);
+                        }
+                    }
+                    _context.RequiredPositions.Remove(pos);
+                }
+            }
             var empInProject = await _context.EmpPositionInProjects.Where(x => x.ProjectID.Equals(projectID))
                 .Select(x => new EmpPositionInProject()
                 {
@@ -523,9 +570,8 @@ namespace ESMS.BackendAPI.Services.Projects
             {
                 if (emp.DateIn != null)
                 {
-                    var employee = await _context.Employees.FindAsync(emp.EmpID);
-                    employee.Status = EmployeeStatus.Pending;
-                    _context.Employees.Update(employee);
+                    emp.DateOut = DateTime.Now;
+                    _context.EmpPositionInProjects.Update(emp);
                 }
                 else
                 {
