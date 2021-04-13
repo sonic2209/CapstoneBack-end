@@ -41,7 +41,7 @@ namespace ESMS.BackendAPI.Controllers
         [HttpPost("unsubscription")]
         public async Task<IActionResult> Unsubscribe(string token, string topic)
         {
-            await FirebaseMessaging.DefaultInstance.UnsubscribeFromTopicAsync(new[] { token }, "topic");          
+            await FirebaseMessaging.DefaultInstance.UnsubscribeFromTopicAsync(new[] { token }, topic);          
             return NoContent();
         }
     }
