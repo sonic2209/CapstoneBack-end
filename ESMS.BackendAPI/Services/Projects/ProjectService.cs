@@ -609,7 +609,7 @@ namespace ESMS.BackendAPI.Services.Projects
                         }
                     }
                     var requiredPos = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectID)
-                    && x.PositionID.Equals(candidate.PosID)).Select(x => new RequiredPosition()
+                    && x.PositionID.Equals(candidate.PosID)).OrderByDescending(x => x.DateCreated).Select(x => new RequiredPosition()
                     {
                         ID = x.ID,
                         PositionID = x.PositionID,
