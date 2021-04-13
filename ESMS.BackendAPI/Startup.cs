@@ -157,6 +157,7 @@ namespace ESMS.BackendAPI
             //var userService = app.ApplicationServices.GetService<IEmployeeService>();
             var scope = app.ApplicationServices.CreateScope();
             var userService = scope.ServiceProvider.GetService<IEmployeeService>();
+            var projectService = scope.ServiceProvider.GetService<IProjectService>();
             var emailService = scope.ServiceProvider.GetService<IEmailService>();
             FirebaseApp.Create(new AppOptions()
             {
@@ -213,7 +214,7 @@ namespace ESMS.BackendAPI
                 RoleName = "Employee",
                 UserName = "nguoitest123"
             };
-            
+
             new Thread(() =>
                 {
                     while (true)
@@ -221,6 +222,7 @@ namespace ESMS.BackendAPI
                         Thread.CurrentThread.IsBackground = true;
                         /* run your code here */
                         //   Console.WriteLine("Hello, world");
+                        var check = projectService.CheckProject();
                         var result = userService.GetById("064535f6-61c5-4968-93a3-fc22172640a3");
                         /* */
                         Thread.Sleep(TimeSpan.FromMinutes(30));
