@@ -306,19 +306,16 @@ namespace ESMS.BackendAPI.Services.Employees
                     var Position = _context.Positions.Where(x => x.PosID == requiredPosition.PosID).Select(x => x.Name).FirstOrDefault();
                     var PosId = _context.Positions.Where(x => x.PosID == requiredPosition.PosID).Select(x => x.PosID).FirstOrDefault();
 
-                    var ListEmpPosquery = from ep in _context.EmpPositions
-                                          join p in _context.Positions on ep.PosID equals p.PosID
-                                          join e in _context.Employees on ep.EmpID equals e.Id
-                                          select new { ep, p, e };
+                   // var ListEmpPosquery = await _context.Employees
                   //  foreach (var posLevel in requiredPosition.PosLevel)
                   //  {
-                        var ListEmpInPos = await ListEmpPosquery.Where(x => x.ep.PosID == requiredPosition.PosID && x.ep.DateOut == null).Select(x => new EmpInPos()
+                        var ListEmpInPos = await _context.Employees.Select(x => new EmpInPos()
                         {
-                            EmpId = x.ep.EmpID,
-                            DateIn = x.ep.DateIn,
+                            EmpId = x.Id,
+                        //    DateIn = x.ep.DateIn,
                         //    NameExp = x.ep.PositionLevel,
-                            EmpName = x.e.Name,
-                            Position = x.p.Name,
+                            EmpName = x.Name,
+                        //    Position = x.p.Name,
                         }).ToListAsync();
                         if (ListEmpInPos.Count > 0)
                         {
