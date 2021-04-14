@@ -17,7 +17,7 @@ namespace ESMS.BackendAPI.Services.Skills
 
         public Task<ApiResult<List<ListSkillViewModel>>> GetSkills(int skillType);
 
-        public Task<ApiResult<List<ListSkillViewModel>>> GetHardSkills(int typeID, int posID);
+        public Task<ApiResult<List<HardSkillVM>>> GetHardSkills(int typeID, int posID);
 
         public Task<ApiResult<List<int>>> GetSoftSkills(int fieldID);
 

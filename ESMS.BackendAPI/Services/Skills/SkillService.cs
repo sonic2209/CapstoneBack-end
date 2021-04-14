@@ -8,6 +8,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using ESMS.BackendAPI.ViewModels.Common;
 using ESMS.BackendAPI.ViewModels.Skill;
+using ESMS.BackendAPI.ViewModels.Certification;
 
 namespace ESMS.BackendAPI.Services.Skills
 {
@@ -195,22 +196,31 @@ namespace ESMS.BackendAPI.Services.Skills
             return new ApiSuccessResult<SkillDetailVM>(skillVM);
         }
 
-        public async Task<ApiResult<List<ListSkillViewModel>>> GetHardSkills(int typeID, int posID)
+        public async Task<ApiResult<List<HardSkillVM>>> GetHardSkills(int typeID, int posID)
         {
             var query = from mp in _context.MinPosInProjects
                         join s in _context.Skills on mp.SkillID equals s.SkillID
                         select new { mp, s };
             var skills = await query.Where(x => x.mp.TypeID.Equals(typeID) && x.mp.PosID.Equals(posID))
-                .Select(x => new ListSkillViewModel()
+                .Select(x => new HardSkillVM()
                 {
                     SkillID = x.mp.SkillID,
                     SkillName = x.s.SkillName
                 }).ToListAsync();
-            if (skills.Count() == 0)
+            if (skills.Count() != 0)
             {
-                return new ApiErrorResult<List<ListSkillViewModel>>("List hard skill not found");
+                foreach (var s in skills)
+                {
+                    s.Certifications = await _context.Certifications.Where(x => x.SkillID.Equals(s.SkillID))
+                        .Select(x => new ListCertificationViewModel()
+                        {
+                            CertificationID = x.CertificationID,
+                            CertificationName = x.CertificationName,
+                            CertiLevel = x.CertiLevel
+                        }).ToListAsync();
+                }
             }
-            return new ApiSuccessResult<List<ListSkillViewModel>>(skills);
+            return new ApiSuccessResult<List<HardSkillVM>>(skills);
         }
 
         public async Task<ApiResult<PagedResult<SkillViewModel>>> GetSkillPaging(GetSkillPagingRequest request)
