@@ -7,6 +7,6 @@ namespace ESMS.BackendAPI.ViewModels.Project
 {
     public class AddCandidateRequest
     {
-        public List<Candidate> Candidates { get; set; }
+        public List<AddCandidateDetail> Candidates { get; set; }
     }
 }

@@ -20,5 +20,6 @@ namespace ESMS.Data.Entities
         public List<EmpCertification> EmpCertifications { get; set; }
         public List<EmpPosition> EmpPositions { get; set; }
         public List<EmpLanguage> EmpLanguages { get; set; }
+        public List<RejectedEmployee> RejectedEmployees { get; set; }
     }
 }

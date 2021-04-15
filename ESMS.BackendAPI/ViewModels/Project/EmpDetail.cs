@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 
 namespace ESMS.BackendAPI.ViewModels.Project
 {
-    public class Candidate
+    public class EmpDetail
     {
-        public int PosID { get; set; }
-        public List<string> EmpIDs { get; set; }
+        public string EmpID { get; set; }
+        public bool IsAccept { get; set; }
+        public string Note { get; set; }
     }
 }

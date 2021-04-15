@@ -7,7 +7,6 @@ namespace ESMS.BackendAPI.ViewModels.Project
 {
     public class ConfirmCandidateRequest
     {
-        public List<Candidate> Candidates { get; set; }
-        public bool IsAccept { get; set; }
+        public List<ConfirmCandidateDetail> Candidates { get; set; }
     }
 }

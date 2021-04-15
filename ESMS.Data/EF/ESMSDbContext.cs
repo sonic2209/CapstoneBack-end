@@ -39,6 +39,7 @@ namespace ESMS.Data.EF
             modelBuilder.ApplyConfiguration(new ProjectFieldConfiguration());
             modelBuilder.ApplyConfiguration(new MinPosInProjectConfiguration());
             modelBuilder.ApplyConfiguration(new SkillInProjectFieldConfiguration());
+            modelBuilder.ApplyConfiguration(new RejectedEmployeeConfiguration());
 
             modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("AppUserClaims");
             modelBuilder.Entity<IdentityUserRole<string>>().ToTable("AppUserRoles").HasKey(x => new { x.UserId, x.RoleId });
@@ -68,5 +69,6 @@ namespace ESMS.Data.EF
         public DbSet<ProjectField> ProjectFields { get; set; }
         public DbSet<MinPosInProject> MinPosInProjects { get; set; }
         public DbSet<SkillInProjectField> SkillInProjectFields { get; set; }
+        public DbSet<RejectedEmployee> RejectedEmployees { get; set; }
     }
 }

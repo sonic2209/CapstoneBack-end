@@ -7,7 +7,6 @@ namespace ESMS.Data.Enums
     public enum RequirementStatus
     {
         Waiting = 1,
-        SuggestAgain = 2,
-        Finished = 3
+        Finished = 2
     }
 }
