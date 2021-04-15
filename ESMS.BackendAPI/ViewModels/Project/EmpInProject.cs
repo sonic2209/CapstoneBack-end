@@ -14,6 +14,6 @@ namespace ESMS.BackendAPI.ViewModels.Project
         public int NumberOfProject { get; set; }
         public DateTime? DateIn { get; set; }
         public EmployeeStatus Status { get; set; }
-        public int? RequirePosID { get; set; }
+        public int? RequiredPosID { get; set; }
     }
 }
