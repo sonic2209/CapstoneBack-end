@@ -233,8 +233,7 @@ namespace ESMS.BackendAPI.Services.Projects
                         Email = x.e.Email,
                         PhoneNumber = x.e.PhoneNumber,
                         Status = x.e.Status,
-                        DateIn = x.ep.DateIn,
-                        RequiredPosID = x.ep.RequiredPositionID
+                        DateIn = x.ep.DateIn
                     }).ToListAsync();
                 if (employees.Count() != 0)
                 {
@@ -990,20 +989,19 @@ namespace ESMS.BackendAPI.Services.Projects
             var query = from rp in _context.RequiredPositions
                         join po in _context.Positions on rp.PositionID equals po.PosID
                         select new { rp, po };
-            var positions = await query.Where(x => x.rp.ProjectID.Equals(projectID))
-                .Select(x => new ListPositionViewModel()
+            var positions = await query.Where(x => x.rp.ProjectID.Equals(projectID) && x.rp.Status.Equals(RequirementStatus.Waiting))
+                .Select(x => new PositionInProject()
                 {
+                    RequiredPosID = x.rp.ID,
                     PosID = x.po.PosID,
-                    Name = x.po.Name
-                }).Distinct().ToListAsync();
-            var list = new List<PositionInProject>();
+                    PosName = x.po.Name
+                }).ToListAsync();
             var empQuery = from ep in _context.EmpPositionInProjects
                            join e in _context.Employees on ep.EmpID equals e.Id
                            select new { ep, e };
             foreach (var pos in positions)
             {
-                int count = 0;
-                var employees = await empQuery.Where(x => x.ep.PosID == pos.PosID && x.ep.DateIn == null && x.ep.ProjectID.Equals(projectID))
+                pos.Employees = await empQuery.Where(x => x.ep.PosID == pos.PosID && x.ep.DateIn == null && x.ep.ProjectID.Equals(projectID))
                     .Select(x => new EmpInProject()
                     {
                         EmpID = x.e.Id,
@@ -1011,38 +1009,29 @@ namespace ESMS.BackendAPI.Services.Projects
                         Email = x.e.Email,
                         PhoneNumber = x.e.PhoneNumber,
                         Status = x.e.Status,
-                        DateIn = x.ep.DateIn,
-                        RequiredPosID = x.ep.RequiredPositionID
+                        DateIn = x.ep.DateIn
                     }).ToListAsync();
-                if (employees.Count() != 0)
+                if (pos.Employees.Count() != 0)
                 {
-                    foreach (var emp in employees)
+                    foreach (var emp in pos.Employees)
                     {
                         var projects = _context.EmpPositionInProjects.Where(x => x.EmpID.Equals(emp.EmpID) && x.ProjectID != projectID)
                             .Select(x => new EmpPositionInProject()).ToList();
                         emp.NumberOfProject = projects.Count();
                         if (emp.DateIn != null)
                         {
-                            count += 1;
+                            pos.Noe += 1;
                         }
                     }
                 }
-                var positionInProject = new PositionInProject()
-                {
-                    PosID = pos.PosID,
-                    PosName = pos.Name,
-                    Employees = employees,
-                    Noe = count
-                };
                 var listCandidateNeeds = await _context.RequiredPositions.Where(x => x.PositionID.Equals(pos.PosID)
                 && x.ProjectID.Equals(projectID)).Select(x => x.CandidateNeeded).ToListAsync();
                 foreach (var candidateNeed in listCandidateNeeds)
                 {
-                    positionInProject.CandidateNeeded += candidateNeed;
+                    pos.CandidateNeeded += candidateNeed;
                 }
-                list.Add(positionInProject);
             }
-            return new ApiSuccessResult<List<PositionInProject>>(list);
+            return new ApiSuccessResult<List<PositionInProject>>(positions);
         }
 
         public async Task<ApiResult<List<PosInProject>>> GetStatisticsByEmpID(string empID)

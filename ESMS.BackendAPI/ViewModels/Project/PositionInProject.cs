@@ -7,6 +7,7 @@ namespace ESMS.BackendAPI.ViewModels.Project
 {
     public class PositionInProject
     {
+        public int RequiredPosID { get; set; }
         public int PosID { get; set; }
         public string PosName { get; set; }
         public int CandidateNeeded { get; set; }
