@@ -233,7 +233,8 @@ namespace ESMS.BackendAPI.Services.Projects
                         Email = x.e.Email,
                         PhoneNumber = x.e.PhoneNumber,
                         Status = x.e.Status,
-                        DateIn = x.ep.DateIn
+                        DateIn = x.ep.DateIn,
+                        RequirePosID = x.ep.RequiredPositionID
                     }).ToListAsync();
                 if (employees.Count() != 0)
                 {
@@ -1010,7 +1011,8 @@ namespace ESMS.BackendAPI.Services.Projects
                         Email = x.e.Email,
                         PhoneNumber = x.e.PhoneNumber,
                         Status = x.e.Status,
-                        DateIn = x.ep.DateIn
+                        DateIn = x.ep.DateIn,
+                        RequirePosID = x.ep.RequiredPositionID
                     }).ToListAsync();
                 if (employees.Count() != 0)
                 {
