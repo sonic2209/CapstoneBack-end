@@ -12,11 +12,11 @@ namespace ESMS.Data.Configurations
         public void Configure(EntityTypeBuilder<EmpPositionInProject> builder)
         {
             builder.ToTable("EmpPositionInProjects");
-            builder.HasKey(x => new { x.ProjectID, x.PosID, x.EmpID });
+            builder.HasKey(x => new { x.EmpID, x.RequiredPositionID });
             builder.Property(x => x.DateIn).HasColumnType("date");
-            builder.HasOne(x => x.Project).WithMany(x => x.EmpPosInProjects).HasForeignKey(x => x.ProjectID);
+            builder.Property(x => x.DateOut).HasColumnType("date");
+            builder.Property(x => x.IsAccept).HasDefaultValue(false);
             builder.HasOne(x => x.Employee).WithMany(x => x.EmpPosInProjects).HasForeignKey(x => x.EmpID);
-            builder.HasOne(x => x.Position).WithMany(x => x.EmpPosInProjects).HasForeignKey(x => x.PosID);
             builder.HasOne(x => x.RequiredPosition).WithMany(x => x.EmpPositionInProjects).HasForeignKey(x => x.RequiredPositionID);
         }
     }

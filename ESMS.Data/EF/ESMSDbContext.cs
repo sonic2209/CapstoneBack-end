@@ -31,7 +31,6 @@ namespace ESMS.Data.EF
             modelBuilder.ApplyConfiguration(new RoleConfiguration());
             modelBuilder.ApplyConfiguration(new RequiredPositionConfiguration());
             modelBuilder.ApplyConfiguration(new RequiredSkillConfiguration());
-            modelBuilder.ApplyConfiguration(new EmpPositionConfiguration());
             modelBuilder.ApplyConfiguration(new LanguageConfiguration());
             modelBuilder.ApplyConfiguration(new EmpLanguageConfiguration());
             modelBuilder.ApplyConfiguration(new RequiredLanguageConfiguration());
@@ -39,7 +38,6 @@ namespace ESMS.Data.EF
             modelBuilder.ApplyConfiguration(new ProjectFieldConfiguration());
             modelBuilder.ApplyConfiguration(new MinPosInProjectConfiguration());
             modelBuilder.ApplyConfiguration(new SkillInProjectFieldConfiguration());
-            modelBuilder.ApplyConfiguration(new RejectedEmployeeConfiguration());
 
             modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("AppUserClaims");
             modelBuilder.Entity<IdentityUserRole<string>>().ToTable("AppUserRoles").HasKey(x => new { x.UserId, x.RoleId });
@@ -61,7 +59,6 @@ namespace ESMS.Data.EF
         public DbSet<EmpPositionInProject> EmpPositionInProjects { get; set; }
         public DbSet<RequiredPosition> RequiredPositions { get; set; }
         public DbSet<RequiredSkill> RequiredSkills { get; set; }
-        public DbSet<EmpPosition> EmpPositions { get; set; }
         public DbSet<Language> Languages { get; set; }
         public DbSet<EmpLanguage> EmpLanguages { get; set; }
         public DbSet<RequiredLanguage> RequiredLanguages { get; set; }
@@ -69,6 +66,5 @@ namespace ESMS.Data.EF
         public DbSet<ProjectField> ProjectFields { get; set; }
         public DbSet<MinPosInProject> MinPosInProjects { get; set; }
         public DbSet<SkillInProjectField> SkillInProjectFields { get; set; }
-        public DbSet<RejectedEmployee> RejectedEmployees { get; set; }
     }
 }

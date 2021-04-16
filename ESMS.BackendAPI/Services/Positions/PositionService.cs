@@ -24,12 +24,6 @@ namespace ESMS.BackendAPI.Services.Positions
             if (position == null) new ApiErrorResult<bool>("Position does not exist");
             if (position.Status)
             {
-                var empPosition = await _context.EmpPositions.Where(x => x.PosID.Equals(position.PosID) && x.DateOut == null)
-                    .Select(x => x.EmpID).ToListAsync();
-                if (empPosition.Count() != 0)
-                {
-                    return new ApiErrorResult<bool>("This position is assigned to some employees");
-                }
                 var requiredPosition = await _context.RequiredPositions.Where(x => x.PositionID.Equals(position.PosID))
                     .Select(x => x.ID).ToListAsync();
                 if (requiredPosition.Count() != 0)
