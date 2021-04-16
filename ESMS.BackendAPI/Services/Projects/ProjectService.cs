@@ -341,16 +341,20 @@ namespace ESMS.BackendAPI.Services.Projects
 
         public async Task<ApiResult<PagedResult<AdminProjectViewModel>>> GetProjectPaging(GetProjectPagingRequest request)
         {
-            var list = await _context.Projects.Select(x => new Project()
+            var list = await _context.Projects.Where(x => x.Status != ProjectStatus.Finished).Select(x => new Project()
             {
                 ProjectID = x.ProjectID,
                 Status = x.Status
             }).ToListAsync();
+            var empQuery = from ep in _context.EmpPositionInProjects
+                           join rp in _context.RequiredPositions on ep.RequiredPositionID equals rp.ID
+                           select new { ep, rp };
             foreach (var p in list)
             {
                 if (p.Status == ProjectStatus.Pending)
                 {
-                    var empInProject = _context.EmpPositionInProjects.Select(x => new EmpPositionInProject()).ToList();
+                    var empInProject = empQuery.Where(x => x.rp.ProjectID.Equals(p.ProjectID))
+                            .Select(x => new EmpPositionInProject()).ToList();
                     if (empInProject.Count() == 0)
                     {
                         var project = await _context.Projects.FindAsync(p.ProjectID);
@@ -401,7 +405,8 @@ namespace ESMS.BackendAPI.Services.Projects
                 p.FieldName = _context.ProjectFields.Find(p.FieldID).Name;
                 if (p.Status == ProjectStatus.OnGoing || p.Status == ProjectStatus.Confirmed)
                 {
-                    var listEmp = await _context.EmpPositionInProjects.Select(x => new EmpPositionInProject()).ToListAsync();
+                    var listEmp = await empQuery.Where(x => x.rp.ProjectID.Equals(p.ProjectID) && x.ep.DateIn == null)
+                        .Select(x => new EmpPositionInProject()).ToListAsync();
                     if (listEmp.Count() != 0)
                     {
                         p.IsAddNewCandidate = true;
@@ -558,10 +563,17 @@ namespace ESMS.BackendAPI.Services.Projects
             project.Status = ProjectStatus.Finished;
             project.DateEnd = DateTime.Now;
             _context.Projects.Update(project);
-            var empInProject = await _context.EmpPositionInProjects.Select(x => new EmpPositionInProject()
+            var empQuery = from ep in _context.EmpPositionInProjects
+                           join rp in _context.RequiredPositions on ep.RequiredPositionID equals rp.ID
+                           select new { ep, rp };
+            var empInProject = await empQuery.Where(x => x.rp.ProjectID.Equals(projectID)).Select(x => new EmpPositionInProject()
             {
-                EmpID = x.EmpID,
-                DateIn = x.DateIn
+                EmpID = x.ep.EmpID,
+                RequiredPositionID = x.ep.RequiredPositionID,
+                DateIn = x.ep.DateIn,
+                DateOut = x.ep.DateOut,
+                IsAccept = x.ep.IsAccept,
+                Note = x.ep.Note
             }).ToListAsync();
             foreach (var emp in empInProject)
             {
@@ -592,6 +604,9 @@ namespace ESMS.BackendAPI.Services.Projects
                 project.Status = ProjectStatus.Pending;
             }
             _context.Projects.Update(project);
+            var empQuery = from ep in _context.EmpPositionInProjects
+                           join rp in _context.RequiredPositions on ep.RequiredPositionID equals rp.ID
+                           select new { ep, rp };
             foreach (var candidate in request.Candidates)
             {
                 var pos = await _context.Positions.FindAsync(candidate.PosID);
@@ -607,7 +622,8 @@ namespace ESMS.BackendAPI.Services.Projects
                     {
                         count += cn;
                     }
-                    var employees = await _context.EmpPositionInProjects.Select(x => x.EmpID).ToListAsync();
+                    var employees = await empQuery.Where(x => x.rp.ProjectID.Equals(projectID)
+                    && x.rp.PositionID.Equals(pos.PosID)).Select(x => new EmpPositionInProject()).ToListAsync();
                     count -= employees.Count();
                     if (candidate.EmpIDs.Count() > count)
                     {
@@ -616,20 +632,24 @@ namespace ESMS.BackendAPI.Services.Projects
                     }
                     foreach (var emp in candidate.EmpIDs)
                     {
-                        var checkEmp = _context.EmpPositionInProjects.Where(x => x.EmpID.Equals(emp) && x.DateIn != null && x.DateOut == null)
-                            .Select(x => x.EmpID).FirstOrDefault();
+                        var checkEmp = await empQuery.Where(x => x.ep.EmpID.Equals(emp) && x.ep.DateIn != null
+                        && x.ep.DateOut == null && x.rp.ProjectID != projectID).Select(x => x.ep.EmpID).FirstOrDefaultAsync();
                         if (checkEmp != null)
                         {
                             var empName = _context.Employees.Find(emp).Name;
                             return new ApiErrorResult<bool>("Employee:" + empName + " already in other project");
                         }
-                        var employee = _context.EmpPositionInProjects.Where(x => x.EmpID.Equals(emp))
+                        var employee = await empQuery.Where(x => x.ep.EmpID.Equals(emp) && x.rp.ProjectID.Equals(projectID)
+                        && x.ep.IsAccept == true)
                             .Select(x => new EmpPositionInProject()
                             {
                                 EmpID = emp,
-                                DateIn = x.DateIn,
-                                DateOut = x.DateOut
-                            }).FirstOrDefault();
+                                RequiredPositionID = x.ep.RequiredPositionID,
+                                DateIn = x.ep.DateIn,
+                                DateOut = x.ep.DateOut,
+                                IsAccept = x.ep.IsAccept,
+                                Note = x.ep.Note
+                            }).FirstOrDefaultAsync();
                         if (employee != null)
                         {
                             if (employee.DateOut == null)
