@@ -698,7 +698,7 @@ namespace ESMS.BackendAPI.Services.Projects
                 var requiredPos = await _context.RequiredPositions.FindAsync(position.RequiredPosID);
                 foreach (var id in position.EmpIDs)
                 {
-                    var employee = await _context.Employees.FindAsync(id);
+                    var employee = await _context.Employees.FindAsync(id.EmpID);
                     var empInProject = await _context.EmpPositionInProjects.Where(x => x.EmpID.Equals(id.EmpID)
                     && x.PosID.Equals(position.PosID) && x.ProjectID.Equals(projectID)).Select(x => new EmpPositionInProject()
                     {
