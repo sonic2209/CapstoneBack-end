@@ -214,49 +214,46 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     PosID = x.po.PosID,
                     PosName = x.po.Name,
-                }).Distinct().ToListAsync();
-            var list = new List<PositionInProject>();
+                }).ToListAsync();
+            var positionInProject = positions.GroupBy(x => new { x.PosID, x.PosName }).Select(x => x.FirstOrDefault()).ToList();
             var empQuery = from ep in _context.EmpPositionInProjects
                            join e in _context.Employees on ep.EmpID equals e.Id
                            select new { ep, e };
-            foreach (var pos in positions)
+            foreach (var pos in positionInProject)
             {
-                int count = 0;
-                var employees = await empQuery
-                    .Select(x => new EmpInProject()
-                    {
-                        EmpID = x.e.Id,
-                        Name = x.e.Name,
-                        Email = x.e.Email,
-                        PhoneNumber = x.e.PhoneNumber,
-                        Status = x.e.Status,
-                        DateIn = x.ep.DateIn
-                    }).ToListAsync();
-                if (employees.Count() != 0)
+                pos.Employees = new List<EmpInProject>();
+                var listRequirePos = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectID)
+                && x.PositionID.Equals(pos.PosID)).Select(x => new RequiredPosition()
                 {
-                    foreach (var emp in employees)
-                    {
-                        if (emp.DateIn != null)
+                    ID = x.ID,
+                    CandidateNeeded = x.CandidateNeeded
+                }).ToListAsync();
+                foreach (var requirePos in listRequirePos)
+                {
+                    var employees = await empQuery.Where(x => x.ep.RequiredPositionID.Equals(requirePos.ID))
+                        .Select(x => new EmpInProject()
                         {
-                            count += 1;
+                            EmpID = x.e.Id,
+                            Name = x.e.Name,
+                            Email = x.e.Email,
+                            PhoneNumber = x.e.PhoneNumber,
+                            Status = x.e.Status,
+                            DateIn = x.ep.DateIn
+                        }).ToListAsync();
+                    if (employees.Count() != 0)
+                    {
+                        foreach (var emp in employees)
+                        {
+                            pos.Employees.Add(emp);
                         }
                     }
+                    var listEmp = await _context.EmpPositionInProjects.Where(x => x.RequiredPositionID.Equals(requirePos.ID)
+                    && x.DateIn != null).Select(x => x.EmpID).ToListAsync();
+                    pos.Noe += listEmp.Count();
+                    pos.CandidateNeeded += requirePos.CandidateNeeded;
                 }
-                var positionInProject = new PositionInProject()
-                {
-                    PosID = pos.PosID,
-                    Employees = employees,
-                    Noe = count
-                };
-                var listCandidateNeeds = await _context.RequiredPositions.Where(x => x.PositionID.Equals(pos.PosID)
-                && x.ProjectID.Equals(projectID)).Select(x => x.CandidateNeeded).ToListAsync();
-                foreach (var candidateNeed in listCandidateNeeds)
-                {
-                    positionInProject.CandidateNeeded += candidateNeed;
-                }
-                list.Add(positionInProject);
             }
-            return new ApiSuccessResult<List<PositionInProject>>(list);
+            return new ApiSuccessResult<List<PositionInProject>>(positionInProject);
         }
 
         public async Task<ApiResult<ListProjectViewModel>> GetProjectByEmpID(string empID, GetProjectPagingRequest request)
@@ -268,13 +265,17 @@ namespace ESMS.BackendAPI.Services.Projects
                     ProjectID = x.ProjectID,
                     Status = x.Status
                 }).ToListAsync();
+            var empQuery = from ep in _context.EmpPositionInProjects
+                           join rp in _context.RequiredPositions on ep.RequiredPositionID equals rp.ID
+                           select new { ep, rp };
             if (projects.Count() != 0)
             {
                 foreach (var p in projects)
                 {
                     if (p.Status == ProjectStatus.Pending)
                     {
-                        var empInProject = _context.EmpPositionInProjects.Select(x => new EmpPositionInProject()).ToList();
+                        var empInProject = empQuery.Where(x => x.rp.ProjectID.Equals(p.ProjectID))
+                            .Select(x => new EmpPositionInProject()).ToList();
                         if (empInProject.Count() == 0)
                         {
                             var project = await _context.Projects.FindAsync(p.ProjectID);
@@ -941,7 +942,6 @@ namespace ESMS.BackendAPI.Services.Projects
             var positions = await query.Where(x => x.rp.ProjectID.Equals(projectID) && x.rp.Status.Equals(RequirementStatus.Waiting))
                 .Select(x => new PositionInProject()
                 {
-                    RequiredPosID = x.rp.ID,
                     PosID = x.po.PosID,
                     PosName = x.po.Name
                 }).ToListAsync();
