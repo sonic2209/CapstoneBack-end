@@ -984,17 +984,18 @@ namespace ESMS.BackendAPI.Services.Projects
             return new ApiSuccessResult<StatisticViewModel>(statisticVM);
         }
 
-        public async Task<ApiResult<List<PositionInProject>>> GetCandidates(int projectID)
+        public async Task<ApiResult<List<CandidateInProject>>> GetCandidates(int projectID)
         {
             var query = from rp in _context.RequiredPositions
                         join po in _context.Positions on rp.PositionID equals po.PosID
                         select new { rp, po };
             var positions = await query.Where(x => x.rp.ProjectID.Equals(projectID) && x.rp.Status.Equals(RequirementStatus.Waiting))
-                .Select(x => new PositionInProject()
+                .Select(x => new CandidateInProject()
                 {
                     RequiredPosID = x.rp.ID,
                     PosID = x.po.PosID,
-                    PosName = x.po.Name
+                    PosName = x.po.Name,
+                    CandidateNeeded = x.rp.CandidateNeeded
                 }).ToListAsync();
             var empQuery = from ep in _context.EmpPositionInProjects
                            join e in _context.Employees on ep.EmpID equals e.Id
@@ -1018,20 +1019,10 @@ namespace ESMS.BackendAPI.Services.Projects
                         var projects = _context.EmpPositionInProjects.Where(x => x.EmpID.Equals(emp.EmpID) && x.ProjectID != projectID)
                             .Select(x => new EmpPositionInProject()).ToList();
                         emp.NumberOfProject = projects.Count();
-                        if (emp.DateIn != null)
-                        {
-                            pos.Noe += 1;
-                        }
                     }
                 }
-                var listCandidateNeeds = await _context.RequiredPositions.Where(x => x.PositionID.Equals(pos.PosID)
-                && x.ProjectID.Equals(projectID)).Select(x => x.CandidateNeeded).ToListAsync();
-                foreach (var candidateNeed in listCandidateNeeds)
-                {
-                    pos.CandidateNeeded += candidateNeed;
-                }
             }
-            return new ApiSuccessResult<List<PositionInProject>>(positions);
+            return new ApiSuccessResult<List<CandidateInProject>>(positions);
         }
 
         public async Task<ApiResult<List<PosInProject>>> GetStatisticsByEmpID(string empID)
