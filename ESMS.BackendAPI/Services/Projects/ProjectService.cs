@@ -708,9 +708,7 @@ namespace ESMS.BackendAPI.Services.Projects
             var project = await _context.Projects.FindAsync(projectID);
             if (project == null) return new ApiErrorResult<List<string>>("Project does not exist");
             List<string> listAddedEmp = new List<string>();
-            List<string> listRemovedEmp = new List<string>();
             List<string> listEmp = new List<string>();
-            string removedMessage = "These employee already removed in this project: ";
             string addedMessage = "These employee already added in this project: ";
             string message = "These employee already in other project: ";
             foreach (var position in request.Candidates)
@@ -746,8 +744,15 @@ namespace ESMS.BackendAPI.Services.Projects
                         {
                             if (empInProject == null)
                             {
-                                listRemovedEmp.Add(id.EmpID);
-                                removedMessage += employee.Name + ",";
+                                empInProject = new EmpPositionInProject()
+                                {
+                                    EmpID = id.EmpID,
+                                    PosID = position.PosID,
+                                    DateIn = DateTime.Now,
+                                    ProjectID = projectID,
+                                    RequiredPositionID = position.RequiredPosID
+                                };
+                                _context.EmpPositionInProjects.Add(empInProject);
                             }
                             else
                             {
@@ -787,15 +792,6 @@ namespace ESMS.BackendAPI.Services.Projects
                         IsSuccessed = false,
                         Message = message,
                         ResultObj = listEmp
-                    };
-                }
-                if (listRemovedEmp.Count() != 0)
-                {
-                    return new ApiResult<List<string>>()
-                    {
-                        IsSuccessed = false,
-                        Message = removedMessage,
-                        ResultObj = listRemovedEmp
                     };
                 }
                 if (listAddedEmp.Count() != 0)
