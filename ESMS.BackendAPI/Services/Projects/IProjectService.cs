@@ -27,9 +27,9 @@ namespace ESMS.BackendAPI.Services.Projects
 
         Task<ApiResult<List<PositionInProject>>> GetEmpInProjectPaging(int projectID);
 
-        Task<ApiResult<List<PositionInProject>>> GetCandidates(int projectID);
+        Task<ApiResult<List<CandidateInProject>>> GetCandidates(int projectID);
 
-        Task<ApiResult<bool>> AddRequiredPosition(int projectID, AddRequiredPositionRequest request);
+        Task<ApiResult<List<RequiredPositionDetail>>> AddRequiredPosition(int projectID, AddRequiredPositionRequest request);
 
         Task<ApiResult<List<RequiredPositionVM>>> GetRequiredPositions(int projectID);
 
@@ -48,5 +48,7 @@ namespace ESMS.BackendAPI.Services.Projects
         Task<ApiResult<StatisticViewModel>> GetStatistics();
 
         Task<ApiResult<List<PosInProject>>> GetStatisticsByEmpID(string empID);
+
+        Task<ApiResult<bool>> CheckProject();
     }
 }

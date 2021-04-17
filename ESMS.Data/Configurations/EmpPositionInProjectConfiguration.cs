@@ -17,6 +17,7 @@ namespace ESMS.Data.Configurations
             builder.HasOne(x => x.Project).WithMany(x => x.EmpPosInProjects).HasForeignKey(x => x.ProjectID);
             builder.HasOne(x => x.Employee).WithMany(x => x.EmpPosInProjects).HasForeignKey(x => x.EmpID);
             builder.HasOne(x => x.Position).WithMany(x => x.EmpPosInProjects).HasForeignKey(x => x.PosID);
+            builder.HasOne(x => x.RequiredPosition).WithMany(x => x.EmpPositionInProjects).HasForeignKey(x => x.RequiredPositionID);
         }
     }
 }
