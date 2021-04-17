@@ -14,6 +14,7 @@ namespace ESMS.BackendAPI.ViewModels.Employees.Suggestion
         public double SoftSkillMatch { get; set; }
         public double HardSkillMatch { get; set; }
         public double ProjectTypeMatch { get; set; }
+        public double ProjectFieldMatch { get; set; }
         public double OverallMatch { get; set; }
     }
 }

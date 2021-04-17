@@ -54,7 +54,7 @@ namespace ESMS.BackendAPI.Services.Employees
             var result = await _signInManager.PasswordSignInAsync(user, request.Password, request.RememberMe, true);
             if (!result.Succeeded)
             {
-                return new ApiErrorResult<LoginVm>("Email/Username or password is not correct");
+                return new ApiErrorResult<LoginVm>("Email or password is not correct");
             }
             var roles = await _userManager.GetRolesAsync(user);
             var claims = new[]
@@ -296,10 +296,10 @@ namespace ESMS.BackendAPI.Services.Employees
         {
             List<CandidateViewModel> result = new List<CandidateViewModel>();
             int ProjectTypeID = request.ProjectTypeID;
+            int ProjectFieldID = request.ProjectFieldID;
             foreach (RequiredPositionDetail requiredPosition in request.RequiredPositions)
             {
                 var dicCandidate = new Dictionary<string, double>();
-                if (requiredPosition.SoftSkillIDs != null)
                 {
                     //Get List Emp Theo Position
                     List<MatchViewModel> listMatchDetail = new List<MatchViewModel>();
@@ -334,12 +334,13 @@ namespace ESMS.BackendAPI.Services.Employees
                                 }
                                 else
                                    continue;
-                                double match = 60;
+                                double match = 0;
                                 double Languagematch = 0;
                                 double Softskillmatch = 0;
                                 double Hardskillmatch = 0;
                                 double ProjectTypeMatch = 0;
-                                MatchViewModel matchDetail = new MatchViewModel();
+                                double ProjectFieldMatch = 0;
+                            MatchViewModel matchDetail = new MatchViewModel();
 
                                 //add match theo kinh nghiem
                                 //dicCandidate.Add(emp.EmpId, 60);
@@ -438,16 +439,16 @@ namespace ESMS.BackendAPI.Services.Employees
                                                 EmpID = emphs.EmpID,
                                                 HighestCertiLevel = listCertiSkill.Any() ? listCertiSkill.Max(x => x.CertiLevel) : 0,
                                             };
-                                            if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
-                                            {
-                                                Hardskillmatch = (((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel) * 0.5) + ((int)emphs.SkillLevel * 2 * 0.5)) * hardskill.Priority / 10 * requiredPosition.HardSkills.Count;
+                                            //if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
+                                            //{
+                                                Hardskillmatch = (((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)) + ((int)emphs.SkillLevel - hardskill.SkillLevel)) * hardskill.Priority / 18 * requiredPosition.HardSkills.Count;
                                                 match += Math.Round(Hardskillmatch, 2);
-                                            }
-                                            else
-                                            {
-                                                Hardskillmatch = (((int)emphs.SkillLevel * 2 * 0.5)) * hardskill.Priority / 10 * requiredPosition.HardSkills.Count;
-                                                match += Math.Round(Hardskillmatch, 2);
-                                            }
+                                            //}
+                                            //else
+                                            //{
+                                            //    Hardskillmatch = (((int)emphs.SkillLevel * 2 * 0.5)) * hardskill.Priority / 10 * requiredPosition.HardSkills.Count;
+                                            //    match += Math.Round(Hardskillmatch, 2);
+                                            //}
                                         }
                                     }
                                 }
@@ -496,7 +497,34 @@ namespace ESMS.BackendAPI.Services.Employees
                                     ProjectTypeMatch = 10;
                                     match += ProjectTypeMatch;
                                 }
-                                matchDetail = new MatchViewModel()
+
+                            //Add match theo projectfield
+                            var listProjectWithField = await projectquery.Where(x => x.p.ProjectFieldID == ProjectFieldID && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.ProjectID).ToListAsync();
+                            var numberOfProjectWithField = listProjectWithField.Count();
+                            if (numberOfProjectWithField == 0)
+                            {
+                                ProjectFieldMatch = 0;
+                            }
+                            if (numberOfProjectWithField > 2 && numberOfProjectWithField < 5)
+                            {
+                                ProjectFieldMatch = 3;
+                                match += ProjectFieldMatch;
+                            }
+                            if (numberOfProjectWithField > 5 && numberOfProjectWithField < 10)
+                            {
+                                ProjectFieldMatch = 6;
+                                match += ProjectFieldMatch;
+                            }
+                            if (numberOfProjectWithField > 9)
+                            {
+                                ProjectFieldMatch = 10;
+                                match += ProjectFieldMatch;
+                            }
+                            if (Hardskillmatch < 2.5 || match < 12.5)
+                            {
+                                continue;
+                            }
+                            matchDetail = new MatchViewModel()
                                 {
                                     EmpID = emp.EmpId,
                                     EmpName = emp.EmpName,
@@ -504,6 +532,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                     SoftSkillMatch = Softskillmatch,
                                     HardSkillMatch = Hardskillmatch,
                                     ProjectTypeMatch = ProjectTypeMatch,
+                                    ProjectFieldMatch = ProjectFieldMatch,
                                     OverallMatch = match,
                                 };
                                 listMatchDetail.Add(matchDetail);
