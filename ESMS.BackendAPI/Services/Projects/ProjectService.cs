@@ -158,7 +158,7 @@ namespace ESMS.BackendAPI.Services.Projects
                             RequiredPositionID = x.RequiredPositionID,
                             DateIn = x.DateIn,
                             DateOut = x.DateOut,
-                            IsAccept = x.IsAccept,
+                            Status = x.Status,
                             Note = x.Note
                         }).ToListAsync();
                     if (empInProject.Count() != 0)
@@ -572,7 +572,7 @@ namespace ESMS.BackendAPI.Services.Projects
                 RequiredPositionID = x.ep.RequiredPositionID,
                 DateIn = x.ep.DateIn,
                 DateOut = x.ep.DateOut,
-                IsAccept = x.ep.IsAccept,
+                Status = x.ep.Status,
                 Note = x.ep.Note
             }).ToListAsync();
             foreach (var emp in empInProject)
@@ -642,14 +642,14 @@ namespace ESMS.BackendAPI.Services.Projects
                                 return new ApiErrorResult<bool>("Employee:" + empName + " already in other project");
                             }
                             var employee = await empQuery.Where(x => x.ep.EmpID.Equals(emp) && x.rp.ProjectID.Equals(projectID)
-                            && x.ep.IsAccept == true)
+                            && x.ep.Status.Equals(ConfirmStatus.Accept))
                                 .Select(x => new EmpPositionInProject()
                                 {
                                     EmpID = emp,
                                     RequiredPositionID = x.ep.RequiredPositionID,
                                     DateIn = x.ep.DateIn,
                                     DateOut = x.ep.DateOut,
-                                    IsAccept = x.ep.IsAccept,
+                                    Status = x.ep.Status,
                                     Note = x.ep.Note
                                 }).FirstOrDefaultAsync();
                             if (employee != null)
@@ -731,7 +731,7 @@ namespace ESMS.BackendAPI.Services.Projects
                     if (id.IsAccept)
                     {
                         var checkEmp = await empQuery.Where(x => x.rp.ProjectID != projectID
-                        && x.ep.IsAccept == true).Select(x => new EmpPositionInProject()
+                        && x.ep.Status.Equals(ConfirmStatus.Accept)).Select(x => new EmpPositionInProject()
                         {
                             EmpID = x.ep.EmpID,
                             DateOut = x.ep.DateOut
@@ -747,7 +747,7 @@ namespace ESMS.BackendAPI.Services.Projects
                         else
                         {
                             var empInOtherPos = await empQuery.Where(x => x.rp.Equals(projectID) && x.ep.RequiredPositionID != position.RequiredPosID
-                            && x.ep.EmpID.Equals(id.EmpID) && x.ep.IsAccept == true && x.ep.DateOut == null)
+                            && x.ep.EmpID.Equals(id.EmpID) && x.ep.Status.Equals(ConfirmStatus.Accept) && x.ep.DateOut == null)
                                 .Select(x => new EmpPositionInProject()).FirstOrDefaultAsync();
                             if (empInOtherPos == null)
                             {
@@ -758,15 +758,15 @@ namespace ESMS.BackendAPI.Services.Projects
                                         EmpID = id.EmpID,
                                         RequiredPositionID = position.RequiredPosID,
                                         DateIn = DateTime.Now,
-                                        IsAccept = true,
+                                        Status = ConfirmStatus.Accept
                                     };
                                     _context.EmpPositionInProjects.Add(empInPos);
                                 }
                                 else
                                 {
-                                    if (empInPos.IsAccept == false)
+                                    if (empInPos.Status == 0)
                                     {
-                                        empInPos.IsAccept = true;
+                                        empInPos.Status = ConfirmStatus.Accept;
                                         empInPos.DateIn = DateTime.Now;
                                         _context.EmpPositionInProjects.Update(empInPos);
                                     }
@@ -781,6 +781,7 @@ namespace ESMS.BackendAPI.Services.Projects
                     }
                     else
                     {
+                        empInPos.Status = ConfirmStatus.Reject;
                         empInPos.Note = id.Note;
                         _context.EmpPositionInProjects.Update(empInPos);
                     }

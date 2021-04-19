@@ -15,7 +15,6 @@ namespace ESMS.Data.Configurations
             builder.HasKey(x => new { x.EmpID, x.RequiredPositionID });
             builder.Property(x => x.DateIn).HasColumnType("date");
             builder.Property(x => x.DateOut).HasColumnType("date");
-            builder.Property(x => x.IsAccept).HasDefaultValue(false);
             builder.HasOne(x => x.Employee).WithMany(x => x.EmpPosInProjects).HasForeignKey(x => x.EmpID);
             builder.HasOne(x => x.RequiredPosition).WithMany(x => x.EmpPositionInProjects).HasForeignKey(x => x.RequiredPositionID);
         }
