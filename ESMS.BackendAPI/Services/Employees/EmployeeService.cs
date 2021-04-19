@@ -450,25 +450,26 @@ namespace ESMS.BackendAPI.Services.Employees
                                                select new { p, epip };
 
                             var currentProjectBeginDate = await _context.Projects.Where(x => x.ProjectID == projectID).Select(x => x.DateBegin).FirstOrDefaultAsync();
-                            var projectOnGoingDateEnd = await projectquery.Where(x => (x.p.Status == ProjectStatus.OnGoing || x.p.Status == ProjectStatus.Confirmed) && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.DateEstimatedEnd).ToListAsync();
+                            var listProjectCurrentlyIn = await projectquery.Where(x => (x.p.Status == ProjectStatus.OnGoing || x.p.Status == ProjectStatus.Confirmed) && x.epip.EmpID.Equals(emp.EmpId) && x.epip.Status == ConfirmStatus.Accept && x.epip.Status == ConfirmStatus.New).Select(x => x.p.DateEstimatedEnd).ToListAsync();
+                            //var projectOnGoingDateEnd = await projectquery.Where(x => (x.p.Status == ProjectStatus.OnGoing || x.p.Status == ProjectStatus.Confirmed) && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.DateEstimatedEnd).ToListAsync();
                             bool checkProjectDate = false;
-                            //if (projectOnGoingDateEnd.Count > 0)
-                            //{
-                            //    foreach (var dateEnd in projectOnGoingDateEnd)
-                            //    {
-                            //        if (dateEnd > currentProjectBeginDate)
-                            //        {
-                            //            checkProjectDate = true;
-                            //            break;
-                            //        }
-                            //    }
-                            //    if (checkProjectDate == true)
-                            //    {
-                            //        continue;
-                            //    }
-                            //}
+                            if (listProjectCurrentlyIn.Count > 0)
+                            {
+                                foreach (var dateEnd in listProjectCurrentlyIn)
+                                {
+                                    if (dateEnd > currentProjectBeginDate)
+                                    {
+                                        checkProjectDate = true;
+                                        break;
+                                    }
+                                }
+                                if (checkProjectDate == true)
+                                {
+                                    continue;
+                                }
+                            }
                             //Add match theo projecttype
-                            var listProjectWithType = await projectquery.Where(x => x.p.ProjectTypeID == ProjectTypeID && x.epip.EmpID.Equals(emp.EmpId) && x.epip.IsAccept == true).Select(x => x.p.ProjectID).ToListAsync();
+                            var listProjectWithType = await projectquery.Where(x => x.p.ProjectTypeID == ProjectTypeID && x.epip.EmpID.Equals(emp.EmpId) && x.epip.Status == ConfirmStatus.Accept).Select(x => x.p.ProjectID).ToListAsync();
                             var numberOfProjectWithType = listProjectWithType.Count();
                             if (numberOfProjectWithType == 0)
                             {
@@ -491,7 +492,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             }
 
                             //Add match theo projectfield
-                            var listProjectWithField = await projectquery.Where(x => x.p.ProjectFieldID == ProjectFieldID && x.epip.EmpID.Equals(emp.EmpId) && x.epip.IsAccept == true).Select(x => x.p.ProjectID).ToListAsync();
+                            var listProjectWithField = await projectquery.Where(x => x.p.ProjectFieldID == ProjectFieldID && x.epip.EmpID.Equals(emp.EmpId) && x.epip.Status == ConfirmStatus.Accept).Select(x => x.p.ProjectID).ToListAsync();
                             var numberOfProjectWithField = listProjectWithField.Count();
                             if (numberOfProjectWithField == 0)
                             {

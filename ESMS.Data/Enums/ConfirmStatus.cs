@@ -6,6 +6,7 @@ namespace ESMS.Data.Enums
 {
     public enum ConfirmStatus
     {
+        New,
         Accept,
         Reject
     }
