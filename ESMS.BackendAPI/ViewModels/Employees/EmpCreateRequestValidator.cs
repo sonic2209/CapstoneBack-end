@@ -13,7 +13,7 @@ namespace ESMS.BackendAPI.ViewModels.Employees
                 .MaximumLength(200).WithMessage("Name cannot exceed 200 characters");
 
             RuleFor(x => x.Email).NotEmpty().WithMessage("Email cannot be empty")
-                .Matches(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
+                .Matches(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$").WithMessage("Email format is not correct");
 
             RuleFor(x => x.PhoneNumber).NotEmpty().WithMessage("Phone number cannot be empty");
 
