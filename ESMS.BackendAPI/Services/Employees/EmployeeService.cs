@@ -354,11 +354,12 @@ namespace ESMS.BackendAPI.Services.Employees
                             //}
 
                             //Merge code mới
-                            //add match theo ngon ngu
-                            //var query = from ep in _context.EmpPositions
-                            //            join el in _context.EmpLanguages on ep.EmpID equals el.EmpID
+
+                            //var query = from ep in _context.emppositions
+                            //            join el in _context.EmpLanguages on ep.empid equals el.empid
                             //            select new { ep, el };
 
+                            //add match theo ngon ngu
                             foreach (LanguageDetail language in requiredPosition.Language)
                             {
                                 var ListEmpInLang = await _context.EmpLanguages.Where(x => x.EmpID.Equals(emp.EmpId) && x.LangID == language.LangID).Select(x => new EmpInLang()
@@ -443,13 +444,14 @@ namespace ESMS.BackendAPI.Services.Employees
 
                             //Merge code mới
                             //Loc nhung nhan vien ko available dua theo thoi gian ket thuc du an dang tien hanh
-                            //var projectquery = from p in _context.Projects
-                            //                   join epip in _context.EmpPositionInProjects on p.ProjectID equals epip.ProjectID
-                            //                   select new { p, epip };
+                            var projectquery = from p in _context.Projects
+                                               join rp in _context.RequiredPositions on p.ProjectID equals rp.ProjectID
+                                               join epip in _context.EmpPositionInProjects on rp.ID equals epip.RequiredPositionID
+                                               select new { p, epip };
 
-                            //var currentProjectBeginDate = await _context.Projects.Where(x => x.ProjectID == projectID).Select(x => x.DateBegin).FirstOrDefaultAsync();
-                            ////var projectOnGoingDateEnd = await projectquery.Where(x => (x.p.Status == ProjectStatus.OnGoing || x.p.Status == ProjectStatus.Confirmed) && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.DateEstimatedEnd).ToListAsync();
-                            //bool checkProjectDate = false;
+                            var currentProjectBeginDate = await _context.Projects.Where(x => x.ProjectID == projectID).Select(x => x.DateBegin).FirstOrDefaultAsync();
+                            var projectOnGoingDateEnd = await projectquery.Where(x => (x.p.Status == ProjectStatus.OnGoing || x.p.Status == ProjectStatus.Confirmed) && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.DateEstimatedEnd).ToListAsync();
+                            bool checkProjectDate = false;
                             //if (projectOnGoingDateEnd.Count > 0)
                             //{
                             //    foreach (var dateEnd in projectOnGoingDateEnd)
@@ -465,55 +467,55 @@ namespace ESMS.BackendAPI.Services.Employees
                             //        continue;
                             //    }
                             //}
-                            ////Add match theo projecttype
-                            //var listProjectWithType = await projectquery.Where(x => x.p.ProjectTypeID == ProjectTypeID && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.ProjectID).ToListAsync();
-                            //var numberOfProjectWithType = listProjectWithType.Count();
-                            //if (numberOfProjectWithType == 0)
-                            //{
-                            //    ProjectTypeMatch = 0;
-                            //}
-                            //if (numberOfProjectWithType > 2 && numberOfProjectWithType < 5)
-                            //{
-                            //    ProjectTypeMatch = 3;
-                            //    match += ProjectTypeMatch;
-                            //}
-                            //if (numberOfProjectWithType > 5 && numberOfProjectWithType < 10)
-                            //{
-                            //    ProjectTypeMatch = 6;
-                            //    match += ProjectTypeMatch;
-                            //}
-                            //if (numberOfProjectWithType > 9)
-                            //{
-                            //    ProjectTypeMatch = 10;
-                            //    match += ProjectTypeMatch;
-                            //}
+                            //Add match theo projecttype
+                            var listProjectWithType = await projectquery.Where(x => x.p.ProjectTypeID == ProjectTypeID && x.epip.EmpID.Equals(emp.EmpId) && x.epip.IsAccept == true).Select(x => x.p.ProjectID).ToListAsync();
+                            var numberOfProjectWithType = listProjectWithType.Count();
+                            if (numberOfProjectWithType == 0)
+                            {
+                                ProjectTypeMatch = 0;
+                            }
+                            if (numberOfProjectWithType > 2 && numberOfProjectWithType < 5)
+                            {
+                                ProjectTypeMatch = 3;
+                                match += ProjectTypeMatch;
+                            }
+                            if (numberOfProjectWithType > 5 && numberOfProjectWithType < 10)
+                            {
+                                ProjectTypeMatch = 6;
+                                match += ProjectTypeMatch;
+                            }
+                            if (numberOfProjectWithType > 9)
+                            {
+                                ProjectTypeMatch = 10;
+                                match += ProjectTypeMatch;
+                            }
 
-                            ////Add match theo projectfield
-                            //var listProjectWithField = await projectquery.Where(x => x.p.ProjectFieldID == ProjectFieldID && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.ProjectID).ToListAsync();
-                            //var numberOfProjectWithField = listProjectWithField.Count();
-                            //if (numberOfProjectWithField == 0)
-                            //{
-                            //    ProjectFieldMatch = 0;
-                            //}
-                            //if (numberOfProjectWithField > 2 && numberOfProjectWithField < 5)
-                            //{
-                            //    ProjectFieldMatch = 3;
-                            //    match += ProjectFieldMatch;
-                            //}
-                            //if (numberOfProjectWithField > 5 && numberOfProjectWithField < 10)
-                            //{
-                            //    ProjectFieldMatch = 6;
-                            //    match += ProjectFieldMatch;
-                            //}
-                            //if (numberOfProjectWithField > 9)
-                            //{
-                            //    ProjectFieldMatch = 10;
-                            //    match += ProjectFieldMatch;
-                            //}
-                            //if (Hardskillmatch < 2.5 || match < 12.5)
-                            //{
-                            //    continue;
-                            //}
+                            //Add match theo projectfield
+                            var listProjectWithField = await projectquery.Where(x => x.p.ProjectFieldID == ProjectFieldID && x.epip.EmpID.Equals(emp.EmpId) && x.epip.IsAccept == true).Select(x => x.p.ProjectID).ToListAsync();
+                            var numberOfProjectWithField = listProjectWithField.Count();
+                            if (numberOfProjectWithField == 0)
+                            {
+                                ProjectFieldMatch = 0;
+                            }
+                            if (numberOfProjectWithField > 2 && numberOfProjectWithField < 5)
+                            {
+                                ProjectFieldMatch = 3;
+                                match += ProjectFieldMatch;
+                            }
+                            if (numberOfProjectWithField > 5 && numberOfProjectWithField < 10)
+                            {
+                                ProjectFieldMatch = 6;
+                                match += ProjectFieldMatch;
+                            }
+                            if (numberOfProjectWithField > 9)
+                            {
+                                ProjectFieldMatch = 10;
+                                match += ProjectFieldMatch;
+                            }
+                            if (Hardskillmatch < 2.5 || match < 12.5)
+                            {
+                                continue;
+                            }
                             matchDetail = new MatchViewModel()
                             {
                                 EmpID = emp.EmpId,
