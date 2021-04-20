@@ -1,5 +1,6 @@
 ﻿using ESMS.BackendAPI.ViewModels.Common;
 using ESMS.BackendAPI.ViewModels.Employees;
+using ESMS.BackendAPI.ViewModels.Employees.Suggestion.SingleCandidate;
 using ESMS.ViewModels.System.Employees;
 using System;
 using System.Collections.Generic;
@@ -31,5 +32,7 @@ namespace ESMS.BackendAPI.Services.Employees
         Task<ApiResult<bool>> UpdateEmpInfo(string empID, AddEmpPositionRequest request);
 
         Task<ApiResult<AddEmpPositionRequest>> LoadEmpInfo(string empID);
+
+        Task<List<SingleCandidateViewModel>> SingleCandidateSuggest(int empID);
     }
 }
