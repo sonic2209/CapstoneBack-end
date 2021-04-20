@@ -761,14 +761,16 @@ namespace ESMS.BackendAPI.Services.Projects
                                         Status = ConfirmStatus.Accept
                                     };
                                     _context.EmpPositionInProjects.Add(empInPos);
+                                    requiredPos.MissingEmployee -= 1;
                                 }
                                 else
                                 {
-                                    if (empInPos.Status == 0)
+                                    if (empInPos.Status == ConfirmStatus.New)
                                     {
                                         empInPos.Status = ConfirmStatus.Accept;
                                         empInPos.DateIn = DateTime.Now;
                                         _context.EmpPositionInProjects.Update(empInPos);
+                                        requiredPos.MissingEmployee -= 1;
                                     }
                                 }
                             }
