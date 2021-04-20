@@ -746,7 +746,7 @@ namespace ESMS.BackendAPI.Services.Projects
                         }
                         else
                         {
-                            var empInOtherPos = await empQuery.Where(x => x.rp.Equals(projectID) && x.ep.RequiredPositionID != position.RequiredPosID
+                            var empInOtherPos = await empQuery.Where(x => x.rp.ProjectID.Equals(projectID) && x.ep.RequiredPositionID != position.RequiredPosID
                             && x.ep.EmpID.Equals(id.EmpID) && x.ep.Status.Equals(ConfirmStatus.Accept) && x.ep.DateOut == null)
                                 .Select(x => new EmpPositionInProject()).FirstOrDefaultAsync();
                             if (empInOtherPos == null)
