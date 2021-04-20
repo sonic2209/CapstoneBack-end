@@ -33,6 +33,6 @@ namespace ESMS.BackendAPI.Services.Employees
 
         Task<ApiResult<AddEmpPositionRequest>> LoadEmpInfo(string empID);
 
-        Task<List<SingleCandidateViewModel>> SingleCandidateSuggest(int empID);
+        Task<List<SingleCandidateViewModel>> SingleCandidateSuggest(string empID);
     }
 }

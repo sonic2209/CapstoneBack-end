@@ -70,6 +70,13 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(candidates);
         }
 
+        [HttpGet("candidate/{empID}")]
+        public async Task<IActionResult> SuggestCandidate(string id)
+        {
+            var candidates = await _userService.SingleCandidateSuggest(id);
+            return Ok(candidates);
+        }
+
         //http://localhost/api/user/paging?pageIndex=1&pageSize=10&keyword=
         [HttpGet("paging")]
         public async Task<IActionResult> GetAllPaging([FromQuery] GetEmpPagingRequest request)
