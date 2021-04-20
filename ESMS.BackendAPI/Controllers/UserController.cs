@@ -71,9 +71,9 @@ namespace ESMS.BackendAPI.Controllers
         }
 
         [HttpGet("candidate/{empID}")]
-        public async Task<IActionResult> SuggestCandidate(string id)
+        public async Task<IActionResult> SuggestSingleCandidate(string empID)
         {
-            var candidates = await _userService.SingleCandidateSuggest(id);
+            var candidates = await _userService.SingleCandidateSuggest(empID);
             return Ok(candidates);
         }
 
