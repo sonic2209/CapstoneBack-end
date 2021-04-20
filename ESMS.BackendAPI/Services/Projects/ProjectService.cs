@@ -1244,5 +1244,70 @@ namespace ESMS.BackendAPI.Services.Projects
             }
             return new ApiSuccessResult<bool>();
         }
+
+        public List<ProjectVM> GetMissEmpProjects()
+        {
+            List<ProjectVM> list = new List<ProjectVM>();
+            var projects = _context.Projects.Where(x => x.Status != ProjectStatus.Finished)
+                .Select(x => new Project()
+                {
+                    ProjectID = x.ProjectID,
+                    ProjectName = x.ProjectName,
+                    ProjectFieldID = x.ProjectFieldID,
+                    ProjectTypeID = x.ProjectTypeID
+                }).ToList();
+            if (projects.Count() != 0)
+            {
+                var posQuery = from rp in _context.RequiredPositions
+                               join po in _context.Positions on rp.PositionID equals po.PosID
+                               select new { rp, po };
+                foreach (var p in projects)
+                {
+                    var requirePos = posQuery.Where(x => x.rp.MissingEmployee > 0 && x.rp.ProjectID.Equals(p.ProjectID))
+                        .Select(x => new RequiredPosVM()
+                        {
+                            RequiredPosID = x.rp.ID,
+                            PosID = x.rp.PositionID,
+                            PosName = x.po.Name,
+                            MissingEmployee = x.rp.MissingEmployee,
+                        }).ToList();
+                    if (requirePos.Count() != 0)
+                    {
+                        var skillQuery = from rs in _context.RequiredSkills
+                                         join s in _context.Skills on rs.SkillID equals s.SkillID
+                                         select new { rs, s };
+                        foreach (var pos in requirePos)
+                        {
+                            pos.Language = _context.RequiredLanguages.Where(x => x.RequiredPositionID.Equals(pos.RequiredPosID))
+                                .Select(x => new LanguageDetail()
+                                {
+                                    LangID = x.LangID,
+                                    Priority = x.Priority
+                                }).ToList();
+                            pos.SoftSkillIDs = skillQuery.Where(x => x.rs.RequiredPositionID.Equals(pos.RequiredPosID)
+                            && x.s.SkillType.Equals(SkillType.SoftSkill)).Select(x => x.rs.SkillID).ToList();
+                            pos.HardSkills = skillQuery.Where(x => x.rs.RequiredPositionID.Equals(pos.RequiredPosID)
+                            && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => new HardSkillDetail()
+                            {
+                                HardSkillID = x.rs.SkillID,
+                                SkillLevel = (int)x.rs.SkillLevel,
+                                CertificationLevel = (int)x.rs.CertificationLevel,
+                                Priority = (int)x.rs.Priority
+                            }).ToList();
+                        }
+                        var projectVM = new ProjectVM()
+                        {
+                            ProjectID = p.ProjectID,
+                            ProjectName = p.ProjectName,
+                            TypeID = (int)p.ProjectTypeID,
+                            FieldID = (int)p.ProjectFieldID,
+                            RequiredPositions = requirePos
+                        };
+                        list.Add(projectVM);
+                    }
+                }
+            }
+            return list;
+        }
     }
 }
