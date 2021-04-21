@@ -53,6 +53,6 @@ namespace ESMS.BackendAPI.Services.Projects
 
         List<ProjectVM> GetMissEmpProjects();
 
-        Task<List<string>> CheckNoEmpProject();
+        Task<List<DeletedProject>> CheckNoEmpProject();
     }
 }

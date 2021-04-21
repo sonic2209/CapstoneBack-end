@@ -1366,9 +1366,9 @@ namespace ESMS.BackendAPI.Services.Projects
             return list;
         }
 
-        public async Task<List<string>> CheckNoEmpProject()
+        public async Task<List<DeletedProject>> CheckNoEmpProject()
         {
-            List<string> list = new List<string>();
+            List<DeletedProject> list = new List<DeletedProject>();
             var projects = await _context.Projects.Where(x => x.Status.Equals(ProjectStatus.NoEmployee))
                 .Select(x => new Project()
                 {
@@ -1397,7 +1397,12 @@ namespace ESMS.BackendAPI.Services.Projects
                         var employees = empQuery.Where(x => x.rp.ProjectID.Equals(p.ProjectID)).Select(x => x.ep.EmpID);
                         if (employees.Count() == 0)
                         {
-                            list.Add(p.ProjectManagerID);
+                            DeletedProject deletedProject = new DeletedProject()
+                            {
+                                ProjectManagerID = p.ProjectManagerID,
+                                ProjectName = p.ProjectName
+                            };
+                            list.Add(deletedProject);
                             var listRequiredPos = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(p.ProjectID))
                                 .Select(x => new RequiredPosition()
                                 {
