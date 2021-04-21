@@ -13,6 +13,7 @@ namespace ESMS.BackendAPI.ViewModels.Employees
         public string UserName { get; set; }
         public string Email { get; set; }
         public string IdentityNumber { get; set; }
+        public DateTime? DateCreated { get; set; }
         public string Address { get; set; }
         public string RoleName { get; set; }
     }

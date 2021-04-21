@@ -271,6 +271,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         Name = x.Name,
                         Id = x.Id,
                         UserName = x.UserName,
+                        DateCreated = x.DateCreated
                     }).ToListAsync();
                 foreach (var empUser in data)
                 {
@@ -283,13 +284,14 @@ namespace ESMS.BackendAPI.Services.Employees
                     }
                     empUser.RoleName = currentRole;
                 }
+                var dataSorted = data.OrderByDescending(x => x.DateCreated).ToList() ;
                 //4.Select and projection
                 var pagedResult = new PagedResult<EmpVm>()
                 {
                     TotalRecords = totalRow,
                     PageIndex = request.PageIndex,
                     PageSize = request.PageSize,
-                    Items = data
+                    Items = dataSorted
                 };
                 return new ApiSuccessResult<PagedResult<EmpVm>>(pagedResult);
             }
