@@ -1015,7 +1015,7 @@ namespace ESMS.BackendAPI.Services.Projects
             foreach (var pos in positions)
             {
                 pos.Employees = await empQuery.Where(x => x.ep.RequiredPositionID.Equals(pos.RequiredPosID)
-                && x.ep.DateIn == null).Select(x => new EmpInProject()
+                && x.ep.Status.Equals(ConfirmStatus.New)).Select(x => new EmpInProject()
                 {
                     EmpID = x.e.Id,
                     Name = x.e.Name,
