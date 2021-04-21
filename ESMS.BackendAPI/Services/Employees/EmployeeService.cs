@@ -297,7 +297,7 @@ namespace ESMS.BackendAPI.Services.Employees
             }
         }
 
-        public async Task<List<CandidateViewModel>> SuggestCandidate(int projectID, SuggestCadidateRequest request)
+        public async Task<ApiResult<List<CandidateViewModel>>> SuggestCandidate(int projectID, SuggestCadidateRequest request)
         {
             List<CandidateViewModel> result = new List<CandidateViewModel>();
             int ProjectTypeID = request.ProjectTypeID;
@@ -306,21 +306,14 @@ namespace ESMS.BackendAPI.Services.Employees
             {
                 var dicCandidate = new Dictionary<string, double>();
                 {
-                    //Get List Emp Theo Position
                     List<MatchViewModel> listMatchDetail = new List<MatchViewModel>();
                     var Position = _context.Positions.Where(x => x.PosID == requiredPosition.PosID).Select(x => x.Name).FirstOrDefault();
                     var PosId = _context.Positions.Where(x => x.PosID == requiredPosition.PosID).Select(x => x.PosID).FirstOrDefault();
 
-                    // var ListEmpPosquery = await _context.Employees
-                    //  foreach (var posLevel in requiredPosition.PosLevel)
-                    //  {
                     var ListEmpInPos = await _context.Employees.Select(x => new EmpInPos()
                     {
                         EmpId = x.Id,
-                        //    DateIn = x.ep.DateIn,
-                        //    NameExp = x.ep.PositionLevel,
                         EmpName = x.Name,
-                        //    Position = x.p.Name,
                     }).ToListAsync();
                     if (ListEmpInPos.Count > 0)
                     {
@@ -347,37 +340,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             double ProjectFieldMatch = 0;
                             MatchViewModel matchDetail = new MatchViewModel();
 
-                            //add match theo kinh nghiem
-                            //dicCandidate.Add(emp.EmpId, 60);
-                            //switch (emp.NameExp)
-                            //{
-                            //    case PositionLevel.Intern:
-                            //        match += (10 / 5) * 1;
-                            //        break;
-
-                            //    case PositionLevel.Fresher:
-                            //        match += (10 / 5) * 2;
-                            //        break;
-
-                            //    case PositionLevel.Junior:
-                            //        match += (10 / 5) * 3;
-                            //        break;
-
-                            //    case PositionLevel.Senior:
-                            //        match += (10 / 5) * 4;
-                            //        break;
-
-                            //    case PositionLevel.Master:
-                            //        match += (10 / 5) * 5;
-                            //        break;
-                            //}
-
-                            //Merge code mới
-
-                            //var query = from ep in _context.emppositions
-                            //            join el in _context.EmpLanguages on ep.empid equals el.empid
-                            //            select new { ep, el };
-
+                           
                             //add match theo ngon ngu
                             foreach (LanguageDetail language in requiredPosition.Language)
                             {
@@ -386,12 +349,6 @@ namespace ESMS.BackendAPI.Services.Employees
                                     EmpId = x.EmpID,
                                     LangLevel = x.LangLevel,
                                 }).ToListAsync();
-                                //var ListEmpInLang = await query.Where(x => x.el.EmpID.Equals(emp.EmpId) && x.el.LangID == language.LangID).Select(x => new EmpInLang()
-                                //{
-                                //    EmpId = x.el.EmpID,
-                                //    LangLevel = x.el.LangLevel,
-                                //}).ToListAsync();
-                                //match += (langlevel1*prio/10)/tong so requiredlang
 
                                 if (ListEmpInLang.Count > 0)
                                 {
@@ -533,7 +490,8 @@ namespace ESMS.BackendAPI.Services.Employees
                                 ProjectFieldMatch = 10;
                                 match += ProjectFieldMatch;
                             }
-                            if (Hardskillmatch < 2.5 || match < 12.5)
+                            //Loc nhung nhan vien khong du diem toi thieu
+                            if (Hardskillmatch < 4 || Softskillmatch <4 || Languagematch <4 || match < 12.5)
                             {
                                 continue;
                             }
@@ -560,10 +518,10 @@ namespace ESMS.BackendAPI.Services.Employees
                     });
                 }
             }
-            return result;
+            return new ApiSuccessResult<List<CandidateViewModel>>(result);
         }
 
-        public async Task<List<SingleCandidateViewModel>> SingleCandidateSuggest(string empID)
+        public async Task<ApiResult<List<SingleCandidateViewModel>>> SingleCandidateSuggest(string empID)
         {
             var empName = _context.Employees.Where(x => x.Id.Equals(empID)).Select(x => x.Name).FirstOrDefault();
             var listProject = _projectService.GetMissEmpProjects();
@@ -574,6 +532,32 @@ namespace ESMS.BackendAPI.Services.Employees
                 int ProjectTypeID = project.TypeID;
                 int ProjectFieldID = project.FieldID;
                 List<SingleCandidateMatchInPos> listMatchInPosDetail = new List<SingleCandidateMatchInPos>();
+
+                //Loc nhung project ko available dua theo thoi gian ket thuc du an dang tien hanh
+                var projectquery = from p in _context.Projects
+                                   join rp in _context.RequiredPositions on p.ProjectID equals rp.ProjectID
+                                   join epip in _context.EmpPositionInProjects on rp.ID equals epip.RequiredPositionID
+                                   select new { p, epip };
+
+                var currentProjectBeginDate = await _context.Projects.Where(x => x.ProjectID == project.ProjectID).Select(x => x.DateBegin).FirstOrDefaultAsync();
+                var listProjectCurrentlyIn = await projectquery.Where(x => (x.p.Status == ProjectStatus.OnGoing || x.p.Status == ProjectStatus.Confirmed) && x.epip.EmpID.Equals(empID) && x.epip.Status == ConfirmStatus.Accept && x.epip.Status == ConfirmStatus.New).Select(x => x.p.DateEstimatedEnd).ToListAsync();
+                //var projectOnGoingDateEnd = await projectquery.Where(x => (x.p.Status == ProjectStatus.OnGoing || x.p.Status == ProjectStatus.Confirmed) && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.DateEstimatedEnd).ToListAsync();
+                bool checkProjectDate = false;
+                if (listProjectCurrentlyIn.Count > 0)
+                {
+                    foreach (var dateEnd in listProjectCurrentlyIn)
+                    {
+                        if (dateEnd > currentProjectBeginDate)
+                        {
+                            checkProjectDate = true;
+                            break;
+                        }
+                    }
+                    if (checkProjectDate == true)
+                    {
+                        continue;
+                    }
+                }
 
                 foreach (RequiredPosVM requiredPosition in project.RequiredPositions)
                 {
@@ -590,7 +574,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             currentRole = roles[0];
                             if (!currentRole.Equals("Employee"))
                             {
-                                continue;
+                                return new ApiErrorResult<List<SingleCandidateViewModel>>>("This user is a PM or HR");
                             }
                         }
                         else
@@ -690,34 +674,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                     //}
                                 }
                             }
-                        }
-
-                        //Merge code mới
-                        //Loc nhung nhan vien ko available dua theo thoi gian ket thuc du an dang tien hanh
-                        var projectquery = from p in _context.Projects
-                                           join rp in _context.RequiredPositions on p.ProjectID equals rp.ProjectID
-                                           join epip in _context.EmpPositionInProjects on rp.ID equals epip.RequiredPositionID
-                                           select new { p, epip };
-
-                        var currentProjectBeginDate = await _context.Projects.Where(x => x.ProjectID == project.ProjectID).Select(x => x.DateBegin).FirstOrDefaultAsync();
-                        var listProjectCurrentlyIn = await projectquery.Where(x => (x.p.Status == ProjectStatus.OnGoing || x.p.Status == ProjectStatus.Confirmed) && x.epip.EmpID.Equals(empID) && x.epip.Status == ConfirmStatus.Accept && x.epip.Status == ConfirmStatus.New).Select(x => x.p.DateEstimatedEnd).ToListAsync();
-                        //var projectOnGoingDateEnd = await projectquery.Where(x => (x.p.Status == ProjectStatus.OnGoing || x.p.Status == ProjectStatus.Confirmed) && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.DateEstimatedEnd).ToListAsync();
-                        bool checkProjectDate = false;
-                        if (listProjectCurrentlyIn.Count > 0)
-                        {
-                            foreach (var dateEnd in listProjectCurrentlyIn)
-                            {
-                                if (dateEnd > currentProjectBeginDate)
-                                {
-                                    checkProjectDate = true;
-                                    break;
-                                }
-                            }
-                            if (checkProjectDate == true)
-                            {
-                                continue;
-                            }
-                        }
+                        }                                              
                         //Add match theo projecttype
                         var listProjectWithType = await projectquery.Where(x => x.p.ProjectTypeID == ProjectTypeID && x.epip.EmpID.Equals(empID) && x.epip.Status == ConfirmStatus.Accept).Select(x => x.p.ProjectID).ToListAsync();
                         var numberOfProjectWithType = listProjectWithType.Count();
@@ -763,10 +720,10 @@ namespace ESMS.BackendAPI.Services.Employees
                             ProjectFieldMatch = 10;
                             match += ProjectFieldMatch;
                         }
-                        if (Hardskillmatch < 2.5 || match < 12.5)
-                        {
-                            continue;
-                        }
+                        if (Hardskillmatch < 4 || Softskillmatch <4 || Languagematch <4 || match < 12.5)
+                            {
+                                continue;
+                            }
                         matchDetail = new SingleCandidateMatchInPos()
                         {
                             PosId = PosId,
@@ -783,15 +740,13 @@ namespace ESMS.BackendAPI.Services.Employees
                         listMatchInPosDetail.Add(matchDetail);
                     }
                 }
-
-                //}
                 result.Add(new SingleCandidateViewModel()
                 {
                     ProjectInfo = project,
                     MatchInEachPos = listMatchInPosDetail,
                 });
             }
-            return result;
+            return new ApiSuccessResult<List<SingleCandidateViewModel>> (result);
         }
 
         //public async Task<List<CandidateViewModel>> SuggestCandidate(int projectID, SuggestCadidateRequest request)

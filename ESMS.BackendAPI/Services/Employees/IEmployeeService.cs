@@ -17,7 +17,7 @@ namespace ESMS.BackendAPI.Services.Employees
 
         Task<ApiResult<bool>> Update(string id, EmpUpdateRequest request);
 
-        Task<List<CandidateViewModel>> SuggestCandidate(int projectID, SuggestCadidateRequest request);
+        Task<ApiResult<List<CandidateViewModel>>> SuggestCandidate(int projectID, SuggestCadidateRequest request);
 
         Task<ApiResult<PagedResult<EmpVm>>> GetEmpsPaging(GetEmpPagingRequest request);
 
@@ -33,6 +33,6 @@ namespace ESMS.BackendAPI.Services.Employees
 
         Task<ApiResult<LoadEmpInfoVM>> LoadEmpInfo(string empID);
 
-        Task<List<SingleCandidateViewModel>> SingleCandidateSuggest(string empID);
+        Task<ApiResult<List<SingleCandidateViewModel>>> SingleCandidateSuggest(string empID);
     }
 }
