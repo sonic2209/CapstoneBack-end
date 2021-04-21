@@ -36,7 +36,7 @@ namespace ESMS.BackendAPI.Controllers
         [HttpPost("unsubscription")]
         public IActionResult Unsubscribe(string token, string topic)
         {
-            _notificationService.Unsubscribe(token, topic)         
+            _notificationService.Unsubscribe(token, topic);       
             return NoContent();
         }
     }

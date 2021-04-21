@@ -262,7 +262,7 @@ namespace ESMS.BackendAPI.Services.Employees
                 //3.Paging
                 int totalRow = await query.CountAsync();
 
-                var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
+                var data = await query.OrderByDescending(x => x.DateCreated).Skip((request.PageIndex - 1) * request.PageSize)
                     .Take(request.PageSize)
                     .Select(x => new EmpVm()
                     {
@@ -284,14 +284,14 @@ namespace ESMS.BackendAPI.Services.Employees
                     }
                     empUser.RoleName = currentRole;
                 }
-                var dataSorted = data.OrderByDescending(x => x.DateCreated).ToList() ;
+             
                 //4.Select and projection
                 var pagedResult = new PagedResult<EmpVm>()
                 {
                     TotalRecords = totalRow,
                     PageIndex = request.PageIndex,
                     PageSize = request.PageSize,
-                    Items = dataSorted
+                    Items = data
                 };
                 return new ApiSuccessResult<PagedResult<EmpVm>>(pagedResult);
             }
