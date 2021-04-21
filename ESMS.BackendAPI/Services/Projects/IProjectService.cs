@@ -50,6 +50,9 @@ namespace ESMS.BackendAPI.Services.Projects
         Task<ApiResult<List<PosInProject>>> GetStatisticsByEmpID(string empID);
 
         Task<ApiResult<bool>> CheckProject();
+
         List<ProjectVM> GetMissEmpProjects();
+
+        Task<List<int>> CheckNoEmpProject();
     }
 }
