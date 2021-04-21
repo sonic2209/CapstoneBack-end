@@ -466,10 +466,11 @@ namespace ESMS.BackendAPI.Services.Employees
                             var projectquery = from p in _context.Projects
                                                join rp in _context.RequiredPositions on p.ProjectID equals rp.ProjectID
                                                join epip in _context.EmpPositionInProjects on rp.ID equals epip.RequiredPositionID
-                                               select new { p, epip };
+                                               select new { rp, p, epip };
 
                             var currentProjectBeginDate = await _context.Projects.Where(x => x.ProjectID == projectID).Select(x => x.DateBegin).FirstOrDefaultAsync();
-                            var listProjectCurrentlyIn = await projectquery.Where(x => (x.p.Status == ProjectStatus.OnGoing || x.p.Status == ProjectStatus.Confirmed) && x.epip.EmpID.Equals(emp.EmpId) && x.epip.Status == ConfirmStatus.Accept && x.epip.Status == ConfirmStatus.New).Select(x => x.p.DateEstimatedEnd).ToListAsync();
+                            var listProjectCurrentlyIn = await projectquery.Where(x => x.p.Status != ProjectStatus.Finished && x.epip.EmpID.Equals(emp.EmpId) && x.epip.Status != ConfirmStatus.Reject)
+                                .Select(x => x.p.DateEstimatedEnd).ToListAsync();
                             //var projectOnGoingDateEnd = await projectquery.Where(x => (x.p.Status == ProjectStatus.OnGoing || x.p.Status == ProjectStatus.Confirmed) && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.DateEstimatedEnd).ToListAsync();
                             bool checkProjectDate = false;
                             if (listProjectCurrentlyIn.Count > 0)
