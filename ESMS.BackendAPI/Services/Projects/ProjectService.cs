@@ -636,7 +636,7 @@ namespace ESMS.BackendAPI.Services.Projects
                         count -= employees.Count();
                         if (candidate.EmpIDs.Count() > count)
                         {
-                            var message = "Can only add equal or less than " + count + " employee for position " + pos.Name;
+                            var message = "Can only add equal or less than " + count + " employee(s) for position " + pos.Name;
                             return new ApiErrorResult<bool>(message);
                         }
                         foreach (var emp in candidate.EmpIDs)

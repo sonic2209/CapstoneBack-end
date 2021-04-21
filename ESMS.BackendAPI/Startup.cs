@@ -3,6 +3,7 @@ using ESMS.BackendAPI.Services.Certifications;
 using ESMS.BackendAPI.Services.Emails;
 using ESMS.BackendAPI.Services.Employees;
 using ESMS.BackendAPI.Services.Languages;
+using ESMS.BackendAPI.Services.Notifications;
 using ESMS.BackendAPI.Services.Positions;
 using ESMS.BackendAPI.Services.Projects;
 using ESMS.BackendAPI.Services.Skills;
@@ -84,6 +85,7 @@ namespace ESMS.BackendAPI
             services.AddTransient<UserManager<Employee>, UserManager<Employee>>();
             services.AddTransient<SignInManager<Employee>, SignInManager<Employee>>();
             services.AddTransient<RoleManager<Role>, RoleManager<Role>>();
+            services.AddTransient<INotificationService, NotificationService>();
 
             services.AddControllersWithViews();
 
