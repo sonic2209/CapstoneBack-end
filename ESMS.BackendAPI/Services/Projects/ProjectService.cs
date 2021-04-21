@@ -243,7 +243,7 @@ namespace ESMS.BackendAPI.Services.Projects
                             Name = x.e.Name,
                             Email = x.e.Email,
                             PhoneNumber = x.e.PhoneNumber,
-                            Status = x.e.Status,
+                            Status = x.ep.Status,
                             DateIn = x.ep.DateIn
                         }).ToListAsync();
                     if (employees.Count() != 0)
@@ -1021,7 +1021,7 @@ namespace ESMS.BackendAPI.Services.Projects
                     Name = x.e.Name,
                     Email = x.e.Email,
                     PhoneNumber = x.e.PhoneNumber,
-                    Status = x.e.Status,
+                    Status = x.ep.Status,
                     DateIn = x.ep.DateIn
                 }).ToListAsync();
                 if (pos.Employees.Count() != 0)

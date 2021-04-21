@@ -13,6 +13,6 @@ namespace ESMS.BackendAPI.ViewModels.Project
         public string PhoneNumber { get; set; }
         public int NumberOfProject { get; set; }
         public DateTime? DateIn { get; set; }
-        public EmployeeStatus Status { get; set; }
+        public ConfirmStatus Status { get; set; }
     }
 }
