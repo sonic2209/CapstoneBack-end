@@ -578,7 +578,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             }
                         }
                         else
-                            continue;
+                            return new ApiErrorResult<List<SingleCandidateViewModel>>> ("This user is a PM or HR");
                         double match = 0;
                         double Languagematch = 0;
                         double Softskillmatch = 0;
