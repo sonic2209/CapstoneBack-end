@@ -1256,7 +1256,8 @@ namespace ESMS.BackendAPI.Services.Projects
                     ProjectID = x.ProjectID,
                     ProjectName = x.ProjectName,
                     ProjectFieldID = x.ProjectFieldID,
-                    ProjectTypeID = x.ProjectTypeID
+                    ProjectTypeID = x.ProjectTypeID,
+                    ProjectManagerID = x.ProjectManagerID
                 }).ToList();
             if (projects.Count() != 0)
             {
@@ -1303,6 +1304,7 @@ namespace ESMS.BackendAPI.Services.Projects
                             ProjectName = p.ProjectName,
                             TypeID = (int)p.ProjectTypeID,
                             FieldID = (int)p.ProjectFieldID,
+                            ProjectManagerID = p.ProjectManagerID,
                             RequiredPositions = requirePos
                         };
                         list.Add(projectVM);

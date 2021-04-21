@@ -12,6 +12,7 @@ namespace ESMS.BackendAPI.ViewModels.Project
         public string ProjectName { get; set; }
         public int TypeID { get; set; }
         public int FieldID { get; set; }
+        public string ProjectManagerID { get; set; }
         public List<RequiredPosVM> RequiredPositions { get; set; }
     }
 }
