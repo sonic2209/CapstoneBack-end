@@ -201,6 +201,12 @@ namespace ESMS.BackendAPI.Services.Projects
             }).FirstOrDefaultAsync();
             if (projectVM == null) return new ApiErrorResult<ProjectViewModel>("Project does not exist");
             projectVM.FieldName = _context.ProjectFields.Find(projectVM.FieldID).Name;
+            var empQuery = from ep in _context.EmpPositionInProjects
+                           join rp in _context.RequiredPositions on ep.RequiredPositionID equals rp.ID
+                           select new { ep, rp };
+            var employee = await empQuery.Where(x => x.rp.ProjectID.Equals(projectID)
+            && x.ep.Status.Equals(ConfirmStatus.Accept)).Select(x => x.ep.EmpID).ToListAsync();
+            projectVM.Noe = employee.Count();
             return new ApiSuccessResult<ProjectViewModel>(projectVM);
         }
 
@@ -809,6 +815,8 @@ namespace ESMS.BackendAPI.Services.Projects
                 requiredPos.Status = RequirementStatus.Finished;
                 _context.RequiredPositions.Update(requiredPos);
             }
+            project.Status = ProjectStatus.Confirmed;
+            _context.Projects.Update(project);
             var result = await _context.SaveChangesAsync();
             if (result == 0)
             {
