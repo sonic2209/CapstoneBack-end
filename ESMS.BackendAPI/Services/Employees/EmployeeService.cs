@@ -284,7 +284,7 @@ namespace ESMS.BackendAPI.Services.Employees
                     }
                     empUser.RoleName = currentRole;
                 }
-             
+
                 //4.Select and projection
                 var pagedResult = new PagedResult<EmpVm>()
                 {
@@ -340,7 +340,6 @@ namespace ESMS.BackendAPI.Services.Employees
                             double ProjectFieldMatch = 0;
                             MatchViewModel matchDetail = new MatchViewModel();
 
-                           
                             //add match theo ngon ngu
                             foreach (LanguageDetail language in requiredPosition.Language)
                             {
@@ -491,7 +490,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 match += ProjectFieldMatch;
                             }
                             //Loc nhung nhan vien khong du diem toi thieu
-                            if (Hardskillmatch < 4 || Softskillmatch <4 || Languagematch <4 || match < 12.5)
+                            if (Hardskillmatch < 4 || Softskillmatch < 4 || Languagematch < 4 || match < 12.5)
                             {
                                 continue;
                             }
@@ -574,11 +573,11 @@ namespace ESMS.BackendAPI.Services.Employees
                             currentRole = roles[0];
                             if (!currentRole.Equals("Employee"))
                             {
-                                return new ApiErrorResult<List<SingleCandidateViewModel>>>("This user is a PM or HR");
+                                return new ApiErrorResult<List<SingleCandidateViewModel>>("This user is a PM or HR");
                             }
                         }
                         else
-                            return new ApiErrorResult<List<SingleCandidateViewModel>>> ("This user is a PM or HR");
+                            return new ApiErrorResult<List<SingleCandidateViewModel>>("This user is a PM or HR");
                         double match = 0;
                         double Languagematch = 0;
                         double Softskillmatch = 0;
@@ -674,7 +673,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                     //}
                                 }
                             }
-                        }                                              
+                        }
                         //Add match theo projecttype
                         var listProjectWithType = await projectquery.Where(x => x.p.ProjectTypeID == ProjectTypeID && x.epip.EmpID.Equals(empID) && x.epip.Status == ConfirmStatus.Accept).Select(x => x.p.ProjectID).ToListAsync();
                         var numberOfProjectWithType = listProjectWithType.Count();
@@ -720,10 +719,10 @@ namespace ESMS.BackendAPI.Services.Employees
                             ProjectFieldMatch = 10;
                             match += ProjectFieldMatch;
                         }
-                        if (Hardskillmatch < 4 || Softskillmatch <4 || Languagematch <4 || match < 12.5)
-                            {
-                                continue;
-                            }
+                        if (Hardskillmatch < 4 || Softskillmatch < 4 || Languagematch < 4 || match < 12.5)
+                        {
+                            continue;
+                        }
                         matchDetail = new SingleCandidateMatchInPos()
                         {
                             PosId = PosId,
@@ -746,7 +745,7 @@ namespace ESMS.BackendAPI.Services.Employees
                     MatchInEachPos = listMatchInPosDetail,
                 });
             }
-            return new ApiSuccessResult<List<SingleCandidateViewModel>> (result);
+            return new ApiSuccessResult<List<SingleCandidateViewModel>>(result);
         }
 
         //public async Task<List<CandidateViewModel>> SuggestCandidate(int projectID, SuggestCadidateRequest request)
