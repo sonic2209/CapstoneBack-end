@@ -20,14 +20,18 @@ namespace ESMS.BackendAPI.ViewModels.Employees
             RuleFor(x => x.UserName).NotEmpty().WithMessage("Username cannot be empty");
             RuleFor(x => x.Password).NotEmpty().WithMessage("Password cannot be empty")
                 .MinimumLength(6).WithMessage("Password needs to have at least 6 characters");
+            RuleFor(x => x.ConfirmPassword).NotEmpty().WithMessage("Confirm Password cannot be empty");
+            RuleFor(x => x.IdentityNumber).NotEmpty().WithMessage("Identity Number cannot be empty");
+            RuleFor(x => x.Address).NotEmpty().WithMessage("Address cannot be empty");
 
             RuleFor(x => x).Custom((request, context) =>
             {
                 if (request.Password != request.ConfirmPassword)
                 {
-                    context.AddFailure("Confirm password must match with password");
+                    context.AddFailure(nameof(request.ConfirmPassword),"Confirm password must match with password");
                 }
             });
+            
         }
     }
 }

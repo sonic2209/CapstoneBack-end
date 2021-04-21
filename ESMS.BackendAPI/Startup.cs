@@ -9,6 +9,7 @@ using ESMS.BackendAPI.Services.Projects;
 using ESMS.BackendAPI.Services.Skills;
 using ESMS.BackendAPI.ViewModels.Common;
 using ESMS.BackendAPI.ViewModels.Employees;
+using ESMS.BackendAPI.ViewModels.Notifications;
 using ESMS.Data.EF;
 using ESMS.Data.Entities;
 using FirebaseAdmin;
@@ -158,7 +159,7 @@ namespace ESMS.BackendAPI
         {
             //var userService = app.ApplicationServices.GetService<IEmployeeService>();
             var scope = app.ApplicationServices.CreateScope();
-            var userService = scope.ServiceProvider.GetService<IEmployeeService>();
+            var notiService = scope.ServiceProvider.GetService<INotificationService>();
             var projectService = scope.ServiceProvider.GetService<IProjectService>();
             var emailService = scope.ServiceProvider.GetService<IEmailService>();
             FirebaseApp.Create(new AppOptions()
@@ -204,20 +205,20 @@ namespace ESMS.BackendAPI
             {
                 endpoints.MapControllers();
             });
-            EmpCreateRequest emp = new EmpCreateRequest()
-            {
-                Address = "test",
-                ConfirmPassword = "Abcd1234$",
-                Email = "nguoitest123@gmail.com",
-                IdentityNumber = "123456789",
-                Name = "nguoi test",
-                Password = "Abcd1234$",
-                PhoneNumber = "1234567890",
-                RoleName = "Employee",
-                UserName = "nguoitest123"
-            };
+            //EmpCreateRequest emp = new EmpCreateRequest()
+            //{
+            //    Address = "test",
+            //    ConfirmPassword = "Abcd1234$",
+            //    Email = "nguoitest123@gmail.com",
+            //    IdentityNumber = "123456789",
+            //    Name = "nguoi test",
+            //    Password = "Abcd1234$",
+            //    PhoneNumber = "1234567890",
+            //    RoleName = "Employee",
+            //    UserName = "nguoitest123"
+            //};
 
-            new Thread(() =>
+            new Thread( () =>
                 {
                     while (true)
                     {
@@ -225,7 +226,21 @@ namespace ESMS.BackendAPI
                         /* run your code here */
                         //   Console.WriteLine("Hello, world");
                         var check = projectService.CheckProject();
-                        var result = userService.GetById("064535f6-61c5-4968-93a3-fc22172640a3");
+                        //var listDeletedProject = await projectService.CheckNoEmpProject();
+                        //if (listDeletedProject.Count > 0)
+                        //{
+                        //    foreach (var deletedProject in listDeletedProject)
+                        //    {
+                        //        string topic = deletedProject.ProjectManagerID;
+                        //        NotificationContent noti = new NotificationContent()
+                        //        {
+                        //            Title = "A project of yours has been deleted",
+                        //            Body = "We've deleted project named \"" + deletedProject.ProjectName + "\" due to the lack of employees in it",
+                        //        };
+                        //        notiService.SendMessage(topic, noti);
+                        //    }
+                        //}
+                        //var result = userService.GetById("064535f6-61c5-4968-93a3-fc22172640a3");
                         /* */
                         Thread.Sleep(TimeSpan.FromMinutes(30));
                     }
