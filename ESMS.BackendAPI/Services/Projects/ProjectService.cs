@@ -236,7 +236,8 @@ namespace ESMS.BackendAPI.Services.Projects
                 }).ToListAsync();
                 foreach (var requirePos in listRequirePos)
                 {
-                    var employees = await empQuery.Where(x => x.ep.RequiredPositionID.Equals(requirePos.ID))
+                    var employees = await empQuery.Where(x => x.ep.RequiredPositionID.Equals(requirePos.ID)
+                    && x.ep.Status != ConfirmStatus.Reject)
                         .Select(x => new EmpInProject()
                         {
                             EmpID = x.e.Id,
