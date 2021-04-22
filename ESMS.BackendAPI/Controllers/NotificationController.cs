@@ -5,11 +5,13 @@ using System.Threading.Tasks;
 using ESMS.BackendAPI.Services.Notifications;
 using ESMS.BackendAPI.ViewModels.Notifications;
 using FirebaseAdmin.Messaging;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ESMS.BackendAPI.Controllers
 {
+    [EnableCors("MyPolicy")]
     [Route("api/[controller]")]
     [ApiController]
     public class NotificationController : ControllerBase

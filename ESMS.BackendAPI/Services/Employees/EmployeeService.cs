@@ -355,7 +355,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                     {
                                         Languagematch += (empl.LangLevel * language.Priority * 0.1) / requiredPosition.Language.Count;
                                     }
-                                    match += Math.Round(Languagematch, 2);
+                                    //match += Math.Round(Languagematch, 2);
                                 }
                             }
                             //Add theo softskill
@@ -373,7 +373,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                         Softskillmatch += 10 / (requiredPosition.SoftSkillIDs.Count);
                                     }
                                 }
-                                match += Math.Round(Softskillmatch, 2);
+                                //match += Math.Round(Softskillmatch, 2);
                             }
                             //add match vao hardskill
                             var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.HardSkill && x.es.EmpID.Equals(emp.EmpId));
@@ -405,8 +405,8 @@ namespace ESMS.BackendAPI.Services.Employees
                                         };
                                         //if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
                                         //{
-                                        Hardskillmatch = (((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)) + ((int)emphs.SkillLevel - hardskill.SkillLevel)) * hardskill.Priority / 18 * requiredPosition.HardSkills.Count;
-                                        match += Math.Round(Hardskillmatch, 2);
+                                        Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)) + ((int)emphs.SkillLevel - hardskill.SkillLevel)) * hardskill.Priority / (18 * requiredPosition.HardSkills.Count);                                   
+                                        //match += Math.Round(Hardskillmatch, 2);
                                         //}
                                         //else
                                         //{
@@ -454,17 +454,17 @@ namespace ESMS.BackendAPI.Services.Employees
                             if (numberOfProjectWithType > 2 && numberOfProjectWithType < 5)
                             {
                                 ProjectTypeMatch = 3;
-                                match += ProjectTypeMatch;
+                                //match += ProjectTypeMatch;
                             }
                             if (numberOfProjectWithType > 5 && numberOfProjectWithType < 10)
                             {
                                 ProjectTypeMatch = 6;
-                                match += ProjectTypeMatch;
+                                //match += ProjectTypeMatch;
                             }
                             if (numberOfProjectWithType > 9)
                             {
                                 ProjectTypeMatch = 10;
-                                match += ProjectTypeMatch;
+                                //match += ProjectTypeMatch;
                             }
 
                             //Add match theo projectfield
@@ -477,30 +477,31 @@ namespace ESMS.BackendAPI.Services.Employees
                             if (numberOfProjectWithField > 2 && numberOfProjectWithField < 5)
                             {
                                 ProjectFieldMatch = 3;
-                                match += ProjectFieldMatch;
+                                //match += ProjectFieldMatch;
                             }
                             if (numberOfProjectWithField > 5 && numberOfProjectWithField < 10)
                             {
                                 ProjectFieldMatch = 6;
-                                match += ProjectFieldMatch;
+                                //match += ProjectFieldMatch;
                             }
                             if (numberOfProjectWithField > 9)
                             {
                                 ProjectFieldMatch = 10;
-                                match += ProjectFieldMatch;
+                                //match += ProjectFieldMatch;
                             }
+                            match = Math.Round(Languagematch + Softskillmatch + Hardskillmatch + ProjectTypeMatch + ProjectFieldMatch, 2);
                             //Loc nhung nhan vien khong du diem toi thieu
-                            if (Hardskillmatch < 4 || Softskillmatch < 4 || Languagematch < 4 || match < 12.5)
-                            {
-                                continue;
-                            }
+                            //if (Hardskillmatch < 4 || Softskillmatch < 4 || Languagematch < 4 || match < 12.5)
+                            //{
+                            //    continue;
+                            //}
                             matchDetail = new MatchViewModel()
                             {
                                 EmpID = emp.EmpId,
                                 EmpName = emp.EmpName,
                                 LanguageMatch = Languagematch,
                                 SoftSkillMatch = Softskillmatch,
-                                HardSkillMatch = Hardskillmatch,
+                                HardSkillMatch = Math.Round(Hardskillmatch,2),
                                 ProjectTypeMatch = ProjectTypeMatch,
                                 ProjectFieldMatch = ProjectFieldMatch,
                                 OverallMatch = match,
@@ -719,10 +720,10 @@ namespace ESMS.BackendAPI.Services.Employees
                             ProjectFieldMatch = 10;
                             match += ProjectFieldMatch;
                         }
-                        if (Hardskillmatch < 4 || Softskillmatch < 4 || Languagematch < 4 || match < 12.5)
-                        {
-                            continue;
-                        }
+                        //if (Hardskillmatch < 4 || Softskillmatch < 4 || Languagematch < 4 || match < 12.5)
+                        //{
+                        //    continue;
+                        //}
                         matchDetail = new SingleCandidateMatchInPos()
                         {
                             PosId = PosId,
