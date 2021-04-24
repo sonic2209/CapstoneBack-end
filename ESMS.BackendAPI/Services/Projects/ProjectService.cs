@@ -25,6 +25,8 @@ namespace ESMS.BackendAPI.Services.Projects
         public async Task<ApiResult<int>> Create(string empID, ProjectCreateRequest request)
         {
             var project = _context.Projects.Find(request.ProjectID);
+            DateTime dateBegin = DateTime.Parse(request.DateBegin);
+            DateTime dateEstimatedEnd = DateTime.Parse(request.DateEstimatedEnd);
             if (project != null)
             {
                 if (!project.ProjectName.Equals(request.ProjectName))
@@ -37,22 +39,22 @@ namespace ESMS.BackendAPI.Services.Projects
                     project.ProjectName = request.ProjectName;
                 }
                 project.Description = request.Description;
-                if (DateTime.Compare(project.DateBegin.Date, request.DateBegin.Date) != 0)
+                if (DateTime.Compare(project.DateBegin.Date, dateBegin.Date) != 0)
                 {
                     var checkDate = _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished
                     && x.ProjectID != project.ProjectID).OrderByDescending(x => x.DateEstimatedEnd)
                     .Select(x => x.DateEstimatedEnd).FirstOrDefault();
-                    if (DateTime.Compare(request.DateBegin, checkDate.AddDays(3)) < 0)
+                    if (DateTime.Compare(dateBegin, checkDate.AddDays(3)) < 0)
                     {
                         return new ApiErrorResult<int>("dateBegin : Date begin must be after your current project's estimated end date(" + checkDate.ToString("dd/MM/yyyy") + ") at least 3 days");
                     }
-                    project.DateBegin = request.DateBegin;
+                    project.DateBegin = dateBegin;
                 }
-                if (DateTime.Compare(request.DateBegin, request.DateEstimatedEnd) > 0)
+                if (DateTime.Compare(dateBegin, dateEstimatedEnd) > 0)
                 {
                     return new ApiErrorResult<int>("dateEstimatedEnd : Date estimated end is earlier than date begin");
                 }
-                project.DateEstimatedEnd = request.DateEstimatedEnd;
+                project.DateEstimatedEnd = dateEstimatedEnd;
                 project.ProjectTypeID = request.ProjectTypeID;
                 project.ProjectFieldID = request.ProjectFieldID;
                 _context.Projects.Update(project);
@@ -73,11 +75,11 @@ namespace ESMS.BackendAPI.Services.Projects
                 var checkDate = _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
                     .OrderByDescending(x => x.DateEstimatedEnd)
                     .Select(x => x.DateEstimatedEnd).FirstOrDefault();
-                if (DateTime.Compare(request.DateBegin, checkDate.AddDays(3)) < 0)
+                if (DateTime.Compare(dateBegin, checkDate.AddDays(3)) < 0)
                 {
                     return new ApiErrorResult<int>("dateBegin : Date begin must be after your current project's estimated end date(" + checkDate.ToString("dd/MM/yyyy") + ") at least 3 days");
                 }
-                if (DateTime.Compare(request.DateBegin, request.DateEstimatedEnd) > 0)
+                if (DateTime.Compare(dateBegin, dateEstimatedEnd) > 0)
                 {
                     return new ApiErrorResult<int>("dateEstimatedEnd : Date estimated end is earlier than date begin");
                 }
@@ -86,8 +88,8 @@ namespace ESMS.BackendAPI.Services.Projects
                     ProjectName = request.ProjectName,
                     Description = request.Description,
                     DateCreated = DateTime.Now,
-                    DateBegin = request.DateBegin,
-                    DateEstimatedEnd = request.DateEstimatedEnd,
+                    DateBegin = dateBegin,
+                    DateEstimatedEnd = dateEstimatedEnd,
                     Status = ProjectStatus.Pending,
                     ProjectManagerID = empID,
                     ProjectTypeID = request.ProjectTypeID,
@@ -435,11 +437,12 @@ namespace ESMS.BackendAPI.Services.Projects
 
         public async Task<ApiResult<bool>> Update(int projectID, ProjectUpdateRequest request)
         {
+            DateTime dateEstimatedEnd = DateTime.Parse(request.DateEstimatedEnd);
             var project = await _context.Projects.FindAsync(projectID);
             if (project == null) return new ApiErrorResult<bool>("Project does not exist");
 
             project.Description = request.Description;
-            if (DateTime.Compare(project.DateEstimatedEnd.Date, request.DateEstimatedEnd.Date) != 0)
+            if (DateTime.Compare(project.DateEstimatedEnd.Date, dateEstimatedEnd.Date) != 0)
             {
                 var projects = await _context.Projects.Where(x => x.ProjectManagerID.Equals(project.ProjectManagerID) && x.Status != ProjectStatus.Finished)
                     .OrderBy(x => x.DateEstimatedEnd).Select(x => new Project()
@@ -453,18 +456,18 @@ namespace ESMS.BackendAPI.Services.Projects
                     {
                         if (i != (projects.Count() - 1))
                         {
-                            if (DateTime.Compare(request.DateEstimatedEnd.Date, projects[i + 1].DateBegin.AddDays(-5)) > 0)
+                            if (DateTime.Compare(dateEstimatedEnd.Date, projects[i + 1].DateBegin.AddDays(-5)) > 0)
                             {
                                 return new ApiErrorResult<bool>("Date Estimated End must be before your next project's begin date(" + projects[i + 1].DateBegin.ToString("dd/MM/yyyy") + ") at least 5 days");
                             }
                         }
                     }
                 }
-                if (DateTime.Compare(project.DateBegin.Date, request.DateEstimatedEnd.Date) > 0)
+                if (DateTime.Compare(project.DateBegin.Date, dateEstimatedEnd.Date) > 0)
                 {
                     return new ApiErrorResult<bool>("Date estimated end is earlier than project's begin date");
                 }
-                project.DateEstimatedEnd = request.DateEstimatedEnd;
+                project.DateEstimatedEnd = dateEstimatedEnd;
             }
             project.ProjectTypeID = request.TypeID;
             project.ProjectFieldID = request.FieldID;

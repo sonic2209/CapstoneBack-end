@@ -21,43 +21,6 @@ namespace ESMS.BackendAPI.Services.Skills
             _context = context;
         }
 
-        public async Task<ApiResult<bool>> AddField(AddFieldRequest request)
-        {
-            var skill = new SkillInProjectField()
-            {
-                SkillID = request.SkillID,
-                FieldID = request.FieldID
-            };
-            var checkSkill = await _context.SkillInProjectFields.FindAsync(skill.FieldID, skill.SkillID);
-            if (checkSkill != null) return new ApiErrorResult<bool>("This skill has been already added");
-            _context.SkillInProjectFields.Add(skill);
-            var result = await _context.SaveChangesAsync();
-            if (result == 0)
-            {
-                return new ApiErrorResult<bool>("Add field failed");
-            }
-            return new ApiSuccessResult<bool>();
-        }
-
-        public async Task<ApiResult<bool>> AddType(AddTypeRequest request)
-        {
-            var skill = new MinPosInProject()
-            {
-                SkillID = request.SkillID,
-                TypeID = request.TypeID,
-                PosID = request.PosID
-            };
-            var checkSkill = await _context.MinPosInProjects.FindAsync(skill.TypeID, skill.PosID, skill.SkillID);
-            if (checkSkill != null) return new ApiErrorResult<bool>("This skill has been already added");
-            _context.MinPosInProjects.Add(skill);
-            var result = await _context.SaveChangesAsync();
-            if (result == 0)
-            {
-                return new ApiErrorResult<bool>("Add type failed");
-            }
-            return new ApiSuccessResult<bool>();
-        }
-
         public async Task<ApiResult<bool>> ChangeStatus(int skillID)
         {
             var skill = _context.Skills.Find(skillID);

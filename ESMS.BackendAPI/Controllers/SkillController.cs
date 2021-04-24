@@ -105,37 +105,5 @@ namespace ESMS.BackendAPI.Controllers
             var skills = await _skillService.GetSoftSkills(fieldID);
             return Ok(skills);
         }
-
-        [HttpPost("addType")]
-        public async Task<IActionResult> AddType([FromBody] AddTypeRequest request)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
-            var result = await _skillService.AddType(request);
-
-            if (!result.IsSuccessed)
-            {
-                return BadRequest(result);
-            }
-            return Ok(result);
-        }
-
-        [HttpPost("addField")]
-        public async Task<IActionResult> AddField([FromBody] AddFieldRequest request)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
-            var result = await _skillService.AddField(request);
-
-            if (!result.IsSuccessed)
-            {
-                return BadRequest(result);
-            }
-            return Ok(result);
-        }
     }
 }
