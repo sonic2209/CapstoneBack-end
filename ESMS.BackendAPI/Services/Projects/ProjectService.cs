@@ -1403,7 +1403,7 @@ namespace ESMS.BackendAPI.Services.Projects
                                 ProjectName = p.ProjectName
                             };
                             list.Add(deletedProject);
-                            var listRequiredPos = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(p.ProjectID))
+                            var listRequiredPos =  await _context.RequiredPositions.Where(x => x.ProjectID.Equals(p.ProjectID))
                                 .Select(x => new RequiredPosition()
                                 {
                                     ID = x.ID,

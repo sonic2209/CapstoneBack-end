@@ -218,28 +218,28 @@ namespace ESMS.BackendAPI
             //    UserName = "nguoitest123"
             //};
 
-            new Thread( () =>
+            new Thread( async () =>
                 {
                     while (true)
                     {
                         Thread.CurrentThread.IsBackground = true;
                         /* run your code here */
                         //   Console.WriteLine("Hello, world");
-                        var check = projectService.CheckProject();
-                        //var listDeletedProject = await projectService.CheckNoEmpProject();
-                        //if (listDeletedProject.Count > 0)
-                        //{
-                        //    foreach (var deletedProject in listDeletedProject)
-                        //    {
-                        //        string topic = deletedProject.ProjectManagerID;
-                        //        NotificationContent noti = new NotificationContent()
-                        //        {
-                        //            Title = "A project of yours has been deleted",
-                        //            Body = "We've deleted project named \"" + deletedProject.ProjectName + "\" due to the lack of employees in it",
-                        //        };
-                        //        notiService.SendMessage(topic, noti);
-                        //    }
-                        //}
+                        var check = await projectService.CheckProject();
+                        var listDeletedProject = await projectService.CheckNoEmpProject();
+                        if (listDeletedProject.Count > 0)
+                        {
+                            foreach (var deletedProject in listDeletedProject)
+                            {
+                                string topic = deletedProject.ProjectManagerID;
+                                NotificationContent noti = new NotificationContent()
+                                {
+                                    Title = "A project of yours has been deleted",
+                                    Body = "We've deleted project named \"" + deletedProject.ProjectName + "\" due to the lack of employees in it",
+                                };
+                                notiService.SendMessage(topic, noti);
+                            }
+                        }
                         //var result = userService.GetById("064535f6-61c5-4968-93a3-fc22172640a3");
                         /* */
                         Thread.Sleep(TimeSpan.FromMinutes(30));
