@@ -11,6 +11,7 @@ namespace ESMS.BackendAPI.ViewModels.Position
         public int RequiredPosID { get; set; }
         public int PosID { get; set; }
         public string PosName { get; set; }
+        public int CandidateNeeded { get; set; }
         public int MissingEmployee { get; set; }
         public List<LanguageDetail> Language { get; set; }
         public List<int> SoftSkillIDs { get; set; }

@@ -16,8 +16,8 @@ namespace ESMS.Data.Entities
         public string Description { get; set; }
         public ProjectStatus Status { get; set; }
         public string ProjectManagerID { get; set; }
-        public int? ProjectTypeID { get; set; }
-        public int? ProjectFieldID { get; set; }
+        public int ProjectTypeID { get; set; }
+        public int ProjectFieldID { get; set; }
         public Employee Employee { get; set; }
         public ProjectType ProjectType { get; set; }
         public ProjectField ProjectField { get; set; }
