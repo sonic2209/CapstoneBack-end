@@ -640,7 +640,7 @@ namespace ESMS.BackendAPI.Services.Projects
                             count += cn;
                         }
                         var employees = await empQuery.Where(x => x.rp.ProjectID.Equals(projectID)
-                        && x.rp.PositionID.Equals(pos.PosID)).Select(x => x.ep.EmpID).Distinct().ToListAsync();
+                        && x.rp.PositionID.Equals(pos.PosID) && x.ep.Status != ConfirmStatus.Reject).Select(x => x.ep.EmpID).Distinct().ToListAsync();
                         count -= employees.Count();
                         if (candidate.EmpIDs.Count() > count)
                         {
@@ -747,7 +747,7 @@ namespace ESMS.BackendAPI.Services.Projects
             List<string> listEmp = new List<string>();
             string notAvalMessage = "These employee are not avaliable for this project: ";
             string addedMessage = "These employee already in this project: ";
-            string message = "These employee already in other project: ";
+            //string message = "These employee already in other project: ";
             foreach (var position in request.Candidates)
             {
                 var pos = await _context.Positions.FindAsync(position.PosID);
@@ -1321,12 +1321,13 @@ namespace ESMS.BackendAPI.Services.Projects
                                select new { rp, po };
                 foreach (var p in projects)
                 {
-                    var requirePos = posQuery.Where(x => x.rp.MissingEmployee > 0 && x.rp.ProjectID.Equals(p.ProjectID))
+                    var requirePos = posQuery.Where(x => x.rp.MissingEmployee > 0 && x.rp.Status != RequirementStatus.Waiting && x.rp.ProjectID.Equals(p.ProjectID))
                         .Select(x => new RequiredPosVM()
                         {
                             RequiredPosID = x.rp.ID,
                             PosID = x.rp.PositionID,
                             PosName = x.po.Name,
+                            CandidateNeeded = x.rp.CandidateNeeded,
                             MissingEmployee = x.rp.MissingEmployee,
                         }).ToList();
                     if (requirePos.Count() != 0)
