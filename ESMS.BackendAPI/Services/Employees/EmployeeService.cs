@@ -405,7 +405,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                         };
                                         //if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
                                         //{
-                                        Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)) + ((int)emphs.SkillLevel - hardskill.SkillLevel)) * hardskill.Priority / (18 * requiredPosition.HardSkills.Count);                                   
+                                        Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)) + ((int)emphs.SkillLevel - hardskill.SkillLevel)) * hardskill.Priority / (18 * requiredPosition.HardSkills.Count);
                                         //match += Math.Round(Hardskillmatch, 2);
                                         //}
                                         //else
@@ -501,7 +501,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 EmpName = emp.EmpName,
                                 LanguageMatch = Languagematch,
                                 SoftSkillMatch = Softskillmatch,
-                                HardSkillMatch = Math.Round(Hardskillmatch,2),
+                                HardSkillMatch = Math.Round(Hardskillmatch, 2),
                                 ProjectTypeMatch = ProjectTypeMatch,
                                 ProjectFieldMatch = ProjectFieldMatch,
                                 OverallMatch = match,
@@ -524,7 +524,7 @@ namespace ESMS.BackendAPI.Services.Employees
         public async Task<ApiResult<List<SingleCandidateViewModel>>> SingleCandidateSuggest(string empID)
         {
             var empName = _context.Employees.Where(x => x.Id.Equals(empID)).Select(x => x.Name).FirstOrDefault();
-            var listProject = _projectService.GetMissEmpProjects();
+            var listProject = _projectService.GetMissEmpProjects(empID);
             List<SingleCandidateViewModel> result = new List<SingleCandidateViewModel>();
 
             foreach (var project in listProject)
@@ -614,7 +614,6 @@ namespace ESMS.BackendAPI.Services.Employees
                                 {
                                     Languagematch += (empl.LangLevel * language.Priority * 0.1) / requiredPosition.Language.Count;
                                 }
-                                
                             }
                         }
                         //Add theo softskill
@@ -632,7 +631,6 @@ namespace ESMS.BackendAPI.Services.Employees
                                     Softskillmatch += 10 / (requiredPosition.SoftSkillIDs.Count);
                                 }
                             }
-                            
                         }
                         //add match vao hardskill
                         var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.HardSkill && x.es.EmpID.Equals(empID));
@@ -665,7 +663,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                     //if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
                                     //{
                                     Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)) + ((int)emphs.SkillLevel - hardskill.SkillLevel)) * hardskill.Priority / (18 * requiredPosition.HardSkills.Count);
-                                    
+
                                     //}
                                     //else
                                     //{
@@ -685,17 +683,14 @@ namespace ESMS.BackendAPI.Services.Employees
                         if (numberOfProjectWithType > 2 && numberOfProjectWithType < 5)
                         {
                             ProjectTypeMatch = 3;
-                            
                         }
                         if (numberOfProjectWithType > 5 && numberOfProjectWithType < 10)
                         {
                             ProjectTypeMatch = 6;
-                            
                         }
                         if (numberOfProjectWithType > 9)
                         {
                             ProjectTypeMatch = 10;
-                            
                         }
 
                         //Add match theo projectfield
@@ -708,17 +703,14 @@ namespace ESMS.BackendAPI.Services.Employees
                         if (numberOfProjectWithField > 2 && numberOfProjectWithField < 5)
                         {
                             ProjectFieldMatch = 3;
-                            
                         }
                         if (numberOfProjectWithField > 5 && numberOfProjectWithField < 10)
                         {
                             ProjectFieldMatch = 6;
-                            
                         }
                         if (numberOfProjectWithField > 9)
                         {
                             ProjectFieldMatch = 10;
-                            
                         }
                         match = Math.Round(Languagematch + Softskillmatch + Hardskillmatch + ProjectTypeMatch + ProjectFieldMatch, 2);
                         //if (Hardskillmatch < 4 || Softskillmatch < 4 || Languagematch < 4 || match < 12.5)
@@ -733,7 +725,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             EmpName = empName,
                             LanguageMatch = Languagematch,
                             SoftSkillMatch = Softskillmatch,
-                            HardSkillMatch = Math.Round(Hardskillmatch,2),
+                            HardSkillMatch = Math.Round(Hardskillmatch, 2),
                             ProjectTypeMatch = ProjectTypeMatch,
                             ProjectFieldMatch = ProjectFieldMatch,
                             OverallMatch = match,

@@ -44,15 +44,15 @@ namespace ESMS.BackendAPI.Services.Projects
                     var checkDate = _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished
                     && x.ProjectID != project.ProjectID).OrderByDescending(x => x.DateEstimatedEnd)
                     .Select(x => x.DateEstimatedEnd).FirstOrDefault();
-                    if (DateTime.Compare(dateBegin, checkDate.AddDays(3)) < 0)
+                    if (DateTime.Compare(dateBegin, checkDate.AddDays(14)) < 0)
                     {
-                        return new ApiErrorResult<int>("dateBegin : Date begin must be after your current project's estimated end date(" + checkDate.ToString("dd/MM/yyyy") + ") at least 3 days");
+                        return new ApiErrorResult<int>("dateBegin : Date begin must be after your current project's estimated end date(" + checkDate.ToString("dd/MM/yyyy") + ") at least 2 weeks");
                     }
                     project.DateBegin = dateBegin;
                 }
                 if (DateTime.Compare(dateBegin, dateEstimatedEnd) > 0)
                 {
-                    return new ApiErrorResult<int>("dateEstimatedEnd : Date estimated end is earlier than date begin");
+                    return new ApiErrorResult<int>("dateEstimatedEnd : Date end is earlier than date begin");
                 }
                 project.DateEstimatedEnd = dateEstimatedEnd;
                 project.ProjectTypeID = request.ProjectTypeID;
@@ -75,13 +75,13 @@ namespace ESMS.BackendAPI.Services.Projects
                 var checkDate = _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
                     .OrderByDescending(x => x.DateEstimatedEnd)
                     .Select(x => x.DateEstimatedEnd).FirstOrDefault();
-                if (DateTime.Compare(dateBegin, checkDate.AddDays(3)) < 0)
+                if (DateTime.Compare(dateBegin, checkDate.AddDays(14)) < 0)
                 {
-                    return new ApiErrorResult<int>("dateBegin : Date begin must be after your current project's estimated end date(" + checkDate.ToString("dd/MM/yyyy") + ") at least 3 days");
+                    return new ApiErrorResult<int>("dateBegin : Date begin must be after your current project's estimated end date(" + checkDate.ToString("dd/MM/yyyy") + ") at least 2 weeks");
                 }
                 if (DateTime.Compare(dateBegin, dateEstimatedEnd) > 0)
                 {
-                    return new ApiErrorResult<int>("dateEstimatedEnd : Date estimated end is earlier than date begin");
+                    return new ApiErrorResult<int>("dateEstimatedEnd : Date end is earlier than date begin");
                 }
                 project = new Project()
                 {
@@ -444,28 +444,32 @@ namespace ESMS.BackendAPI.Services.Projects
             project.Description = request.Description;
             if (DateTime.Compare(project.DateEstimatedEnd.Date, dateEstimatedEnd.Date) != 0)
             {
-                var projects = await _context.Projects.Where(x => x.ProjectManagerID.Equals(project.ProjectManagerID) && x.Status != ProjectStatus.Finished)
-                    .OrderBy(x => x.DateEstimatedEnd).Select(x => new Project()
-                    {
-                        DateBegin = x.DateBegin,
-                        DateEstimatedEnd = x.DateEstimatedEnd
-                    }).ToListAsync();
-                for (int i = 0; i < projects.Count(); i++)
+                if (DateTime.Compare(project.DateEstimatedEnd.Date, dateEstimatedEnd.Date) < 0)
                 {
-                    if (DateTime.Compare(projects[i].DateEstimatedEnd.Date, project.DateEstimatedEnd.Date) == 0)
-                    {
-                        if (i != (projects.Count() - 1))
-                        {
-                            if (DateTime.Compare(dateEstimatedEnd.Date, projects[i + 1].DateBegin.AddDays(-5)) > 0)
-                            {
-                                return new ApiErrorResult<bool>("Date Estimated End must be before your next project's begin date(" + projects[i + 1].DateBegin.ToString("dd/MM/yyyy") + ") at least 5 days");
-                            }
-                        }
-                    }
+                    return new ApiErrorResult<bool>("Date end cannot be delay");
                 }
+                //var projects = await _context.Projects.Where(x => x.ProjectManagerID.Equals(project.ProjectManagerID) && x.Status != ProjectStatus.Finished)
+                //    .OrderBy(x => x.DateEstimatedEnd).Select(x => new Project()
+                //    {
+                //        DateBegin = x.DateBegin,
+                //        DateEstimatedEnd = x.DateEstimatedEnd
+                //    }).ToListAsync();
+                //for (int i = 0; i < projects.Count(); i++)
+                //{
+                //    if (DateTime.Compare(projects[i].DateEstimatedEnd.Date, project.DateEstimatedEnd.Date) == 0)
+                //    {
+                //        if (i != (projects.Count() - 1))
+                //        {
+                //            if (DateTime.Compare(dateEstimatedEnd.Date, projects[i + 1].DateBegin.AddDays(-5)) > 0)
+                //            {
+                //                return new ApiErrorResult<bool>("Date Estimated End must be before your next project's begin date(" + projects[i + 1].DateBegin.ToString("dd/MM/yyyy") + ") at least 5 days");
+                //            }
+                //        }
+                //    }
+                //}
                 if (DateTime.Compare(project.DateBegin.Date, dateEstimatedEnd.Date) > 0)
                 {
-                    return new ApiErrorResult<bool>("Date estimated end is earlier than project's begin date");
+                    return new ApiErrorResult<bool>("Date end is earlier than project's begin date");
                 }
                 project.DateEstimatedEnd = dateEstimatedEnd;
             }
@@ -878,11 +882,11 @@ namespace ESMS.BackendAPI.Services.Projects
                         join rp in _context.RequiredPositions on p.ProjectID equals rp.ProjectID
                         join ep in _context.EmpPositionInProjects on rp.ID equals ep.RequiredPositionID
                         select new { p, rp, ep };
+            query = query.Where(x => x.ep.EmpID.Equals(empID) && x.ep.Status == ConfirmStatus.Accept);
             if (!string.IsNullOrEmpty(request.Keyword))
             {
                 query = query.Where(x => x.p.ProjectName.Contains(request.Keyword));
             }
-
             //Paging
             int totalRow = await query.CountAsync();
 
@@ -893,8 +897,18 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     ProjectID = x.p.ProjectID,
                     ProjectName = x.p.ProjectName,
+                    DateIn = x.ep.DateIn
                 }).ToListAsync();
-
+            var posQuery = from po in _context.Positions
+                           join rp in _context.RequiredPositions on po.PosID equals rp.PositionID
+                           join ep in _context.EmpPositionInProjects on rp.ID equals ep.RequiredPositionID
+                           select new { po, rp, ep };
+            foreach (var project in data)
+            {
+                var position = await posQuery.Where(x => x.ep.EmpID.Equals(empID) && x.rp.ProjectID.Equals(project.ProjectID)
+                && x.ep.Status.Equals(ConfirmStatus.Accept) && x.ep.DateIn.Equals(project.DateIn)).Select(x => x.po.Name).FirstOrDefaultAsync();
+                project.PosName = position;
+            }
             //Select and projection
             var pagedResult = new PagedResult<EmployeeProjectViewModel>()
             {
@@ -1302,10 +1316,21 @@ namespace ESMS.BackendAPI.Services.Projects
             return new ApiSuccessResult<bool>();
         }
 
-        public List<ProjectVM> GetMissEmpProjects()
+        public List<ProjectVM> GetMissEmpProjects(string empID)
         {
             List<ProjectVM> list = new List<ProjectVM>();
-            var projects = _context.Projects.Where(x => x.Status != ProjectStatus.Finished)
+            var projectQuery = from p in _context.Projects
+                               join rp in _context.RequiredPositions on p.ProjectID equals rp.ProjectID
+                               join ep in _context.EmpPositionInProjects on rp.ID equals ep.RequiredPositionID
+                               select new { p, ep };
+            var checkDate = projectQuery.Where(x => x.ep.EmpID.Equals(empID)
+            && x.ep.Status != ConfirmStatus.Reject && x.p.Status != ProjectStatus.Finished).OrderByDescending(x => x.p.DateEstimatedEnd)
+                .Select(x => x.p.DateEstimatedEnd).FirstOrDefault();
+            if (checkDate == null)
+            {
+                checkDate = DateTime.Parse("0001-01-01");
+            }
+            var projects = _context.Projects.Where(x => x.Status != ProjectStatus.Finished && x.DateBegin > checkDate)
                 .Select(x => new Project()
                 {
                     ProjectID = x.ProjectID,
@@ -1358,8 +1383,8 @@ namespace ESMS.BackendAPI.Services.Projects
                         {
                             ProjectID = p.ProjectID,
                             ProjectName = p.ProjectName,
-                            TypeID = (int)p.ProjectTypeID,
-                            FieldID = (int)p.ProjectFieldID,
+                            TypeID = p.ProjectTypeID,
+                            FieldID = p.ProjectFieldID,
                             ProjectManagerID = p.ProjectManagerID,
                             RequiredPositions = requirePos
                         };
@@ -1407,7 +1432,7 @@ namespace ESMS.BackendAPI.Services.Projects
                                 ProjectName = p.ProjectName
                             };
                             list.Add(deletedProject);
-                            var listRequiredPos =  await _context.RequiredPositions.Where(x => x.ProjectID.Equals(p.ProjectID))
+                            var listRequiredPos = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(p.ProjectID))
                                 .Select(x => new RequiredPosition()
                                 {
                                     ID = x.ID,

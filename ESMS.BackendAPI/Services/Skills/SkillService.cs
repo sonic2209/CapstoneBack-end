@@ -288,8 +288,41 @@ namespace ESMS.BackendAPI.Services.Skills
             }
             if (request.SkillType.Equals((int)SkillType.HardSkill))
             {
+                var MinPos = await _context.MinPosInProjects.Where(x => x.SkillID.Equals(skillID))
+                    .Select(x => new MinPosInProject()
+                    {
+                        SkillID = x.SkillID,
+                        TypeID = x.TypeID,
+                        PosID = x.PosID
+                    }).ToListAsync();
                 if (request.HardSkillOption.Count() != 0)
                 {
+                    if (MinPos.Count() != 0)
+                    {
+                        foreach (var mp in MinPos)
+                        {
+                            var check = false;
+                            foreach (var type in request.HardSkillOption)
+                            {
+                                foreach (var pos in type.Position)
+                                {
+                                    if (mp.TypeID.Equals(type.ProjectType) && mp.PosID.Equals(pos))
+                                    {
+                                        check = true;
+                                    }
+                                }
+                            }
+                            if (check == false)
+                            {
+                                _context.MinPosInProjects.Remove(mp);
+                                result = await _context.SaveChangesAsync();
+                                if (result == 0)
+                                {
+                                    return new ApiErrorResult<bool>("Remove skill failed");
+                                }
+                            }
+                        }
+                    }
                     foreach (var type in request.HardSkillOption)
                     {
                         foreach (var pos in type.Position)
@@ -313,11 +346,55 @@ namespace ESMS.BackendAPI.Services.Skills
                         }
                     }
                 }
+                else
+                {
+                    if (MinPos.Count() != 0)
+                    {
+                        foreach (var mp in MinPos)
+                        {
+                            _context.MinPosInProjects.Remove(mp);
+                        }
+                        result = await _context.SaveChangesAsync();
+                        if (result == 0)
+                        {
+                            return new ApiErrorResult<bool>("Remove skill failed");
+                        }
+                    }
+                }
             }
             if (request.SkillType.Equals((int)SkillType.SoftSkill))
             {
+                var skillInFields = await _context.SkillInProjectFields.Where(x => x.SkillID.Equals(skillID))
+                    .Select(x => new SkillInProjectField()
+                    {
+                        SkillID = x.SkillID,
+                        FieldID = x.FieldID
+                    }).ToListAsync();
                 if (request.SoftSkillOption.Count() != 0)
                 {
+                    if (skillInFields.Count() != 0)
+                    {
+                        foreach (var sf in skillInFields)
+                        {
+                            var check = false;
+                            foreach (var field in request.SoftSkillOption)
+                            {
+                                if (sf.FieldID.Equals(field))
+                                {
+                                    check = true;
+                                }
+                            }
+                            if (check == false)
+                            {
+                                _context.SkillInProjectFields.Remove(sf);
+                                result = await _context.SaveChangesAsync();
+                                if (result == 0)
+                                {
+                                    return new ApiErrorResult<bool>("Remove skill failed");
+                                }
+                            }
+                        }
+                    }
                     foreach (var field in request.SoftSkillOption)
                     {
                         var skillField = new SkillInProjectField()
@@ -334,6 +411,21 @@ namespace ESMS.BackendAPI.Services.Skills
                             {
                                 return new ApiErrorResult<bool>("Add project field failed");
                             }
+                        }
+                    }
+                }
+                else
+                {
+                    if (skillInFields.Count() != 0)
+                    {
+                        foreach (var sf in skillInFields)
+                        {
+                            _context.SkillInProjectFields.Remove(sf);
+                        }
+                        result = await _context.SaveChangesAsync();
+                        if (result == 0)
+                        {
+                            return new ApiErrorResult<bool>("Remove skill failed");
                         }
                     }
                 }
