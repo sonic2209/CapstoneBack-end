@@ -971,6 +971,7 @@ namespace ESMS.BackendAPI.Services.Employees
 
         public async Task<ApiResult<bool>> UpdateEmpInfo(string empID, AddEmpPositionRequest request)
         {
+            var listRequestCerti = new List<EmpCertificationDetail>();
             //Update Language
             var listLanguage = await _context.EmpLanguages.Where(x => x.EmpID.Equals(empID)).Select(x => new EmpLanguage()
             {
@@ -985,11 +986,6 @@ namespace ESMS.BackendAPI.Services.Employees
                     foreach (var lang in listLanguage)
                     {
                         _context.EmpLanguages.Remove(lang);
-                    }
-                    var result = await _context.SaveChangesAsync();
-                    if (result == 0)
-                    {
-                        return new ApiErrorResult<bool>("Update Language Info failed");
                     }
                 }
             }
@@ -1032,11 +1028,6 @@ namespace ESMS.BackendAPI.Services.Employees
                         _context.EmpLanguages.Update(checkEmpLang);
                     }
                 }
-                var result = await _context.SaveChangesAsync();
-                if (result == 0)
-                {
-                    return new ApiErrorResult<bool>("Update Language Info failed");
-                }
             }
 
             var query = from es in _context.EmpSkills
@@ -1060,11 +1051,6 @@ namespace ESMS.BackendAPI.Services.Employees
                     foreach (var skill in listSoftSkill)
                     {
                         _context.EmpSkills.Remove(skill);
-                    }
-                    var result = await _context.SaveChangesAsync();
-                    if (result == 0)
-                    {
-                        return new ApiErrorResult<bool>("Update SoftSkill Info failed");
                     }
                 }
             }
@@ -1105,11 +1091,6 @@ namespace ESMS.BackendAPI.Services.Employees
                         _context.EmpSkills.Update(checkEmpSkill);
                     }
                 }
-                var result = await _context.SaveChangesAsync();
-                if (result == 0)
-                {
-                    return new ApiErrorResult<bool>("Update SoftSkill Info failed");
-                }
             }
 
             //Update HardSkill
@@ -1130,11 +1111,6 @@ namespace ESMS.BackendAPI.Services.Employees
                     {
                         skill.DateEnd = DateTime.Now;
                         _context.EmpSkills.Update(skill);
-                    }
-                    var result = await _context.SaveChangesAsync();
-                    if (result == 0)
-                    {
-                        return new ApiErrorResult<bool>("Update Skill Info failed");
                     }
                 }
             }
@@ -1182,14 +1158,17 @@ namespace ESMS.BackendAPI.Services.Employees
                         checkEmpSkill.SkillLevel = (SkillLevel)sk.SkillLevel;
                         _context.EmpSkills.Update(checkEmpSkill);
                     }
-                    var result = await _context.SaveChangesAsync();
-                    if (result == 0)
+                    if (sk.EmpCertifications.Count() != 0)
                     {
-                        return new ApiErrorResult<bool>("Update Skill Info failed");
+                        foreach (var certi in sk.EmpCertifications)
+                        {
+                            listRequestCerti.Add(certi);
+                        }
                     }
+                }
 
-                    //Update Certification
-                    var listCerti = await certiQuery.Where(x => x.ec.EmpID.Equals(empID) && x.c.SkillID.Equals(sk.SkillID))
+                //Update Certification
+                var listCerti = await certiQuery.Where(x => x.ec.EmpID.Equals(empID))
                             .Select(x => new EmpCertification()
                             {
                                 EmpID = x.ec.EmpID,
@@ -1197,113 +1176,96 @@ namespace ESMS.BackendAPI.Services.Employees
                                 DateTaken = x.ec.DateTaken,
                                 DateEnd = x.ec.DateEnd
                             }).ToListAsync();
-                    if (sk.EmpCertifications.Count() == 0)
+                if (listRequestCerti.Count() == 0)
+                {
+                    if (listCerti.Count() != 0)
                     {
-                        if (listCerti.Count() != 0)
+                        foreach (var c in listCerti)
                         {
-                            foreach (var c in listCerti)
+                            _context.EmpCertifications.Remove(c);
+                        }
+                    }
+                }
+                else
+                {
+                    if (listCerti.Count() != 0)
+                    {
+                        foreach (var c in listCerti)
+                        {
+                            var check = false;
+                            foreach (var certi in listRequestCerti)
+                            {
+                                if (c.CertificationID.Equals(certi.CertiID))
+                                {
+                                    check = true;
+                                }
+                            }
+                            if (check == false)
                             {
                                 _context.EmpCertifications.Remove(c);
                             }
-                            result = await _context.SaveChangesAsync();
-                            if (result == 0)
-                            {
-                                return new ApiErrorResult<bool>("Update Certification Info failed");
-                            }
                         }
                     }
-                    else
+                    foreach (var certi in listRequestCerti)
                     {
-                        if (listCerti.Count() != 0)
+                        var certification = await _context.Certifications.FindAsync(certi.CertiID);
+                        var checkEmpCerti = await _context.EmpCertifications.FindAsync(empID, certi.CertiID);
+                        if (checkEmpCerti == null)
                         {
-                            foreach (var c in listCerti)
+                            if (DateTime.Compare(DateTime.Parse(certi.DateTaken).Date, DateTime.Today) < 0)
                             {
-                                var check = false;
-                                foreach (var certi in sk.EmpCertifications)
-                                {
-                                    if (c.CertificationID.Equals(certi.CertiID))
-                                    {
-                                        check = true;
-                                    }
-                                }
-                                if (check == false)
-                                {
-                                    _context.EmpCertifications.Remove(c);
-                                }
+                                return new ApiErrorResult<bool>("Certification " + certification.CertificationName + "-date taken is earlier than today");
                             }
+                            var empCerti = new EmpCertification()
+                            {
+                                EmpID = empID,
+                                CertificationID = certi.CertiID,
+                                DateTaken = DateTime.Parse(certi.DateTaken),
+                            };
+                            if (certi.DateEnd.Equals(""))
+                            {
+                                empCerti.DateEnd = null;
+                            }
+                            else
+                            {
+                                if (DateTime.Compare(DateTime.Parse(certi.DateEnd).Date, DateTime.Today) < 0)
+                                {
+                                    return new ApiErrorResult<bool>("Certification " + certification.CertificationName + "-date expire is earlier than today");
+                                }
+                                if (DateTime.Compare(empCerti.DateTaken.Date, DateTime.Parse(certi.DateEnd).Date) > 0)
+                                {
+                                    return new ApiErrorResult<bool>("Certification " + certification.CertificationName + "-date expire is earlier than date taken");
+                                }
+                                empCerti.DateEnd = DateTime.Parse(certi.DateEnd);
+                            }
+                            _context.EmpCertifications.Add(empCerti);
                         }
-                        foreach (var certi in sk.EmpCertifications)
+                        else
                         {
-                            var certification = await _context.Certifications.FindAsync(certi.CertiID);
-                            var checkEmpCerti = await _context.EmpCertifications.FindAsync(empID, certi.CertiID);
-                            if (checkEmpCerti == null)
+                            if (DateTime.Compare(checkEmpCerti.DateTaken.Date, DateTime.Parse(certi.DateTaken).Date) != 0)
                             {
                                 if (DateTime.Compare(DateTime.Parse(certi.DateTaken).Date, DateTime.Today) < 0)
                                 {
                                     return new ApiErrorResult<bool>("Certification " + certification.CertificationName + "-date taken is earlier than today");
                                 }
-                                var empCerti = new EmpCertification()
+                                if (!certi.DateEnd.Equals(""))
                                 {
-                                    EmpID = empID,
-                                    CertificationID = certi.CertiID,
-                                    DateTaken = DateTime.Parse(certi.DateTaken),
-                                };
-                                if (certi.DateEnd.Equals(""))
-                                {
-                                    empCerti.DateEnd = null;
-                                }
-                                else
-                                {
-                                    if (DateTime.Compare(DateTime.Parse(certi.DateEnd).Date, DateTime.Today) < 0)
+                                    if (DateTime.Compare(DateTime.Parse(certi.DateTaken).Date, DateTime.Parse(certi.DateEnd).Date) > 0)
                                     {
-                                        return new ApiErrorResult<bool>("Certification " + certification.CertificationName + "-date expire is earlier than today");
+                                        return new ApiErrorResult<bool>("Certification " + certification.CertificationName + "-date taken is later than date taken");
                                     }
-                                    if (DateTime.Compare(empCerti.DateTaken.Date, DateTime.Parse(certi.DateEnd).Date) > 0)
-                                    {
-                                        return new ApiErrorResult<bool>("Certification " + certification.CertificationName + "-date expire is earlier than date taken");
-                                    }
-                                    empCerti.DateEnd = DateTime.Parse(certi.DateEnd);
                                 }
-                                _context.EmpCertifications.Add(empCerti);
+                                checkEmpCerti.DateTaken = DateTime.Parse(certi.DateTaken);
+                            }
+                            if (certi.DateEnd.Equals(""))
+                            {
+                                checkEmpCerti.DateEnd = null;
                             }
                             else
                             {
-                                if (DateTime.Compare(checkEmpCerti.DateTaken.Date, DateTime.Parse(certi.DateTaken).Date) != 0)
+                                if (checkEmpCerti.DateEnd != null)
                                 {
-                                    if (DateTime.Compare(DateTime.Parse(certi.DateTaken).Date, DateTime.Today) < 0)
-                                    {
-                                        return new ApiErrorResult<bool>("Certification " + certification.CertificationName + "-date taken is earlier than today");
-                                    }
-                                    if (!certi.DateEnd.Equals(""))
-                                    {
-                                        if (DateTime.Compare(DateTime.Parse(certi.DateTaken).Date, DateTime.Parse(certi.DateEnd).Date) > 0)
-                                        {
-                                            return new ApiErrorResult<bool>("Certification " + certification.CertificationName + "-date taken is later than date taken");
-                                        }
-                                    }
-                                    checkEmpCerti.DateTaken = DateTime.Parse(certi.DateTaken);
-                                }
-                                if (certi.DateEnd.Equals(""))
-                                {
-                                    checkEmpCerti.DateEnd = null;
-                                }
-                                else
-                                {
-                                    if (checkEmpCerti.DateEnd != null)
-                                    {
-                                        if (DateTime.Compare(DateTime.Parse(checkEmpCerti.DateEnd.ToString()).Date, DateTime.Parse(certi.DateEnd).Date) != 0)
-                                        {
-                                            if (DateTime.Compare(DateTime.Parse(certi.DateEnd).Date, DateTime.Today) < 0)
-                                            {
-                                                return new ApiErrorResult<bool>("Certification " + certification.CertificationName + "-date expire is earlier than today");
-                                            }
-                                            if (DateTime.Compare(checkEmpCerti.DateTaken.Date, DateTime.Parse(certi.DateEnd).Date) > 0)
-                                            {
-                                                return new ApiErrorResult<bool>("Certification " + certification.CertificationName + "-date expire is earlier than date taken");
-                                            }
-                                        }
-                                    }
-                                    else
+                                    if (DateTime.Compare(DateTime.Parse(checkEmpCerti.DateEnd.ToString()).Date, DateTime.Parse(certi.DateEnd).Date) != 0)
                                     {
                                         if (DateTime.Compare(DateTime.Parse(certi.DateEnd).Date, DateTime.Today) < 0)
                                         {
@@ -1314,18 +1276,29 @@ namespace ESMS.BackendAPI.Services.Employees
                                             return new ApiErrorResult<bool>("Certification " + certification.CertificationName + "-date expire is earlier than date taken");
                                         }
                                     }
-                                    checkEmpCerti.DateEnd = DateTime.Parse(certi.DateEnd);
                                 }
-                                _context.EmpCertifications.Update(checkEmpCerti);
+                                else
+                                {
+                                    if (DateTime.Compare(DateTime.Parse(certi.DateEnd).Date, DateTime.Today) < 0)
+                                    {
+                                        return new ApiErrorResult<bool>("Certification " + certification.CertificationName + "-date expire is earlier than today");
+                                    }
+                                    if (DateTime.Compare(checkEmpCerti.DateTaken.Date, DateTime.Parse(certi.DateEnd).Date) > 0)
+                                    {
+                                        return new ApiErrorResult<bool>("Certification " + certification.CertificationName + "-date expire is earlier than date taken");
+                                    }
+                                }
+                                checkEmpCerti.DateEnd = DateTime.Parse(certi.DateEnd);
                             }
-                        }
-                        result = await _context.SaveChangesAsync();
-                        if (result == 0)
-                        {
-                            return new ApiErrorResult<bool>("Update Certification Info failed");
+                            _context.EmpCertifications.Update(checkEmpCerti);
                         }
                     }
                 }
+            }
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                return new ApiErrorResult<bool>("Update Employee Info failed");
             }
             return new ApiSuccessResult<bool>();
         }

@@ -209,6 +209,11 @@ namespace ESMS.BackendAPI.Services.Projects
             var employee = await empQuery.Where(x => x.rp.ProjectID.Equals(projectID)
             && x.ep.Status.Equals(ConfirmStatus.Accept)).Select(x => x.ep.EmpID).ToListAsync();
             projectVM.Noe = employee.Count();
+            var missEmpInPos = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectVM.ProjectID) && x.MissingEmployee > 0).FirstOrDefaultAsync();
+            if (missEmpInPos != null)
+            {
+                projectVM.IsMissEmp = true;
+            }
             return new ApiSuccessResult<ProjectViewModel>(projectVM);
         }
 
@@ -331,6 +336,11 @@ namespace ESMS.BackendAPI.Services.Projects
             foreach (var p in data)
             {
                 p.FieldName = _context.ProjectFields.Find(p.FieldID).Name;
+                var missEmpInPos = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(p.ProjectID) && x.MissingEmployee > 0).FirstOrDefaultAsync();
+                if (missEmpInPos != null)
+                {
+                    p.IsMissEmp = true;
+                }
             }
             //Select and projection
             var pagedResult = new PagedResult<ProjectViewModel>()
@@ -407,14 +417,20 @@ namespace ESMS.BackendAPI.Services.Projects
                     TypeID = x.p.ProjectTypeID,
                     TypeName = x.pt.Name,
                     FieldID = x.p.ProjectFieldID,
-                    IsAddNewCandidate = false
+                    IsAddNewCandidate = false,
+                    IsMissEmp = false
                 }).ToListAsync();
             foreach (var p in data)
             {
                 p.FieldName = _context.ProjectFields.Find(p.FieldID).Name;
                 if (p.Status == ProjectStatus.OnGoing || p.Status == ProjectStatus.Confirmed)
                 {
-                    var listEmp = await empQuery.Where(x => x.rp.ProjectID.Equals(p.ProjectID) && x.ep.DateIn == null)
+                    var missEmpInPos = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(p.ProjectID) && x.MissingEmployee > 0).FirstOrDefaultAsync();
+                    if (missEmpInPos != null)
+                    {
+                        p.IsMissEmp = true;
+                    }
+                    var listEmp = await empQuery.Where(x => x.rp.ProjectID.Equals(p.ProjectID) && x.ep.Status.Equals(ConfirmStatus.New))
                         .Select(x => new EmpPositionInProject()).ToListAsync();
                     if (listEmp.Count() != 0)
                     {

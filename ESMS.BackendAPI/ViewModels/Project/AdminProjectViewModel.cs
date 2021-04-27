@@ -23,5 +23,6 @@ namespace ESMS.BackendAPI.ViewModels.Project
         public int? FieldID { get; set; }
         public string FieldName { get; set; }
         public bool IsAddNewCandidate { get; set; }
+        public bool IsMissEmp { get; set; }
     }
 }

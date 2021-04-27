@@ -20,5 +20,6 @@ namespace ESMS.BackendAPI.ViewModels.Project
         public DateTime? DateEnd { get; set; }
         public string PmID { get; set; }
         public int Noe { get; set; }
+        public bool IsMissEmp { get; set; }
     }
 }
