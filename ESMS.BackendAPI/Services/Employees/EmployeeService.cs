@@ -253,37 +253,50 @@ namespace ESMS.BackendAPI.Services.Employees
         public async Task<ApiResult<PagedResult<EmpVm>>> GetEmpsPaging(GetEmpPagingRequest request)
         {
             {
-                var query = _userManager.Users;
+                var query = from u in _userManager.Users
+                            join ur in _context.UserRoles on u.Id equals ur.UserId
+                            join r in _context.Roles on ur.RoleId equals r.Id 
+                            select new { u, r, ur };
                 if (!string.IsNullOrEmpty(request.Keyword))
                 {
-                    query = query.Where(x => x.UserName.Contains(request.Keyword) || x.Name.Contains(request.Keyword) || x.PhoneNumber.Contains(request.Keyword)
-                    || x.Email.Contains(request.Keyword));
+                    query = query.Where(x => (x.u.UserName.Contains(request.Keyword) || x.u.Name.Contains(request.Keyword) || x.u.PhoneNumber.Contains(request.Keyword)
+                    || x.u.Email.Contains(request.Keyword)) && x.r.Name == request.RoleName);
+                } else
+                {
+                    query = query.Where(x => x.r.Name == request.RoleName);
                 }
                 //3.Paging
                 int totalRow = await query.CountAsync();
 
-                var data = await query.OrderByDescending(x => x.DateCreated).Skip((request.PageIndex - 1) * request.PageSize)
+                var data = await query.OrderByDescending(x => x.u.DateCreated).Skip((request.PageIndex - 1) * request.PageSize)
                     .Take(request.PageSize)
                     .Select(x => new EmpVm()
                     {
-                        Email = x.Email,
-                        PhoneNumber = x.PhoneNumber,
-                        Name = x.Name,
-                        Id = x.Id,
-                        UserName = x.UserName,
-                        DateCreated = x.DateCreated
+                        Email = x.u.Email,
+                        PhoneNumber = x.u.PhoneNumber,
+                        Name = x.u.Name,
+                        Id = x.u.Id,
+                        UserName = x.u.UserName,
+                        DateCreated = x.u.DateCreated,
+                        RoleName = x.r.Name
                     }).ToListAsync();
-                foreach (var empUser in data)
-                {
-                    var user = await _userManager.FindByIdAsync(empUser.Id.ToString());
-                    var roles = await _userManager.GetRolesAsync(user);
-                    string currentRole = null;
-                    if (roles.Count > 0)
-                    {
-                        currentRole = roles[0];
-                    }
-                    empUser.RoleName = currentRole;
-                }
+                List<EmpVm> dataFilter = new List<EmpVm>();
+                //foreach (var empUser in data)
+                //{
+                //    var user = await _userManager.FindByIdAsync(empUser.Id.ToString());
+                //    var roles = await _userManager.GetRolesAsync(user);
+                //    string currentRole = null;
+                //    if (roles.Count > 0)
+                //    {
+                //        currentRole = roles[0];
+                //    }
+                //    if (currentRole == request.RoleName)
+                //    {
+                //        empUser.RoleName = currentRole;
+                //        dataFilter.Add(empUser);
+                //    }
+                //    //empUser.RoleName = currentRole;
+                //}
 
                 //4.Select and projection
                 var pagedResult = new PagedResult<EmpVm>()
