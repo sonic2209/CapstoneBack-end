@@ -462,7 +462,7 @@ namespace ESMS.BackendAPI.Services.Projects
             {
                 if (DateTime.Compare(project.DateEstimatedEnd.Date, dateEstimatedEnd.Date) < 0)
                 {
-                    return new ApiErrorResult<bool>("Date end cannot be delay");
+                    return new ApiErrorResult<bool>("Date end cannot be delayed");
                 }
                 //var projects = await _context.Projects.Where(x => x.ProjectManagerID.Equals(project.ProjectManagerID) && x.Status != ProjectStatus.Finished)
                 //    .OrderBy(x => x.DateEstimatedEnd).Select(x => new Project()
@@ -838,13 +838,13 @@ namespace ESMS.BackendAPI.Services.Projects
                                 }
                                 else
                                 {
-                                    if (empInPos.Status == ConfirmStatus.New)
+                                    if (empInPos.Status != ConfirmStatus.Accept)
                                     {
-                                        empInPos.Status = ConfirmStatus.Accept;
                                         empInPos.DateIn = DateTime.Now;
-                                        _context.EmpPositionInProjects.Update(empInPos);
                                         requiredPos.MissingEmployee -= 1;
                                     }
+                                    empInPos.Status = ConfirmStatus.Accept;
+                                    _context.EmpPositionInProjects.Update(empInPos);
                                 }
                             }
                             else
