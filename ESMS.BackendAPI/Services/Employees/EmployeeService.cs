@@ -501,7 +501,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             }
                             match = Math.Round(Languagematch + Softskillmatch + Hardskillmatch + ProjectTypeMatch + ProjectFieldMatch, 2);
                             //Loc nhung nhan vien khong du diem toi thieu
-                            if (Hardskillmatch == 0 ||  match == 0)
+                            if (Hardskillmatch <= 0 ||  match <= 0)
                             {
                                 continue;
                             }
@@ -723,7 +723,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             ProjectFieldMatch = 10;
                         }
                         match = Math.Round(Languagematch + Softskillmatch + Hardskillmatch + ProjectTypeMatch + ProjectFieldMatch, 2);
-                        if (Hardskillmatch == 0 ||  match == 0)
+                        if (Hardskillmatch <= 0 ||  match <= 0)
                         {
                             continue;
                         }
