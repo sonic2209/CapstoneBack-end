@@ -9,8 +9,7 @@ namespace ESMS.BackendAPI.ViewModels.Project
     {
         public ProjectUpdateRequestValidator()
         {
-            RuleFor(x => x.Description).NotEmpty().WithMessage("Description cannot be empty")
-                   .MaximumLength(200).WithMessage("Description cannot exceed 200 characters");
+            RuleFor(x => x.Description).NotEmpty().WithMessage("Description cannot be empty");
             RuleFor(x => x.DateEstimatedEnd).NotEmpty().WithMessage("Date estimated end cannot be empty");
         }
     }
