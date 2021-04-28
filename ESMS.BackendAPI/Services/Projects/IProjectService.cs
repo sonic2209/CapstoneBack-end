@@ -54,5 +54,9 @@ namespace ESMS.BackendAPI.Services.Projects
         List<ProjectVM> GetMissEmpProjects(string empID);
 
         Task<List<DeletedProject>> CheckNoEmpProject();
+
+        Task<ApiResult<List<MissEmpPosition>>> GetMissEmpPos();
+
+        Task<ApiResult<List<SkillInPos>>> GetSkillInPos(int posID);
     }
 }

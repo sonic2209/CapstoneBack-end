@@ -1504,5 +1504,69 @@ namespace ESMS.BackendAPI.Services.Projects
             }
             return list;
         }
+
+        public async Task<ApiResult<List<MissEmpPosition>>> GetMissEmpPos()
+        {
+            List<MissEmpPosition> list = new List<MissEmpPosition>();
+            var positions = await _context.Positions.Select(x => new Position()
+            {
+                PosID = x.PosID,
+                Name = x.Name
+            }).ToListAsync();
+            var posQuery = from rp in _context.RequiredPositions
+                           join p in _context.Projects on rp.ProjectID equals p.ProjectID
+                           select new { rp, p };
+            foreach (var pos in positions)
+            {
+                var missEmpRequiredPos = await posQuery.Where(x => x.rp.PositionID.Equals(pos.PosID) && x.rp.MissingEmployee > 0
+                && x.p.Status != ProjectStatus.Finished).Select(x => x.rp.MissingEmployee).ToListAsync();
+                if (missEmpRequiredPos.Count() != 0)
+                {
+                    MissEmpPosition missEmpPos = new MissEmpPosition()
+                    {
+                        Name = pos.Name,
+                        MissingEmp = 0
+                    };
+                    foreach (var rp in missEmpRequiredPos)
+                    {
+                        missEmpPos.MissingEmp += rp;
+                    }
+                    list.Add(missEmpPos);
+                }
+            }
+            return new ApiSuccessResult<List<MissEmpPosition>>(list);
+        }
+
+        public async Task<ApiResult<List<SkillInPos>>> GetSkillInPos(int posID)
+        {
+            var list = new List<SkillInPos>();
+            var listRequirePos = await _context.RequiredPositions.Where(x => x.PositionID.Equals(posID))
+                .Select(x => x.ID).ToListAsync();
+            if (listRequirePos.Count() != 0)
+            {
+                var skillQuery = from rs in _context.RequiredSkills
+                                 join s in _context.Skills on rs.SkillID equals s.SkillID
+                                 select new { rs, s };
+                List<string> skillName = new List<string>();
+                foreach (var rp in listRequirePos)
+                {
+                    var listRequireSkill = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(rp)
+                    && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => x.s.SkillName).ToListAsync();
+                    if (listRequireSkill.Count() != 0)
+                    {
+                        foreach (var rs in listRequireSkill)
+                        {
+                            skillName.Add(rs);
+                        }
+                    }
+                }
+                list = skillName.GroupBy(x => x).Select(x => new SkillInPos()
+                {
+                    HardSkill = x.Key,
+                    NumberInRequire = x.Count()
+                }).ToList();
+            }
+            return new ApiSuccessResult<List<SkillInPos>>(list);
+        }
     }
 }

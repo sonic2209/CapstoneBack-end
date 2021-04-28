@@ -198,6 +198,20 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(result);
         }
 
+        [HttpGet("getMissEmpPos")]
+        public async Task<IActionResult> GetMissEmpPos()
+        {
+            var result = await _projectService.GetMissEmpPos();
+            return Ok(result);
+        }
+
+        [HttpGet("getSkillInPos/{posID}")]
+        public async Task<IActionResult> GetSkillInPos(int posID)
+        {
+            var result = await _projectService.GetSkillInPos(posID);
+            return Ok(result);
+        }
+
         [HttpGet("getStatistics/{empID}")]
         public async Task<IActionResult> GetStatisticsByEmpID(string empID)
         {
