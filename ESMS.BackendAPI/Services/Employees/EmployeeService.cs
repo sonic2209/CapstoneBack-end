@@ -501,10 +501,10 @@ namespace ESMS.BackendAPI.Services.Employees
                             }
                             match = Math.Round(Languagematch + Softskillmatch + Hardskillmatch + ProjectTypeMatch + ProjectFieldMatch, 2);
                             //Loc nhung nhan vien khong du diem toi thieu
-                            //if (Hardskillmatch < 4 || Softskillmatch < 4 || Languagematch < 4 || match < 12.5)
-                            //{
-                            //    continue;
-                            //}
+                            if (Hardskillmatch == 0 ||  match == 0)
+                            {
+                                continue;
+                            }
                             matchDetail = new MatchViewModel()
                             {
                                 EmpID = emp.EmpId,
@@ -723,10 +723,10 @@ namespace ESMS.BackendAPI.Services.Employees
                             ProjectFieldMatch = 10;
                         }
                         match = Math.Round(Languagematch + Softskillmatch + Hardskillmatch + ProjectTypeMatch + ProjectFieldMatch, 2);
-                        //if (Hardskillmatch < 4 || Softskillmatch < 4 || Languagematch < 4 || match < 12.5)
-                        //{
-                        //    continue;
-                        //}
+                        if (Hardskillmatch == 0 ||  match == 0)
+                        {
+                            continue;
+                        }
                         matchDetail = new SingleCandidateMatchInPos()
                         {
                             PosId = PosId,
