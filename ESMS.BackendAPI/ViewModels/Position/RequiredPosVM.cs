@@ -16,6 +16,6 @@ namespace ESMS.BackendAPI.ViewModels.Position
         public List<LanguageDetail> Language { get; set; }
         public List<int> SoftSkillIDs { get; set; }
         public List<HardSkillDetail> HardSkills { get; set; }
-        public List<MatchViewModel> MatchDetail { get; set; }
+        public MatchViewModel MatchDetail { get; set; }
     }
 }
