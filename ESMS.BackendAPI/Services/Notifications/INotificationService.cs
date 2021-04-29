@@ -1,4 +1,5 @@
 ﻿using ESMS.BackendAPI.ViewModels.Notifications;
+using FirebaseAdmin.Messaging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +9,8 @@ namespace ESMS.BackendAPI.Services.Notifications
 {
     public interface INotificationService
     {
-        public void SendMessage(string topic, NotificationContent noti);
-        public void Subscribe(string token, string topic);
-        public void Unsubscribe(string token, string topic);
+        Task<string> SendMessage(string topic, NotificationContent noti);
+        Task<TopicManagementResponse> Subscribe(string token, string topic);
+        Task<TopicManagementResponse> Unsubscribe(string token, string topic);
     }
 }

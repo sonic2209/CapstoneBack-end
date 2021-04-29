@@ -10,12 +10,12 @@ namespace ESMS.BackendAPI.ViewModels.Employees
         public EmpCreateRequestValidator()
         {
             RuleFor(x => x.Name).NotEmpty().WithMessage("Name cannot be empty")
-                .MaximumLength(200).WithMessage("Name cannot exceed 200 characters");
+                .MaximumLength(50).WithMessage("Name cannot exceed 50 characters");
 
             RuleFor(x => x.Email).NotEmpty().WithMessage("Email cannot be empty")
                 .Matches(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$").WithMessage("Email format is not correct");
-
-            RuleFor(x => x.PhoneNumber).NotEmpty().WithMessage("Phone number cannot be empty");
+            int i = 0;
+            RuleFor(x => x.PhoneNumber).NotEmpty().WithMessage("Phone number cannot be empty").Length(10).Must(x=> int.TryParse(x,out i)).WithMessage("Phone number must be digits");
 
             RuleFor(x => x.UserName).NotEmpty().WithMessage("Username cannot be empty");
             RuleFor(x => x.Password).NotEmpty().WithMessage("Password cannot be empty")

@@ -9,7 +9,7 @@ namespace ESMS.BackendAPI.Services.Notifications
 {
     public class NotificationService : INotificationService
     {
-        public async void SendMessage(string topic, NotificationContent noti)
+        public async Task<string> SendMessage(string topic, NotificationContent noti)
         {
             var message = new Message()
             {
@@ -21,17 +21,20 @@ namespace ESMS.BackendAPI.Services.Notifications
                 Topic = topic
             };
             // Send a message to the devices subscribed to the provided topic.
-            await FirebaseMessaging.DefaultInstance.SendAsync(message);
+            var result = await FirebaseMessaging.DefaultInstance.SendAsync(message);
+            return result;
         }
 
-        public async void Subscribe(string token, string topic)
+        public async Task<TopicManagementResponse> Subscribe(string token, string topic)
         {
-            await FirebaseMessaging.DefaultInstance.SubscribeToTopicAsync(new[] { token }, topic);
+            var result = await FirebaseMessaging.DefaultInstance.SubscribeToTopicAsync(new[] { token }, topic);
+            return result;
         }
 
-        public async void Unsubscribe(string token, string topic)
+        public async Task<TopicManagementResponse> Unsubscribe(string token, string topic)
         {
-            await FirebaseMessaging.DefaultInstance.UnsubscribeFromTopicAsync(new[] { token }, topic);
+            var result = await FirebaseMessaging.DefaultInstance.UnsubscribeFromTopicAsync(new[] { token }, topic);
+            return result;
         }
     }
 }

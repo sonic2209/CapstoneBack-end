@@ -118,8 +118,12 @@ namespace ESMS.BackendAPI.Services.Employees
                 string empID = user.Id;
                 return new ApiSuccessResult<string>(empID);
             }
-
-            return new ApiErrorResult<string>("Register failed");
+            string errorMessage = "Register failed:";
+            foreach (var error in result.Errors)
+            {
+                errorMessage += " "+error.Description; 
+            }
+            return new ApiErrorResult<string>(errorMessage);
         }
 
         public async Task<ApiResult<bool>> AddEmpPosition(string empID, AddEmpPositionRequest request)
