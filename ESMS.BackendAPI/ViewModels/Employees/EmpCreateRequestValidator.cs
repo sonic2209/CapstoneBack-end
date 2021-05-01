@@ -15,8 +15,8 @@ namespace ESMS.BackendAPI.ViewModels.Employees
             RuleFor(x => x.Email).NotEmpty().WithMessage("Email cannot be empty")
                 .Matches(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$").WithMessage("Email format is not correct");
             int i = 0;
-            RuleFor(x => x.PhoneNumber).NotEmpty().WithMessage("Phone number cannot be empty").Length(10).Must(x=> int.TryParse(x,out i)).WithMessage("Phone number must be digits");
-
+            //RuleFor(x => x.PhoneNumber).NotEmpty().WithMessage("Phone number cannot be empty").Length(10).Must(x=> int.TryParse(x,out i)).WithMessage("Phone number must be digits");
+            RuleFor(x => x.PhoneNumber).NotEmpty().WithMessage("Phone number cannot be empty").Matches(@"(0[1-9])+([0-9]{8})\b").WithMessage("Phone number format is not correct");
             RuleFor(x => x.UserName).NotEmpty().WithMessage("Username cannot be empty");
             RuleFor(x => x.Password).NotEmpty().WithMessage("Password cannot be empty")
                 .MinimumLength(6).WithMessage("Password needs to have at least 6 characters");

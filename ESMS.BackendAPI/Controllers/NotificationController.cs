@@ -25,21 +25,21 @@ namespace ESMS.BackendAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> SendMessage(string topic, [FromBody] NotificationContent noti)
         {
-            var result = await _notificationService.SendMessage(topic, noti);         
-            return Ok(result);
+            await _notificationService.SendMessage(topic, noti);         
+            return NoContent();
         }
 
         [HttpPost("subscription")]
         public async Task<IActionResult> Subscribe(string token, string topic)
         {
-            var result = await _notificationService.Subscribe(token, topic);
-            return Ok(result);
+            await _notificationService.Subscribe(token, topic);
+            return NoContent();
         }
         [HttpPost("unsubscription")]
         public async Task<IActionResult> Unsubscribe(string token, string topic)
         {
-            var result = await _notificationService.Unsubscribe(token, topic);
-            return Ok(result);
+            await _notificationService.Unsubscribe(token, topic);
+            return NoContent();
         }
     }
     }
