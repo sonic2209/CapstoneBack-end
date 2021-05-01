@@ -1,6 +1,7 @@
 ﻿using ESMS.BackendAPI.ViewModels.Common;
 using ESMS.BackendAPI.ViewModels.Employees;
 using ESMS.BackendAPI.ViewModels.Employees.Suggestion.SingleCandidate;
+using ESMS.BackendAPI.ViewModels.Project;
 using ESMS.ViewModels.System.Employees;
 using System;
 using System.Collections.Generic;
@@ -18,7 +19,7 @@ namespace ESMS.BackendAPI.Services.Employees
         Task<ApiResult<bool>> Update(string id, EmpUpdateRequest request);
 
         Task<ApiResult<List<CandidateViewModel>>> SuggestCandidate(int projectID, SuggestCadidateRequest request);
-        Task<ApiResult<List<CandidateViewModel>>> SuggestCandidateWithoutMinimumPoint(int projectID, SuggestCadidateRequest request)
+        Task<ApiResult<List<CandidateViewModel>>> SuggestCandidateWithoutMinimumPoint(int projectID, SuggestCadidateRequest request);
 
         Task<ApiResult<PagedResult<EmpVm>>> GetEmpsPaging(GetEmpPagingRequest request);
 
@@ -34,6 +35,6 @@ namespace ESMS.BackendAPI.Services.Employees
 
         Task<ApiResult<LoadEmpInfoVM>> LoadEmpInfo(string empID);
 
-        Task<ApiResult<List<SingleCandidateViewModel>>> SingleCandidateSuggest(string empID);
+        Task<ApiResult<List<ProjectVM>>> SingleCandidateSuggest(string empID);
     }
 }
