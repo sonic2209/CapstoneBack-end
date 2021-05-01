@@ -5,6 +5,7 @@ using ESMS.BackendAPI.ViewModels.Employees;
 using ESMS.BackendAPI.ViewModels.Employees.Suggestion;
 using ESMS.BackendAPI.ViewModels.Employees.Suggestion.SingleCandidate;
 using ESMS.BackendAPI.ViewModels.Position;
+using ESMS.BackendAPI.ViewModels.Project;
 using ESMS.Data.EF;
 using ESMS.Data.Entities;
 using ESMS.Data.Enums;
@@ -118,12 +119,8 @@ namespace ESMS.BackendAPI.Services.Employees
                 string empID = user.Id;
                 return new ApiSuccessResult<string>(empID);
             }
-            string errorMessage = "Register failed:";
-            foreach (var error in result.Errors)
-            {
-                errorMessage += " "+error.Description; 
-            }
-            return new ApiErrorResult<string>(errorMessage);
+
+            return new ApiErrorResult<string>("Register failed");
         }
 
         public async Task<ApiResult<bool>> AddEmpPosition(string empID, AddEmpPositionRequest request)
@@ -505,10 +502,10 @@ namespace ESMS.BackendAPI.Services.Employees
                             }
                             match = Math.Round(Languagematch + Softskillmatch + Hardskillmatch + ProjectTypeMatch + ProjectFieldMatch, 2);
                             //Loc nhung nhan vien khong du diem toi thieu
-                            if (Hardskillmatch <= 0 ||  match <= 0)
-                            {
-                                continue;
-                            }
+                            //if (Hardskillmatch < 4 || Softskillmatch < 4 || Languagematch < 4 || match < 12.5)
+                            //{
+                            //    continue;
+                            //}
                             matchDetail = new MatchViewModel()
                             {
                                 EmpID = emp.EmpId,
@@ -535,7 +532,7 @@ namespace ESMS.BackendAPI.Services.Employees
             return new ApiSuccessResult<List<CandidateViewModel>>(result);
         }
 
-        public async Task<ApiResult<List<SingleCandidateViewModel>>> SingleCandidateSuggest(string empID)
+        public async Task<ApiResult<List<ProjectVM>>> SingleCandidateSuggest(string empID)
         {
             var empName = _context.Employees.Where(x => x.Id.Equals(empID)).Select(x => x.Name).FirstOrDefault();
             var listProject = _projectService.GetMissEmpProjects(empID);
@@ -545,13 +542,13 @@ namespace ESMS.BackendAPI.Services.Employees
             {
                 int ProjectTypeID = project.TypeID;
                 int ProjectFieldID = project.FieldID;
-                List<SingleCandidateMatchInPos> listMatchInPosDetail = new List<SingleCandidateMatchInPos>();
+                List<RequiredPosVM> listMatchInPosDetail = new List<RequiredPosVM>();
 
                 //Loc nhung project ko available dua theo thoi gian ket thuc du an dang tien hanh
                 var projectquery = from p in _context.Projects
                                    join rp in _context.RequiredPositions on p.ProjectID equals rp.ProjectID
                                    join epip in _context.EmpPositionInProjects on rp.ID equals epip.RequiredPositionID
-                                   select new { p, epip };
+                                   select new { p, epip, rp };
 
                 var currentProjectBeginDate = await _context.Projects.Where(x => x.ProjectID == project.ProjectID).Select(x => x.DateBegin).FirstOrDefaultAsync();
                 var listProjectCurrentlyIn = await projectquery.Where(x => (x.p.Status == ProjectStatus.OnGoing || x.p.Status == ProjectStatus.Confirmed) && x.epip.EmpID.Equals(empID) && x.epip.Status == ConfirmStatus.Accept && x.epip.Status == ConfirmStatus.New).Select(x => x.p.DateEstimatedEnd).ToListAsync();
@@ -588,18 +585,18 @@ namespace ESMS.BackendAPI.Services.Employees
                             currentRole = roles[0];
                             if (!currentRole.Equals("Employee"))
                             {
-                                return new ApiErrorResult<List<SingleCandidateViewModel>>("This user is a PM or HR");
+                                return new ApiErrorResult<List<ProjectVM>>("This user is a PM or HR");
                             }
                         }
                         else
-                            return new ApiErrorResult<List<SingleCandidateViewModel>>("This user is a PM or HR");
+                            return new ApiErrorResult<List<ProjectVM>>("This user is a PM or HR");
                         double match = 0;
                         double Languagematch = 0;
                         double Softskillmatch = 0;
                         double Hardskillmatch = 0;
                         double ProjectTypeMatch = 0;
                         double ProjectFieldMatch = 0;
-                        SingleCandidateMatchInPos matchDetail = new SingleCandidateMatchInPos();
+                        MatchViewModel matchDetail = new MatchViewModel();
 
                         //Merge code mới
 
@@ -727,14 +724,12 @@ namespace ESMS.BackendAPI.Services.Employees
                             ProjectFieldMatch = 10;
                         }
                         match = Math.Round(Languagematch + Softskillmatch + Hardskillmatch + ProjectTypeMatch + ProjectFieldMatch, 2);
-                        if (Hardskillmatch <= 0 ||  match <= 0)
+                        if (Hardskillmatch == 0 || match == 0)
                         {
                             continue;
                         }
-                        matchDetail = new SingleCandidateMatchInPos()
+                        matchDetail = new MatchViewModel()
                         {
-                            PosId = PosId,
-                            Position = Position,
                             EmpID = empID,
                             EmpName = empName,
                             LanguageMatch = Languagematch,
@@ -744,16 +739,20 @@ namespace ESMS.BackendAPI.Services.Employees
                             ProjectFieldMatch = ProjectFieldMatch,
                             OverallMatch = match,
                         };
-                        listMatchInPosDetail.Add(matchDetail);
+                        requiredPosition.MatchDetail = matchDetail;
+                    };
+                       
+                        //};
+                        //listMatchInPosDetail.Add(matchDetail);
                     }
                 }
-                result.Add(new SingleCandidateViewModel()
-                {
-                    ProjectInfo = project,
-                    MatchInEachPos = listMatchInPosDetail,
-                });
-            }
-            return new ApiSuccessResult<List<SingleCandidateViewModel>>(result);
+                //result.Add(new SingleCandidateViewModel()
+                //{
+                //    ProjectInfo = project,
+                //    MatchInEachPos = listMatchInPosDetail,
+                //});
+            //}
+            return new ApiSuccessResult<List<ProjectVM>>(listProject);
         }
 
         //public async Task<List<CandidateViewModel>> SuggestCandidate(int projectID, SuggestCadidateRequest request)
