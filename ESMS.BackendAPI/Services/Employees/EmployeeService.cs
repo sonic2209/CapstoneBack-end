@@ -51,9 +51,6 @@ namespace ESMS.BackendAPI.Services.Employees
         public async Task<ApiResult<LoginVm>> Authenticate(LoginRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
-
-            if (user == null)
-                user = await _userManager.FindByNameAsync(request.Email);
             if (user == null)
                 return new ApiErrorResult<LoginVm>("Account does not exist");
 
@@ -759,7 +756,7 @@ namespace ESMS.BackendAPI.Services.Employees
         {
             var empName = _context.Employees.Where(x => x.Id.Equals(empID)).Select(x => x.Name).FirstOrDefault();
             var listProject = _projectService.GetMissEmpProjects(empID);
-            List<SingleCandidateViewModel> result = new List<SingleCandidateViewModel>();
+            List<ProjectVM> listResult = new List<ProjectVM>();
 
             foreach (var project in listProject)
             {
@@ -792,10 +789,8 @@ namespace ESMS.BackendAPI.Services.Employees
                         continue;
                     }
                 }
-
                 foreach (RequiredPosVM requiredPosition in project.RequiredPositions)
-                {
-                    {
+                {                       
                         List<MatchViewModel> listMatchDetail = new List<MatchViewModel>();
                         var Position = _context.Positions.Where(x => x.PosID == requiredPosition.PosID).Select(x => x.Name).FirstOrDefault();
                         var PosId = _context.Positions.Where(x => x.PosID == requiredPosition.PosID).Select(x => x.PosID).FirstOrDefault();
@@ -962,20 +957,44 @@ namespace ESMS.BackendAPI.Services.Employees
                             ProjectFieldMatch = ProjectFieldMatch,
                             OverallMatch = match,
                         };
-                        requiredPosition.MatchDetail = matchDetail;
+                    RequiredPosVM requiredPos = new RequiredPosVM()
+                    {
+                        RequiredPosID = requiredPosition.RequiredPosID,
+                        CandidateNeeded = requiredPosition.CandidateNeeded,
+                        HardSkills = requiredPosition.HardSkills,
+                        SoftSkillIDs = requiredPosition.SoftSkillIDs,
+                        Language = requiredPosition.Language,
+                        MissingEmployee = requiredPosition.MissingEmployee,
+                        PosID = requiredPosition.PosID,
+                        PosName = requiredPosition.PosName,
+                        MatchDetail = matchDetail
                     };
-                       
+                    listMatchInPosDetail.Add(requiredPos);
+
+                    }
+                      if (listMatchInPosDetail.Count > 0)
+                {
+                    ProjectVM result = new ProjectVM()
+                    {
+                        ProjectID = project.ProjectID,
+                        FieldID = project.FieldID,
+                        ProjectManagerID = project.ProjectManagerID,
+                        ProjectName = project.ProjectName,
+                        TypeID = project.TypeID,
+                        RequiredPositions = listMatchInPosDetail
+                    };
+                    listResult.Add(result);
+                } 
                         //};
                         //listMatchInPosDetail.Add(matchDetail);
-                    }
-                }
+                    }              
                 //result.Add(new SingleCandidateViewModel()
                 //{
                 //    ProjectInfo = project,
                 //    MatchInEachPos = listMatchInPosDetail,
                 //});
             //}
-            return new ApiSuccessResult<List<ProjectVM>>(listProject);
+            return new ApiSuccessResult<List<ProjectVM>>(listResult);
         }
 
         //public async Task<List<CandidateViewModel>> SuggestCandidate(int projectID, SuggestCadidateRequest request)
