@@ -58,6 +58,9 @@ namespace ESMS.BackendAPI.Services.Projects
         Task<ApiResult<List<MissEmpPosition>>> GetMissEmpPos();
 
         Task<ApiResult<List<SkillInPos>>> GetSkillInPos(int posID);
+
         Task<ApiResult<List<SkillInAllPos>>> GetSkillInAllPos();
+
+        Task<ApiResult<List<EmpInProject>>> GetEmpByRequiredID(int requiredID);
     }
 }
