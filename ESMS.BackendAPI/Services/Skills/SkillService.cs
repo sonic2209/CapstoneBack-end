@@ -192,7 +192,11 @@ namespace ESMS.BackendAPI.Services.Skills
                         select new { s };
             if (!string.IsNullOrEmpty(request.Keyword))
             {
-                query = query.Where(x => x.s.SkillName.Contains(request.Keyword));
+                query = query.Where(x => x.s.SkillName.Contains(request.Keyword) && x.s.SkillType == request.SkillType);
+            }
+            else
+            {
+                query = query.Where(x => x.s.SkillType == request.SkillType);
             }
             int totalRow = await query.CountAsync();
             var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
