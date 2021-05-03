@@ -1568,46 +1568,66 @@ namespace ESMS.BackendAPI.Services.Projects
             }
             return new ApiSuccessResult<List<SkillInPos>>(list);
         }
+
         public async Task<ApiResult<List<SkillInAllPos>>> GetSkillInAllPos()
         {
             var result = new List<SkillInAllPos>();
             var listPos = await _context.Positions.Select(x => x.PosID).ToListAsync();
             foreach (var pos in listPos)
-            { 
-            var list = new List<SkillInPos>();
-            var listRequirePos = await _context.RequiredPositions.Where(x => x.PositionID.Equals(pos))
-                .Select(x => x.ID).ToListAsync();
-            if (listRequirePos.Count() != 0)
             {
-                var skillQuery = from rs in _context.RequiredSkills
-                                 join s in _context.Skills on rs.SkillID equals s.SkillID
-                                 select new { rs, s };
-                List<string> skillName = new List<string>();
-                foreach (var rp in listRequirePos)
+                var list = new List<SkillInPos>();
+                var listRequirePos = await _context.RequiredPositions.Where(x => x.PositionID.Equals(pos))
+                    .Select(x => x.ID).ToListAsync();
+                if (listRequirePos.Count() != 0)
                 {
-                    var listRequireSkill = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(rp)
-                    && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => x.s.SkillName).ToListAsync();
-                    if (listRequireSkill.Count() != 0)
+                    var skillQuery = from rs in _context.RequiredSkills
+                                     join s in _context.Skills on rs.SkillID equals s.SkillID
+                                     select new { rs, s };
+                    List<string> skillName = new List<string>();
+                    foreach (var rp in listRequirePos)
                     {
-                        foreach (var rs in listRequireSkill)
+                        var listRequireSkill = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(rp)
+                        && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => x.s.SkillName).ToListAsync();
+                        if (listRequireSkill.Count() != 0)
                         {
-                            skillName.Add(rs);
+                            foreach (var rs in listRequireSkill)
+                            {
+                                skillName.Add(rs);
+                            }
                         }
                     }
+                    list = skillName.GroupBy(x => x).Select(x => new SkillInPos()
+                    {
+                        HardSkill = x.Key,
+                        NumberInRequire = x.Count()
+                    }).ToList();
                 }
-                list = skillName.GroupBy(x => x).Select(x => new SkillInPos()
-                {
-                    HardSkill = x.Key,
-                    NumberInRequire = x.Count()
-                }).ToList();
-            }
                 result.Add(new SkillInAllPos()
                 {
                     PosID = pos,
                     SkillInPos = list
-                });               
+                });
             }
             return new ApiSuccessResult<List<SkillInAllPos>>(result);
+        }
+
+        public async Task<ApiResult<List<EmpInProject>>> GetEmpByRequiredID(int requiredID)
+        {
+            var query = from e in _context.Employees
+                        join ep in _context.EmpPositionInProjects on e.Id equals ep.EmpID
+                        select new { e, ep };
+            var employees = await query.Where(x => x.ep.RequiredPositionID.Equals(requiredID))
+                .Select(x => new EmpInProject()
+                {
+                    EmpID = x.ep.EmpID,
+                    Name = x.e.Name,
+                    Email = x.e.Email,
+                    DateIn = x.ep.DateIn,
+                    PhoneNumber = x.e.PhoneNumber,
+                    Status = x.ep.Status,
+                    RejectReason = x.ep.Note
+                }).ToListAsync();
+            return new ApiSuccessResult<List<EmpInProject>>(employees);
         }
     }
 }

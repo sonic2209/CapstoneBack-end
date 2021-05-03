@@ -218,10 +218,18 @@ namespace ESMS.BackendAPI.Controllers
             var result = await _projectService.GetStatisticsByEmpID(empID);
             return Ok(result);
         }
+
         [HttpGet("getSkillInAllPos")]
         public async Task<IActionResult> GetSkillInAllPos()
         {
             var result = await _projectService.GetSkillInAllPos();
+            return Ok(result);
+        }
+
+        [HttpGet("getEmpByRequiredID/{requiredID}")]
+        public async Task<IActionResult> GetEmpByRequiredID(int requiredID)
+        {
+            var result = await _projectService.GetEmpByRequiredID(requiredID);
             return Ok(result);
         }
     }
