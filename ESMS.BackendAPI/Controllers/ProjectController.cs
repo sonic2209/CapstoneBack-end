@@ -232,5 +232,12 @@ namespace ESMS.BackendAPI.Controllers
             var result = await _projectService.GetEmpByRequiredID(requiredID);
             return Ok(result);
         }
+
+        [HttpPost("checkCandidate/{projectID}")]
+        public async Task<IActionResult> CheckCandidate(int projectID, AddCandidateRequest request)
+        {
+            var result = await _projectService.CheckCandidate(projectID, request);
+            return Ok(result);
+        }
     }
 }
