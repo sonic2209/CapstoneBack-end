@@ -1716,6 +1716,9 @@ namespace ESMS.BackendAPI.Services.Projects
         public async Task<ApiResult<List<string>>> CheckCandidate(int projectID, AddCandidateRequest request)
         {
             List<string> list = new List<string>();
+            var empQuery = from ep in _context.EmpPositionInProjects
+                           join rp in _context.RequiredPositions on ep.RequiredPositionID equals rp.ID
+                           select new { ep, rp };
             foreach (var req in request.Candidates)
             {
                 foreach (var emp in req.EmpIDs)
@@ -1727,6 +1730,18 @@ namespace ESMS.BackendAPI.Services.Projects
                         {
                             var employee = await _context.Employees.FindAsync(emp);
                             var message = employee.Name + " : " + checkEmp.Note;
+                            list.Add(message);
+                        }
+                    }
+                    else
+                    {
+                        var checkOtherPos = await empQuery.Where(x => x.rp.ProjectID.Equals(projectID)
+                        && x.ep.Status.Equals(ConfirmStatus.Reject) && x.ep.RequiredPositionID != req.RequiredPosID
+                        && x.ep.EmpID.Equals(emp)).Select(x => x.ep.Note).FirstOrDefaultAsync();
+                        if (checkOtherPos != null)
+                        {
+                            var employee = await _context.Employees.FindAsync(emp);
+                            var message = employee.Name + " : " + checkOtherPos;
                             list.Add(message);
                         }
                     }
