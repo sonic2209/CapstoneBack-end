@@ -384,7 +384,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 //match += Math.Round(Softskillmatch, 2);
                             }
                             //add match vao hardskill
-                            var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.HardSkill && x.es.EmpID.Equals(emp.EmpId));
+                            var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.HardSkill && !x.es.DateEnd.HasValue  && x.es.EmpID.Equals(emp.EmpId));
                             var listEmpHardSkill = await listEmpHardSkillquery.Select(x => new EmpInHardSkill()
                             {
                                 EmpID = emp.EmpId,
@@ -432,19 +432,71 @@ namespace ESMS.BackendAPI.Services.Employees
                                                join epip in _context.EmpPositionInProjects on rp.ID equals epip.RequiredPositionID
                                                select new { rp, p, epip };
 
-                            var currentProjectBeginDate = await _context.Projects.Where(x => x.ProjectID == projectID).Select(x => x.DateBegin).FirstOrDefaultAsync();
-                            var listProjectCurrentlyIn = await projectquery.Where(x => x.p.Status != ProjectStatus.Finished && x.epip.EmpID.Equals(emp.EmpId) && x.epip.Status != ConfirmStatus.Reject)
-                                .Select(x => x.p.DateEstimatedEnd).ToListAsync();
+                            var currentProjectDate = await _context.Projects.Where(x => x.ProjectID == projectID).Select(x => new Project()
+                            {
+                                DateBegin = x.DateBegin,
+                                DateEstimatedEnd = x.DateEstimatedEnd                             
+                            }).FirstOrDefaultAsync();
+                            DateTime dateBegin = currentProjectDate.DateBegin;
+                            DateTime dateEstimatedEnd = currentProjectDate.DateEstimatedEnd;
+                            var listProjectCurrentlyIn = await projectquery.Where(x => x.p.Status != ProjectStatus.Finished && x.epip.EmpID.Equals(emp.EmpId) && x.epip.Status != ConfirmStatus.Reject).OrderBy(x => x.p.DateEstimatedEnd)
+                                .Select(x => new Project()
+                                {
+                                    ProjectID = x.p.ProjectID,
+                                    DateBegin = x.p.DateBegin,
+                                    DateEstimatedEnd = x.p.DateEstimatedEnd
+                                }).ToListAsync();
                             //var projectOnGoingDateEnd = await projectquery.Where(x => (x.p.Status == ProjectStatus.OnGoing || x.p.Status == ProjectStatus.Confirmed) && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.DateEstimatedEnd).ToListAsync();
                             bool checkProjectDate = false;
+                            var check = true;
                             if (listProjectCurrentlyIn.Count > 0)
                             {
-                                foreach (var dateEnd in listProjectCurrentlyIn)
+                                if (listProjectCurrentlyIn.Count > 0)
                                 {
-                                    if (dateEnd > currentProjectBeginDate)
+                                    for (int i = 0; i < listProjectCurrentlyIn.Count(); i++)
                                     {
-                                        checkProjectDate = true;
-                                        break;
+                                        if (listProjectCurrentlyIn[i].ProjectID == projectID)
+                                        {
+                                            checkProjectDate = true;
+                                            break;
+                                        }
+                                        if (DateTime.Compare(listProjectCurrentlyIn[i].DateBegin, dateBegin) >= 0)
+                                        {
+                                            check = false;
+                                        }
+                                        if (check == false)
+                                        {
+                                            if (i == 0)
+                                            {
+                                                if (DateTime.Compare(dateEstimatedEnd, listProjectCurrentlyIn[i].DateBegin.AddDays(-3)) > 0)
+                                                {
+                                                    checkProjectDate = true;
+                                                    break;
+                                                }
+                                            }
+                                            if (i > 0)
+                                            {
+                                                if (DateTime.Compare(dateBegin, listProjectCurrentlyIn[i - 1].DateEstimatedEnd.AddDays(3)) < 0)
+                                                {
+                                                    checkProjectDate = true;
+                                                    break;
+                                                }
+                                                if (DateTime.Compare(dateEstimatedEnd, listProjectCurrentlyIn[i].DateBegin.AddDays(-3)) > 0)
+                                                {
+                                                    checkProjectDate = true;
+                                                    break;
+                                                }
+                                            }
+                                            break;
+                                        }
+                                    }
+                                    if (check == true)
+                                    {
+                                        if (DateTime.Compare(dateBegin, listProjectCurrentlyIn[listProjectCurrentlyIn.Count() - 1].DateEstimatedEnd.AddDays(3)) < 0)
+                                        {
+                                            checkProjectDate = true;
+                                            break;
+                                        }
                                     }
                                 }
                                 if (checkProjectDate == true)
