@@ -57,7 +57,7 @@ namespace ESMS.BackendAPI.Services.Skills
         public async Task<ApiResult<bool>> Create(SkillCreateRequest request)
         {
             var checkName = _context.Skills.Where(x => x.SkillName.Equals(request.SkillName))
-                .Select(x => new Skill());
+                .Select(x => new Skill()).FirstOrDefault();
             if (checkName != null)
             {
                 return new ApiErrorResult<bool>("This skill name already exist");
