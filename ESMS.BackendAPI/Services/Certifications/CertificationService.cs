@@ -51,7 +51,7 @@ namespace ESMS.BackendAPI.Services.Certifications
                 .Select(x => new Certification()).FirstOrDefault();
             if (checkName != null)
             {
-                return new ApiErrorResult<bool>("This certification name already exist");
+                return new ApiErrorResult<bool>("This certification name already exists");
             }
             var certification = new Certification()
             {
@@ -145,7 +145,7 @@ namespace ESMS.BackendAPI.Services.Certifications
                     .Select(x => new Certification()).FirstOrDefault();
                 if (checkName != null)
                 {
-                    return new ApiErrorResult<bool>("this certification name existed");
+                    return new ApiErrorResult<bool>("this certification name already exists");
                 }
                 else
                 {

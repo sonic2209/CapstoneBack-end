@@ -181,7 +181,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         {
                             if (DateTime.Compare(DateTime.Parse(certification.DateEnd).Date, DateTime.Today) < 0)
                             {
-                                return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " is expired");
+                                return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " has expired");
                             }
                             if (DateTime.Compare(empCertification.DateTaken.Date, DateTime.Parse(certification.DateEnd).Date) > 0)
                             {
@@ -1586,7 +1586,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             {
                                 if (DateTime.Compare(DateTime.Parse(certi.DateEnd).Date, DateTime.Today) < 0)
                                 {
-                                    return new ApiErrorResult<bool>("Certification " + certification.CertificationName + " is expired");
+                                    return new ApiErrorResult<bool>("Certification " + certification.CertificationName + " has expired");
                                 }
                                 if (DateTime.Compare(empCerti.DateTaken.Date, DateTime.Parse(certi.DateEnd).Date) > 0)
                                 {
@@ -1621,7 +1621,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                     {
                                         if (DateTime.Compare(DateTime.Parse(certi.DateEnd).Date, DateTime.Today) < 0)
                                         {
-                                            return new ApiErrorResult<bool>("Certification " + certification.CertificationName + " is expired");
+                                            return new ApiErrorResult<bool>("Certification " + certification.CertificationName + " has expired");
                                         }
                                         if (DateTime.Compare(checkEmpCerti.DateTaken.Date, DateTime.Parse(certi.DateEnd).Date) > 0)
                                         {
@@ -1633,7 +1633,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 {
                                     if (DateTime.Compare(DateTime.Parse(certi.DateEnd).Date, DateTime.Today) < 0)
                                     {
-                                        return new ApiErrorResult<bool>("Certification " + certification.CertificationName + " is expired");
+                                        return new ApiErrorResult<bool>("Certification " + certification.CertificationName + " has expired");
                                     }
                                     if (DateTime.Compare(checkEmpCerti.DateTaken.Date, DateTime.Parse(certi.DateEnd).Date) > 0)
                                     {
