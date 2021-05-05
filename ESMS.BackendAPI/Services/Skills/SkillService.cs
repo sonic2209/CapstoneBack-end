@@ -175,7 +175,7 @@ namespace ESMS.BackendAPI.Services.Skills
                 foreach (var s in skills)
                 {
                     s.Certifications = await _context.Certifications.Where(x => x.SkillID.Equals(s.SkillID))
-                        .Select(x => new ListCertificationViewModel()
+                        .OrderBy(x => x.CertiLevel).Select(x => new ListCertificationViewModel()
                         {
                             CertificationID = x.CertificationID,
                             CertificationName = x.CertificationName,
