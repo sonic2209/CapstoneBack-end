@@ -451,8 +451,6 @@ namespace ESMS.BackendAPI.Services.Employees
                             var check = true;
                             if (listProjectCurrentlyIn.Count > 0)
                             {
-                                if (listProjectCurrentlyIn.Count > 0)
-                                {
                                     for (int i = 0; i < listProjectCurrentlyIn.Count(); i++)
                                     {
                                         if (listProjectCurrentlyIn[i].ProjectID == projectID)
@@ -494,16 +492,14 @@ namespace ESMS.BackendAPI.Services.Employees
                                     {
                                         if (DateTime.Compare(dateBegin, listProjectCurrentlyIn[listProjectCurrentlyIn.Count() - 1].DateEstimatedEnd.AddDays(3)) < 0)
                                         {
-                                            checkProjectDate = true;
-                                            break;
+                                            checkProjectDate = true;                                           
                                         }
                                     }
                                 }
                                 if (checkProjectDate == true)
                                 {
                                     continue;
-                                }
-                            }
+                                }                           
                             //Add match theo projecttype
                             var listProjectWithType = await projectquery.Where(x => x.p.ProjectTypeID == ProjectTypeID && x.epip.EmpID.Equals(emp.EmpId) && x.epip.Status == ConfirmStatus.Accept).Select(x => x.p.ProjectID).ToListAsync();
                             var numberOfProjectWithType = listProjectWithType.Count();
@@ -882,7 +878,6 @@ namespace ESMS.BackendAPI.Services.Employees
                         if (DateTime.Compare(dateBegin, listProjectCurrentlyIn[listProjectCurrentlyIn.Count() - 1].DateEstimatedEnd.AddDays(3)) < 0)
                         {
                             checkProjectDate = true;
-                            break;
                         }
                     }
                 }
