@@ -361,7 +361,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 {
                                     foreach (EmpInLang empl in ListEmpInLang)
                                     {
-                                        Languagematch += (empl.LangLevel * language.Priority * 0.1) / requiredPosition.Language.Count;
+                                        Languagematch += (double)((empl.LangLevel * language.Priority * 0.1) / requiredPosition.Language.Count);
                                     }
                                     //match += Math.Round(Languagematch, 2);
                                 }
@@ -378,13 +378,13 @@ namespace ESMS.BackendAPI.Services.Employees
                                 {
                                     if (softSkill.Equals(softskillId))
                                     {
-                                        Softskillmatch += 10 / (requiredPosition.SoftSkillIDs.Count);
+                                        Softskillmatch += (double)(10 / (requiredPosition.SoftSkillIDs.Count));
                                     }
                                 }
                                 //match += Math.Round(Softskillmatch, 2);
                             }
                             //add match vao hardskill
-                            var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.HardSkill && !x.es.DateEnd.HasValue  && x.es.EmpID.Equals(emp.EmpId));
+                            var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.HardSkill && x.es.DateEnd == null  && x.es.EmpID.Equals(emp.EmpId));
                             var listEmpHardSkill = await listEmpHardSkillquery.Select(x => new EmpInHardSkill()
                             {
                                 EmpID = emp.EmpId,
@@ -400,7 +400,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                         var certiquery = from c in _context.Certifications
                                                          join ec in _context.EmpCertifications on c.CertificationID equals ec.CertificationID
                                                          select new { c, ec };
-                                        var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID).Select(x => new CertiInSkill
+                                        var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID && x.ec.DateEnd > DateTime.Now).Select(x => new CertiInSkill
                                         {
                                             CertiID = x.c.CertificationID,
                                             SkillID = x.c.SkillID,
@@ -555,8 +555,8 @@ namespace ESMS.BackendAPI.Services.Employees
                             {
                                 EmpID = emp.EmpId,
                                 EmpName = emp.EmpName,
-                                LanguageMatch = Languagematch,
-                                SoftSkillMatch = Softskillmatch,
+                                LanguageMatch = Math.Round(Languagematch,2),
+                                SoftSkillMatch = Math.Round(Softskillmatch,2),
                                 HardSkillMatch = Math.Round(Hardskillmatch, 2),
                                 ProjectTypeMatch = ProjectTypeMatch,
                                 ProjectFieldMatch = ProjectFieldMatch,
@@ -672,7 +672,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                         var certiquery = from c in _context.Certifications
                                                          join ec in _context.EmpCertifications on c.CertificationID equals ec.CertificationID
                                                          select new { c, ec };
-                                        var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID).Select(x => new CertiInSkill
+                                        var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID && x.ec.DateEnd > DateTime.Now).Select(x => new CertiInSkill
                                         {
                                             CertiID = x.c.CertificationID,
                                             SkillID = x.c.SkillID,
@@ -946,7 +946,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             {
                                 foreach (EmpInLang empl in ListEmpInLang)
                                 {
-                                    Languagematch += (empl.LangLevel * language.Priority * 0.1) / requiredPosition.Language.Count;
+                                    Languagematch += (double)((empl.LangLevel * language.Priority * 0.1) / requiredPosition.Language.Count);
                                 }
                             }
                         }
@@ -962,12 +962,12 @@ namespace ESMS.BackendAPI.Services.Employees
                             {
                                 if (softSkill.Equals(softskillId))
                                 {
-                                    Softskillmatch += 10 / (requiredPosition.SoftSkillIDs.Count);
+                                    Softskillmatch += (double)(10 / (requiredPosition.SoftSkillIDs.Count));
                                 }
                             }
                         }
                         //add match vao hardskill
-                        var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.HardSkill && x.es.EmpID.Equals(empID));
+                        var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.HardSkill && x.es.DateEnd == null && x.es.EmpID.Equals(empID));
                         var listEmpHardSkill = await listEmpHardSkillquery.Select(x => new EmpInHardSkill()
                         {
                             EmpID = empID,
@@ -983,7 +983,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                     var certiquery = from c in _context.Certifications
                                                      join ec in _context.EmpCertifications on c.CertificationID equals ec.CertificationID
                                                      select new { c, ec };
-                                    var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID).Select(x => new CertiInSkill
+                                    var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID && x.ec.DateEnd > DateTime.Now).Select(x => new CertiInSkill
                                     {
                                         CertiID = x.c.CertificationID,
                                         SkillID = x.c.SkillID,
@@ -1055,8 +1055,8 @@ namespace ESMS.BackendAPI.Services.Employees
                         {
                             EmpID = empID,
                             EmpName = empName,
-                            LanguageMatch = Languagematch,
-                            SoftSkillMatch = Softskillmatch,
+                            LanguageMatch = Math.Round(Languagematch,2),
+                            SoftSkillMatch = Math.Round(Softskillmatch,2),
                             HardSkillMatch = Math.Round(Hardskillmatch, 2),
                             ProjectTypeMatch = ProjectTypeMatch,
                             ProjectFieldMatch = ProjectFieldMatch,
