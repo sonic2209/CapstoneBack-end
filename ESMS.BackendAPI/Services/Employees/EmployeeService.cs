@@ -89,11 +89,11 @@ namespace ESMS.BackendAPI.Services.Employees
             var user = await _userManager.FindByNameAsync(request.UserName);
             if (user != null)
             {
-                return new ApiErrorResult<string>("Account existed");
+                return new ApiErrorResult<string>("Username: This username already exists");
             }
             if (await _userManager.FindByEmailAsync(request.Email) != null)
             {
-                return new ApiErrorResult<string>("Email existed");
+                return new ApiErrorResult<string>("Email: This email already exists");
             }
             user = new Employee()
             {
@@ -770,25 +770,83 @@ namespace ESMS.BackendAPI.Services.Employees
                                    join epip in _context.EmpPositionInProjects on rp.ID equals epip.RequiredPositionID
                                    select new { p, epip, rp };
 
-                var currentProjectBeginDate = await _context.Projects.Where(x => x.ProjectID == project.ProjectID).Select(x => x.DateBegin).FirstOrDefaultAsync();
-                var listProjectCurrentlyIn = await projectquery.Where(x => (x.p.Status == ProjectStatus.OnGoing || x.p.Status == ProjectStatus.Confirmed) && x.epip.EmpID.Equals(empID) && x.epip.Status == ConfirmStatus.Accept && x.epip.Status == ConfirmStatus.New).Select(x => x.p.DateEstimatedEnd).ToListAsync();
+                var currentProjectDate = await _context.Projects.Where(x => x.ProjectID == project.ProjectID).Select(x => new Project()
+                {
+                    DateBegin = x.DateBegin,
+                    DateEstimatedEnd = x.DateEstimatedEnd
+                }).FirstOrDefaultAsync();
+                DateTime dateBegin = currentProjectDate.DateBegin;
+                DateTime dateEstimatedEnd = currentProjectDate.DateEstimatedEnd;
+                var listProjectCurrentlyIn = await projectquery.Where(x => x.p.Status != ProjectStatus.Finished && x.epip.EmpID.Equals(empID) && x.epip.Status != ConfirmStatus.Reject).OrderBy(x=> x.p.DateEstimatedEnd).Select(x => new Project()
+                {
+                    ProjectID = x.p.ProjectID,
+                    DateBegin = x.p.DateBegin,
+                    DateEstimatedEnd = x.p.DateEstimatedEnd
+                }).ToListAsync();
                 //var projectOnGoingDateEnd = await projectquery.Where(x => (x.p.Status == ProjectStatus.OnGoing || x.p.Status == ProjectStatus.Confirmed) && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.DateEstimatedEnd).ToListAsync();
                 bool checkProjectDate = false;
+                var check = true;
                 if (listProjectCurrentlyIn.Count > 0)
-                {
-                    foreach (var dateEnd in listProjectCurrentlyIn)
+                {                 
+                        for (int i = 0; i < listProjectCurrentlyIn.Count(); i++)
+                        {
+                            if (listProjectCurrentlyIn[i].ProjectID == project.ProjectID)
+                        {
+                            checkProjectDate = true;
+                            break;
+                        }
+                            if (DateTime.Compare(listProjectCurrentlyIn[i].DateBegin, dateBegin) >= 0)
+                            {
+                                check = false;
+                            }
+                            if (check == false)
+                            {
+                                if (i == 0)
+                                {
+                                    if (DateTime.Compare(dateEstimatedEnd, listProjectCurrentlyIn[i].DateBegin.AddDays(-3)) > 0)
+                                    {
+                                        checkProjectDate = true;
+                                        break;
+                                    }
+                                }
+                                if (i > 0)
+                                {
+                                    if (DateTime.Compare(dateBegin, listProjectCurrentlyIn[i - 1].DateEstimatedEnd.AddDays(3)) < 0)
+                                    {
+                                    checkProjectDate = true;
+                                    break;
+                                }
+                                    if (DateTime.Compare(dateEstimatedEnd, listProjectCurrentlyIn[i].DateBegin.AddDays(-3)) > 0)
+                                    {
+                                    checkProjectDate = true;
+                                    break;
+                                }
+                                }
+                                break;
+                            }
+                    }
+                    if (check == true)
                     {
-                        if (dateEnd > currentProjectBeginDate)
+                        if (DateTime.Compare(dateBegin, listProjectCurrentlyIn[listProjectCurrentlyIn.Count() - 1].DateEstimatedEnd.AddDays(3)) < 0)
                         {
                             checkProjectDate = true;
                             break;
                         }
                     }
-                    if (checkProjectDate == true)
-                    {
-                        continue;
-                    }
                 }
+
+                        //    foreach (var dateEnd in listProjectCurrentlyIn)
+                        //    {
+                        //        if (dateEnd > currentProjectBeginDate)
+                        //        {
+                        //            checkProjectDate = true;
+                        //            break;
+                        //        }
+                        //    }
+                        if (checkProjectDate == true)
+                        {
+                            continue;
+                        }                  
                 foreach (RequiredPosVM requiredPosition in project.RequiredPositions)
                 {                       
                         List<MatchViewModel> listMatchDetail = new List<MatchViewModel>();

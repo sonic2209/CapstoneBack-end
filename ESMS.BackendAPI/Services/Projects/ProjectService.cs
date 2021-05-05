@@ -34,7 +34,7 @@ namespace ESMS.BackendAPI.Services.Projects
                     var checkName = _context.Projects.Where(x => x.ProjectName.Equals(request.ProjectName)).Select(x => new Project()).FirstOrDefault();
                     if (checkName != null)
                     {
-                        return new ApiErrorResult<int>("projectName : This project name is existed");
+                        return new ApiErrorResult<int>("projectName : This project name already exist");
                     }
                     project.ProjectName = request.ProjectName;
                 }
@@ -113,7 +113,7 @@ namespace ESMS.BackendAPI.Services.Projects
                     .Select(x => new Project()).FirstOrDefault();
                 if (checkName != null)
                 {
-                    return new ApiErrorResult<int>("projectName : This project name is existed");
+                    return new ApiErrorResult<int>("projectName : This project name already exist");
                 }
                 var checkProjectDate = await _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
                     .OrderBy(x => x.DateEstimatedEnd).Select(x => new Project()

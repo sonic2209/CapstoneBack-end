@@ -51,7 +51,7 @@ namespace ESMS.BackendAPI.Services.Positions
                 .Select(x => new Position()).FirstOrDefault();
             if (checkName != null)
             {
-                return new ApiErrorResult<bool>("This position name is existed");
+                return new ApiErrorResult<bool>("This position name already exist");
             }
             var position = new Position()
             {
@@ -135,7 +135,7 @@ namespace ESMS.BackendAPI.Services.Positions
                  .Select(x => new Position()).FirstOrDefault();
                 if (checkName != null)
                 {
-                    return new ApiErrorResult<bool>("This position name is existed");
+                    return new ApiErrorResult<bool>("This position name already exist");
                 }
                 else
                 {

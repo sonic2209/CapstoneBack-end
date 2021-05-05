@@ -60,7 +60,7 @@ namespace ESMS.BackendAPI.Services.Skills
                 .Select(x => new Skill()).FirstOrDefault();
             if (checkName != null)
             {
-                return new ApiErrorResult<bool>("This skill name is existed");
+                return new ApiErrorResult<bool>("This skill name already exist");
             }
             var skill = new Skill()
             {
@@ -258,7 +258,7 @@ namespace ESMS.BackendAPI.Services.Skills
                 .Select(x => new Skill()).FirstOrDefault();
                 if (checkName != null)
                 {
-                    return new ApiErrorResult<bool>("This skill name is existed");
+                    return new ApiErrorResult<bool>("This skill name already exist");
                 }
                 skill.SkillName = request.SkillName;
             }

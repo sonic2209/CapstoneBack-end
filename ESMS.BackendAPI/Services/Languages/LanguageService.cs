@@ -24,7 +24,7 @@ namespace ESMS.BackendAPI.Services.Languages
                 .Select(x => new Language()).FirstOrDefault();
             if (checkName != null)
             {
-                return new ApiErrorResult<bool>("This language name is existed");
+                return new ApiErrorResult<bool>("This language name already exist");
             }
             var language = new Language()
             {
