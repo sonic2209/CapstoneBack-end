@@ -792,12 +792,22 @@ namespace ESMS.BackendAPI.Services.Projects
                             }
                             else
                             {
-                                employee = new EmpPositionInProject()
+                                var checkEmp = await _context.EmpPositionInProjects.FindAsync(emp, candidate.RequiredPosID);
+                                if (checkEmp != null)
                                 {
-                                    EmpID = emp,
-                                    RequiredPositionID = candidate.RequiredPosID
-                                };
-                                _context.EmpPositionInProjects.Add(employee);
+                                    checkEmp.Status = ConfirmStatus.New;
+                                    checkEmp.Note = null;
+                                    _context.EmpPositionInProjects.Update(checkEmp);
+                                }
+                                else
+                                {
+                                    employee = new EmpPositionInProject()
+                                    {
+                                        EmpID = emp,
+                                        RequiredPositionID = candidate.RequiredPosID
+                                    };
+                                    _context.EmpPositionInProjects.Add(employee);
+                                }
                             }
                         }
                         requiredPos.Status = RequirementStatus.Waiting;
