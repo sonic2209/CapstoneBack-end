@@ -57,7 +57,7 @@ namespace ESMS.BackendAPI.Services.Skills
         public async Task<ApiResult<bool>> Create(SkillCreateRequest request)
         {
             var checkName = _context.Skills.Where(x => x.SkillName.Equals(request.SkillName))
-                .Select(x => new Skill());
+                .Select(x => new Skill()).FirstOrDefault();
             if (checkName != null)
             {
                 return new ApiErrorResult<bool>("This skill name already exist");
@@ -175,7 +175,7 @@ namespace ESMS.BackendAPI.Services.Skills
                 foreach (var s in skills)
                 {
                     s.Certifications = await _context.Certifications.Where(x => x.SkillID.Equals(s.SkillID))
-                        .Select(x => new ListCertificationViewModel()
+                        .OrderBy(x => x.CertiLevel).Select(x => new ListCertificationViewModel()
                         {
                             CertificationID = x.CertificationID,
                             CertificationName = x.CertificationName,

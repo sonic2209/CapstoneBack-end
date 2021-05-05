@@ -66,20 +66,20 @@ namespace ESMS.BackendAPI.Services.Projects
                         {
                             if (i == 0)
                             {
-                                if (DateTime.Compare(dateEstimatedEnd, checkProjectDate[i].DateBegin.AddDays(-14)) > 0)
+                                if (DateTime.Compare(dateEstimatedEnd, checkProjectDate[i].DateBegin.AddDays(-7)) > 0)
                                 {
-                                    return new ApiErrorResult<int>("dateEstimatedEnd : Date end must be before your next project's begin date(" + checkProjectDate[i].DateBegin.ToString("dd/MM/yyyy") + ") at least 2 weeks");
+                                    return new ApiErrorResult<int>("dateEstimatedEnd : Date end must be before your next project's begin date(" + checkProjectDate[i].DateBegin.ToString("dd/MM/yyyy") + ") at least 1 weeks");
                                 }
                             }
                             if (i > 0)
                             {
-                                if (DateTime.Compare(dateBegin, checkProjectDate[i - 1].DateEstimatedEnd.AddDays(14)) < 0)
+                                if (DateTime.Compare(dateBegin, checkProjectDate[i - 1].DateEstimatedEnd.AddDays(7)) < 0)
                                 {
-                                    return new ApiErrorResult<int>("dateBegin : Date begin must be after your previous project's estimated end date(" + checkProjectDate[i - 1].DateEstimatedEnd.ToString("dd/MM/yyyy") + ") at least 2 weeks");
+                                    return new ApiErrorResult<int>("dateBegin : Date begin must be after your previous project's estimated end date(" + checkProjectDate[i - 1].DateEstimatedEnd.ToString("dd/MM/yyyy") + ") at least 1 weeks");
                                 }
-                                if (DateTime.Compare(dateEstimatedEnd, checkProjectDate[i].DateBegin.AddDays(-14)) > 0)
+                                if (DateTime.Compare(dateEstimatedEnd, checkProjectDate[i].DateBegin.AddDays(-7)) > 0)
                                 {
-                                    return new ApiErrorResult<int>("dateEstimatedEnd : Date end must be before your next project's begin date(" + checkProjectDate[i].DateBegin.ToString("dd/MM/yyyy") + ") at least 2 weeks");
+                                    return new ApiErrorResult<int>("dateEstimatedEnd : Date end must be before your next project's begin date(" + checkProjectDate[i].DateBegin.ToString("dd/MM/yyyy") + ") at least 1 weeks");
                                 }
                             }
                             break;
@@ -89,9 +89,9 @@ namespace ESMS.BackendAPI.Services.Projects
                     {
                         if (DateTime.Compare(project.DateBegin, dateBegin) != 0)
                         {
-                            if (DateTime.Compare(dateBegin, checkProjectDate[checkProjectDate.Count() - 1].DateEstimatedEnd.AddDays(14)) < 0)
+                            if (DateTime.Compare(dateBegin, checkProjectDate[checkProjectDate.Count() - 1].DateEstimatedEnd.AddDays(7)) < 0)
                             {
-                                return new ApiErrorResult<int>("dateBegin : Date begin must be after your previous project's estimated end date(" + checkProjectDate[checkProjectDate.Count() - 1].DateEstimatedEnd.ToString("dd/MM/yyyy") + ") at least 2 weeks");
+                                return new ApiErrorResult<int>("dateBegin : Date begin must be after your previous project's estimated end date(" + checkProjectDate[checkProjectDate.Count() - 1].DateEstimatedEnd.ToString("dd/MM/yyyy") + ") at least 1 weeks");
                             }
                         }
                     }
@@ -138,20 +138,20 @@ namespace ESMS.BackendAPI.Services.Projects
                         {
                             if (i == 0)
                             {
-                                if (DateTime.Compare(dateEstimatedEnd, checkProjectDate[i].DateBegin.AddDays(-14)) > 0)
+                                if (DateTime.Compare(dateEstimatedEnd, checkProjectDate[i].DateBegin.AddDays(-7)) > 0)
                                 {
-                                    return new ApiErrorResult<int>("dateEstimatedEnd : Date end must be before your next project's begin date(" + checkProjectDate[i].DateBegin.ToString("dd/MM/yyyy") + ") at least 2 weeks");
+                                    return new ApiErrorResult<int>("dateEstimatedEnd : Date end must be before your next project's begin date(" + checkProjectDate[i].DateBegin.ToString("dd/MM/yyyy") + ") at least 1 weeks");
                                 }
                             }
                             if (i > 0)
                             {
-                                if (DateTime.Compare(dateBegin, checkProjectDate[i - 1].DateEstimatedEnd.AddDays(14)) < 0)
+                                if (DateTime.Compare(dateBegin, checkProjectDate[i - 1].DateEstimatedEnd.AddDays(7)) < 0)
                                 {
-                                    return new ApiErrorResult<int>("dateBegin : Date begin must be after your previous project's estimated end date(" + checkProjectDate[i - 1].DateEstimatedEnd.ToString("dd/MM/yyyy") + ") at least 2 weeks");
+                                    return new ApiErrorResult<int>("dateBegin : Date begin must be after your previous project's estimated end date(" + checkProjectDate[i - 1].DateEstimatedEnd.ToString("dd/MM/yyyy") + ") at least 1 weeks");
                                 }
-                                if (DateTime.Compare(dateEstimatedEnd, checkProjectDate[i].DateBegin.AddDays(-14)) > 0)
+                                if (DateTime.Compare(dateEstimatedEnd, checkProjectDate[i].DateBegin.AddDays(-7)) > 0)
                                 {
-                                    return new ApiErrorResult<int>("dateEstimatedEnd : Date end must be before your next project's begin date(" + checkProjectDate[i].DateBegin.ToString("dd/MM/yyyy") + ") at least 2 weeks");
+                                    return new ApiErrorResult<int>("dateEstimatedEnd : Date end must be before your next project's begin date(" + checkProjectDate[i].DateBegin.ToString("dd/MM/yyyy") + ") at least 1 weeks");
                                 }
                             }
                             break;
@@ -159,9 +159,9 @@ namespace ESMS.BackendAPI.Services.Projects
                     }
                     if (check == true)
                     {
-                        if (DateTime.Compare(dateBegin, checkProjectDate[checkProjectDate.Count() - 1].DateEstimatedEnd.AddDays(14)) < 0)
+                        if (DateTime.Compare(dateBegin, checkProjectDate[checkProjectDate.Count() - 1].DateEstimatedEnd.AddDays(7)) < 0)
                         {
-                            return new ApiErrorResult<int>("dateBegin : Date begin must be after your previous project's estimated end date(" + checkProjectDate[checkProjectDate.Count() - 1].DateEstimatedEnd.ToString("dd/MM/yyyy") + ") at least 2 weeks");
+                            return new ApiErrorResult<int>("dateBegin : Date begin must be after your previous project's estimated end date(" + checkProjectDate[checkProjectDate.Count() - 1].DateEstimatedEnd.ToString("dd/MM/yyyy") + ") at least 1 weeks");
                         }
                     }
                 }
