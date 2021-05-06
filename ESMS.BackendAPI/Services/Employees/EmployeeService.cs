@@ -400,7 +400,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                         var certiquery = from c in _context.Certifications
                                                          join ec in _context.EmpCertifications on c.CertificationID equals ec.CertificationID
                                                          select new { c, ec };
-                                        var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID && x.ec.DateEnd > DateTime.Now).Select(x => new CertiInSkill
+                                        var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID && (x.ec.DateEnd > DateTime.Now || x.ec.DateEnd == null)).Select(x => new CertiInSkill
                                         {
                                             CertiID = x.c.CertificationID,
                                             SkillID = x.c.SkillID,
@@ -984,7 +984,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 var certiquery = from c in _context.Certifications
                                                  join ec in _context.EmpCertifications on c.CertificationID equals ec.CertificationID
                                                  select new { c, ec };
-                                var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID && x.ec.DateEnd > DateTime.Now).Select(x => new CertiInSkill
+                                var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID && (x.ec.DateEnd > DateTime.Now || x.ec.DateEnd == null)).Select(x => new CertiInSkill
                                 {
                                     CertiID = x.c.CertificationID,
                                     SkillID = x.c.SkillID,
