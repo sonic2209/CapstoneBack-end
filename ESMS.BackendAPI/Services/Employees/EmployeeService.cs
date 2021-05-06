@@ -507,12 +507,12 @@ namespace ESMS.BackendAPI.Services.Employees
                             {
                                 ProjectTypeMatch = 0;
                             }
-                            if (numberOfProjectWithType > 2 && numberOfProjectWithType < 5)
+                            if (numberOfProjectWithType >= 1 && numberOfProjectWithType < 5)
                             {
                                 ProjectTypeMatch = 3;
                                 //match += ProjectTypeMatch;
                             }
-                            if (numberOfProjectWithType > 5 && numberOfProjectWithType < 10)
+                            if (numberOfProjectWithType >= 5 && numberOfProjectWithType < 10)
                             {
                                 ProjectTypeMatch = 6;
                                 //match += ProjectTypeMatch;
@@ -530,12 +530,12 @@ namespace ESMS.BackendAPI.Services.Employees
                             {
                                 ProjectFieldMatch = 0;
                             }
-                            if (numberOfProjectWithField > 2 && numberOfProjectWithField < 5)
+                            if (numberOfProjectWithField >= 1 && numberOfProjectWithField < 5)
                             {
                                 ProjectFieldMatch = 3;
                                 //match += ProjectFieldMatch;
                             }
-                            if (numberOfProjectWithField > 5 && numberOfProjectWithField < 10)
+                            if (numberOfProjectWithField >= 5 && numberOfProjectWithField < 10)
                             {
                                 ProjectFieldMatch = 6;
                                 //match += ProjectFieldMatch;
@@ -1015,11 +1015,11 @@ namespace ESMS.BackendAPI.Services.Employees
                     {
                         ProjectTypeMatch = 0;
                     }
-                    if (numberOfProjectWithType > 2 && numberOfProjectWithType < 5)
+                    if (numberOfProjectWithType >=1  && numberOfProjectWithType < 5)
                     {
                         ProjectTypeMatch = 3;
                     }
-                    if (numberOfProjectWithType > 5 && numberOfProjectWithType < 10)
+                    if (numberOfProjectWithType >= 5 && numberOfProjectWithType < 10)
                     {
                         ProjectTypeMatch = 6;
                     }
@@ -1035,11 +1035,11 @@ namespace ESMS.BackendAPI.Services.Employees
                     {
                         ProjectFieldMatch = 0;
                     }
-                    if (numberOfProjectWithField > 2 && numberOfProjectWithField < 5)
+                    if (numberOfProjectWithField >= 1 && numberOfProjectWithField < 5)
                     {
                         ProjectFieldMatch = 3;
                     }
-                    if (numberOfProjectWithField > 5 && numberOfProjectWithField < 10)
+                    if (numberOfProjectWithField >= 5 && numberOfProjectWithField < 10)
                     {
                         ProjectFieldMatch = 6;
                     }
