@@ -49,6 +49,10 @@ namespace ESMS.BackendAPI.Services.Projects
                 var check = true;
                 if (DateTime.Compare(project.DateBegin, dateBegin) != 0 || DateTime.Compare(project.DateEstimatedEnd, dateEstimatedEnd) != 0)
                 {
+                    if (DateTime.Compare(dateBegin, DateTime.Today.AddMonths(1)) < 0)
+                    {
+                        return new ApiErrorResult<int>("dateBegin : Date begin must be after today at least 1 month");
+                    }
                     if (DateTime.Compare(dateBegin, dateEstimatedEnd.AddDays(-30)) > 0)
                     {
                         return new ApiErrorResult<int>("dateEstimatedEnd : Date end must be after date begin at least 30 days");
@@ -122,6 +126,10 @@ namespace ESMS.BackendAPI.Services.Projects
                         DateEstimatedEnd = x.DateEstimatedEnd
                     }).ToListAsync();
                 var check = true;
+                if (DateTime.Compare(dateBegin, DateTime.Today.AddMonths(1)) < 0)
+                {
+                    return new ApiErrorResult<int>("dateBegin : Date begin must be after today at least 1 month");
+                }
                 if (DateTime.Compare(dateBegin, dateEstimatedEnd.AddDays(-30)) > 0)
                 {
                     return new ApiErrorResult<int>("dateEstimatedEnd : Date end must be after date begin at least 30 days");
@@ -1160,7 +1168,21 @@ namespace ESMS.BackendAPI.Services.Projects
                     message = "Position " + position.Name + " is not enable";
                     return new ApiErrorResult<string>(message);
                 }
-                if (pos.SoftSkillIDs != null)
+                foreach (var hardSkill in pos.HardSkills)
+                {
+                    var skill = await _context.Skills.FindAsync(hardSkill.HardSkillID);
+                    if (!skill.Status)
+                    {
+                        message = "Skill " + skill.SkillName + " is not enable";
+                        return new ApiErrorResult<string>(message);
+                    }
+                }
+                foreach (var lang in pos.Language)
+                {
+                    var language = await _context.Languages.FindAsync(lang.LangID);
+                    if (language == null) return new ApiErrorResult<string>("Language not found");
+                }
+                if (pos.SoftSkillIDs.Count() != 0)
                 {
                     foreach (var id in pos.SoftSkillIDs)
                     {
@@ -1170,15 +1192,6 @@ namespace ESMS.BackendAPI.Services.Projects
                             message = "Skill " + skill.SkillName + " is not enable";
                             return new ApiErrorResult<string>(message);
                         }
-                    }
-                }
-                foreach (var hardSkill in pos.HardSkills)
-                {
-                    var skill = await _context.Skills.FindAsync(hardSkill.HardSkillID);
-                    if (!skill.Status)
-                    {
-                        message = "Skill " + skill.SkillName + " is not enable";
-                        return new ApiErrorResult<string>(message);
                     }
                 }
             }
