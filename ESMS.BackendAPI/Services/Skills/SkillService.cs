@@ -10,6 +10,8 @@ using ESMS.BackendAPI.ViewModels.Common;
 using ESMS.BackendAPI.ViewModels.Skill;
 using ESMS.BackendAPI.ViewModels.Certification;
 
+using ESMS.BackendAPI.Ultilities;
+
 namespace ESMS.BackendAPI.Services.Skills
 {
     public class SkillService : ISkillService
@@ -56,11 +58,18 @@ namespace ESMS.BackendAPI.Services.Skills
 
         public async Task<ApiResult<bool>> Create(SkillCreateRequest request)
         {
-            var checkName = _context.Skills.Where(x => x.SkillName.Equals(request.SkillName))
-                .Select(x => new Skill()).FirstOrDefault();
+            UltilitiesService ultilities = new UltilitiesService();
+            Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
+            var checkName = await _context.Skills.Where(x => x.SkillName.Equals(request.SkillName))
+                .Select(x => new Skill()).FirstOrDefaultAsync();
             if (checkName != null)
             {
-                return new ApiErrorResult<bool>("This skill name already exist");
+                ultilities.AddOrUpdateError(errors, "SkillName", "This skill name already exist");
+                //return new ApiErrorResult<bool>("This skill name already exist");
+            }
+            if (errors.Count() > 0)
+            {
+                return new ApiErrorResult<bool>(errors);
             }
             var skill = new Skill()
             {
@@ -250,15 +259,22 @@ namespace ESMS.BackendAPI.Services.Skills
 
         public async Task<ApiResult<bool>> Update(int skillID, SkillUpdateRequest request)
         {
+            UltilitiesService ultilities = new UltilitiesService();
+            Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var skill = _context.Skills.Find(skillID);
             if (skill == null) return new ApiErrorResult<bool>("Skill does not exist");
             if (!skill.SkillName.Equals(request.SkillName))
             {
-                var checkName = _context.Skills.Where(x => x.SkillName.Equals(request.SkillName))
-                .Select(x => new Skill()).FirstOrDefault();
+                var checkName = await _context.Skills.Where(x => x.SkillName.Equals(request.SkillName))
+                .Select(x => new Skill()).FirstOrDefaultAsync();
                 if (checkName != null)
                 {
-                    return new ApiErrorResult<bool>("This skill name already exist");
+                    ultilities.AddOrUpdateError(errors, "SkillName", "This skill name already exist");
+                    //return new ApiErrorResult<bool>("This skill name already exist");
+                }
+                if (errors.Count() > 0)
+                {
+                    return new ApiErrorResult<bool>(errors);
                 }
                 skill.SkillName = request.SkillName;
             }
