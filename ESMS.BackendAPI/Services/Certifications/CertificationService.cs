@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ESMS.BackendAPI.ViewModels.Certification;
 using ESMS.BackendAPI.ViewModels.Common;
+using ESMS.BackendAPI.Ultilities;
 
 namespace ESMS.BackendAPI.Services.Certifications
 {
@@ -47,11 +48,18 @@ namespace ESMS.BackendAPI.Services.Certifications
 
         public async Task<ApiResult<bool>> Create(CertificationCreateRequest request)
         {
-            var checkName = _context.Certifications.Where(x => x.CertificationName.Equals(request.CertificationName))
-                .Select(x => new Certification()).FirstOrDefault();
+            UltilitiesService ultilities = new UltilitiesService();
+            Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
+            var checkName = await _context.Certifications.Where(x => x.CertificationName.Equals(request.CertificationName))
+                .Select(x => new Certification()).FirstOrDefaultAsync();
             if (checkName != null)
             {
-                return new ApiErrorResult<bool>("This certification name already exists");
+                ultilities.AddOrUpdateError(errors, "CertificationName", "This certification name already exists");
+                //return new ApiErrorResult<bool>("This certification name already exists");
+            }
+            if (errors.Count() > 0)
+            {
+                return new ApiErrorResult<bool>(errors);
             }
             var certification = new Certification()
             {
@@ -137,20 +145,24 @@ namespace ESMS.BackendAPI.Services.Certifications
 
         public async Task<ApiResult<bool>> Update(int certificationID, CertificationUpdateRequest request)
         {
-            var certification = _context.Certifications.Find(certificationID);
+            UltilitiesService ultilities = new UltilitiesService();
+            Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
+            var certification = await _context.Certifications.FindAsync(certificationID);
             if (certification == null) return new ApiErrorResult<bool>("Certification does not exist");
             if (!certification.CertificationName.Equals(request.CertificationName))
             {
-                var checkName = _context.Certifications.Where(x => x.CertificationName.Equals(request.CertificationName))
-                    .Select(x => new Certification()).FirstOrDefault();
+                var checkName = await _context.Certifications.Where(x => x.CertificationName.Equals(request.CertificationName))
+                    .Select(x => new Certification()).FirstOrDefaultAsync();
                 if (checkName != null)
                 {
-                    return new ApiErrorResult<bool>("this certification name already exists");
+                    ultilities.AddOrUpdateError(errors, "CertificationName", "This certification name already exists");
+                    //return new ApiErrorResult<bool>("this certification name already exists");
                 }
-                else
+                if (errors.Count() > 0)
                 {
-                    certification.CertificationName = request.CertificationName;
+                    return new ApiErrorResult<bool>(errors);
                 }
+                certification.CertificationName = request.CertificationName;
             }
             certification.Description = request.Description;
             certification.SkillID = request.SkillID;
