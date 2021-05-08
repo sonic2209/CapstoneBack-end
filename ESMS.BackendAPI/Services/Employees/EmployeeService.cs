@@ -114,7 +114,8 @@ namespace ESMS.BackendAPI.Services.Employees
                 UserName = request.UserName,
                 PhoneNumber = request.PhoneNumber,
             };
-            var result = await _userManager.CreateAsync(user, request.Password);
+            string password = "Abcd1234$";
+            var result = await _userManager.CreateAsync(user, password);
             if (result.Succeeded)
             {
                 if (await _userManager.IsInRoleAsync(user, request.RoleName) == false)
