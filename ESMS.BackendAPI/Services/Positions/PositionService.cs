@@ -1,4 +1,5 @@
-﻿using ESMS.BackendAPI.ViewModels.Common;
+﻿using ESMS.BackendAPI.Ultilities;
+using ESMS.BackendAPI.ViewModels.Common;
 using ESMS.BackendAPI.ViewModels.Position;
 using ESMS.Data.EF;
 using ESMS.Data.Entities;
@@ -47,11 +48,18 @@ namespace ESMS.BackendAPI.Services.Positions
 
         public async Task<ApiResult<bool>> Create(PositionCreateRequest request)
         {
-            var checkName = _context.Positions.Where(x => x.Name.Equals(request.Name))
-                .Select(x => new Position()).FirstOrDefault();
+            UltilitiesService ultilities = new UltilitiesService();
+            Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
+            var checkName = await _context.Positions.Where(x => x.Name.Equals(request.Name))
+                .Select(x => new Position()).FirstOrDefaultAsync();
             if (checkName != null)
             {
-                return new ApiErrorResult<bool>("This position name already exist");
+                ultilities.AddOrUpdateError(errors, "Name", "This position name already exist");
+                //return new ApiErrorResult<bool>("This position name already exist");
+            }
+            if (errors.Count() > 0)
+            {
+                return new ApiErrorResult<bool>(errors);
             }
             var position = new Position()
             {
@@ -127,20 +135,24 @@ namespace ESMS.BackendAPI.Services.Positions
 
         public async Task<ApiResult<bool>> Update(int positionID, PositionUpdateRequest request)
         {
+            UltilitiesService ultilities = new UltilitiesService();
+            Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var position = await _context.Positions.FindAsync(positionID);
             if (position == null) new ApiErrorResult<bool>("Position does not exist");
             if (!position.Name.Equals(request.Name))
             {
-                var checkName = _context.Positions.Where(x => x.Name.Equals(request.Name))
-                 .Select(x => new Position()).FirstOrDefault();
+                var checkName = await _context.Positions.Where(x => x.Name.Equals(request.Name))
+                 .Select(x => new Position()).FirstOrDefaultAsync();
                 if (checkName != null)
                 {
-                    return new ApiErrorResult<bool>("This position name already exist");
+                    ultilities.AddOrUpdateError(errors, "Name", "This position name already exist");
+                    //return new ApiErrorResult<bool>("This position name already exist");
                 }
-                else
+                if (errors.Count() > 0)
                 {
-                    position.Name = request.Name;
+                    return new ApiErrorResult<bool>(errors);
                 }
+                position.Name = request.Name;
             }
             position.Description = request.Description;
 

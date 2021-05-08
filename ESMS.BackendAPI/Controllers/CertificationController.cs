@@ -2,6 +2,7 @@
 using ESMS.BackendAPI.ViewModels.Certification;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -46,7 +47,7 @@ namespace ESMS.BackendAPI.Controllers
 
             if (!result.IsSuccessed)
             {
-                return BadRequest(result);
+                return StatusCode(StatusCodes.Status403Forbidden, result);
             }
             return Ok(result);
         }
@@ -63,7 +64,7 @@ namespace ESMS.BackendAPI.Controllers
 
             if (!result.IsSuccessed)
             {
-                return BadRequest(result);
+                return StatusCode(StatusCodes.Status403Forbidden, result);
             }
             return Ok(result);
         }

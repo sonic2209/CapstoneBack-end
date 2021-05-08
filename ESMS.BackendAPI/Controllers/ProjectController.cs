@@ -3,6 +3,7 @@ using ESMS.BackendAPI.ViewModels.Position;
 using ESMS.BackendAPI.ViewModels.Project;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -11,7 +12,7 @@ namespace ESMS.BackendAPI.Controllers
     [EnableCors("MyPolicy")]
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class ProjectController : ControllerBase
     {
         private readonly IProjectService _projectService;
@@ -103,9 +104,12 @@ namespace ESMS.BackendAPI.Controllers
             {
                 return BadRequest();
             }
-            var projectID = await _projectService.Create(empID, request);
-
-            return Ok(projectID);
+            var result = await _projectService.Create(empID, request);
+            if (!result.IsSuccessed)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, result);
+            }
+            return Ok(result);
         }
 
         //Put:http://localhost/api/project/id
@@ -119,7 +123,7 @@ namespace ESMS.BackendAPI.Controllers
             var result = await _projectService.Update(projectID, request);
             if (!result.IsSuccessed)
             {
-                return BadRequest(result);
+                return StatusCode(StatusCodes.Status403Forbidden, result);
             }
             return Ok(result);
         }
