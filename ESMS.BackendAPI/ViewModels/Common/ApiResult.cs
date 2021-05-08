@@ -9,6 +9,7 @@ namespace ESMS.BackendAPI.ViewModels.Common
         public bool IsSuccessed { get; set; }
 
         public string Message { get; set; }
+        public Dictionary<string, List<string>> Errors { get;set;}
 
         public T ResultObj { get; set; }
     }

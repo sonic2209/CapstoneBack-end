@@ -1,4 +1,5 @@
 ﻿using ESMS.BackendAPI.Services.Projects;
+using ESMS.BackendAPI.Ultilities;
 using ESMS.BackendAPI.ViewModels.Certification;
 using ESMS.BackendAPI.ViewModels.Common;
 using ESMS.BackendAPI.ViewModels.Employees;
@@ -86,14 +87,22 @@ namespace ESMS.BackendAPI.Services.Employees
 
         public async Task<ApiResult<string>> Create(EmpCreateRequest request)
         {
+            UltilitiesService ultilities = new UltilitiesService();
+            Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var user = await _userManager.FindByNameAsync(request.UserName);
             if (user != null)
             {
-                return new ApiErrorResult<string>("Username: This username already exists");
+                ultilities.AddOrUpdateError(errors, "Username", "This username alreadys exists");
+                //return new ApiErrorResult<string>("Username: This username already exists");
             }
             if (await _userManager.FindByEmailAsync(request.Email) != null)
             {
-                return new ApiErrorResult<string>("Email: This email already exists");
+                ultilities.AddOrUpdateError(errors, "Email", "This email already exists");
+                //return new ApiErrorResult<string>("Email: This email already exists");
+            }
+            if (errors.Count > 0)
+            {
+                return new ApiErrorResult<string>(errors);
             }
             user = new Employee()
             {
@@ -221,7 +230,7 @@ namespace ESMS.BackendAPI.Services.Employees
         {
             var user = await _userManager.FindByIdAsync(id.ToString());
             if (user == null)
-            {
+            {              
                 return new ApiErrorResult<EmpVm>("User does not exist");
             }
             var roles = await _userManager.GetRolesAsync(user);

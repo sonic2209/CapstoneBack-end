@@ -4,6 +4,7 @@ using ESMS.BackendAPI.ViewModels.Employees;
 using ESMS.ViewModels.System.Employees;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ESMS.BackendAPI.Controllers
@@ -44,7 +45,7 @@ namespace ESMS.BackendAPI.Controllers
             var result = await _userService.Create(request);
             if (!result.IsSuccessed)
             {
-                return BadRequest(result);
+                return StatusCode(StatusCodes.Status403Forbidden, result);
             }
             return Ok(result);
         }

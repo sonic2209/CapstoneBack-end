@@ -7,7 +7,7 @@ namespace ESMS.BackendAPI.ViewModels.Common
     public class ApiErrorResult<T> : ApiResult<T>
     {
         public string[] ValidationErrors { get; set; }
-
+        
         public ApiErrorResult()
         {
         }
@@ -22,6 +22,11 @@ namespace ESMS.BackendAPI.ViewModels.Common
         {
             IsSuccessed = false;
             ValidationErrors = validationErrors;
+        }
+        public ApiErrorResult(Dictionary<string, List<string>> errors)
+        {
+            IsSuccessed = false;
+            Errors = errors;          
         }
     }
 }
