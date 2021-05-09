@@ -113,7 +113,7 @@ namespace ESMS.BackendAPI.Controllers
             var result = await _userService.AddEmpPosition(empID, request);
             if (!result.IsSuccessed)
             {
-                return BadRequest(result);
+                return StatusCode(StatusCodes.Status400BadRequest, result);
             }
             return Ok(result);
         }
@@ -136,6 +136,10 @@ namespace ESMS.BackendAPI.Controllers
         public async Task<IActionResult> UpdateEmpInfo(string empID, [FromBody] AddEmpPositionRequest request)
         {
             var result = await _userService.UpdateEmpInfo(empID, request);
+            if (!result.IsSuccessed)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, result);
+            }
             return Ok(result);
         }
     }
