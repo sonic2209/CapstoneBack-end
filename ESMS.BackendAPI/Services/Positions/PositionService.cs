@@ -48,13 +48,12 @@ namespace ESMS.BackendAPI.Services.Positions
 
         public async Task<ApiResult<bool>> Create(PositionCreateRequest request)
         {
-            UltilitiesService ultilities = new UltilitiesService();
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var checkName = await _context.Positions.Where(x => x.Name.Equals(request.Name))
                 .Select(x => new Position()).FirstOrDefaultAsync();
             if (checkName != null)
             {
-                ultilities.AddOrUpdateError(errors, "Name", "This position name already exist");
+                UltilitiesService.AddOrUpdateError(errors, "Name", "This position name already exist");
                 //return new ApiErrorResult<bool>("This position name already exist");
             }
             if (errors.Count() > 0)
@@ -135,7 +134,6 @@ namespace ESMS.BackendAPI.Services.Positions
 
         public async Task<ApiResult<bool>> Update(int positionID, PositionUpdateRequest request)
         {
-            UltilitiesService ultilities = new UltilitiesService();
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var position = await _context.Positions.FindAsync(positionID);
             if (position == null) new ApiErrorResult<bool>("Position does not exist");
@@ -145,7 +143,7 @@ namespace ESMS.BackendAPI.Services.Positions
                  .Select(x => new Position()).FirstOrDefaultAsync();
                 if (checkName != null)
                 {
-                    ultilities.AddOrUpdateError(errors, "Name", "This position name already exist");
+                    UltilitiesService.AddOrUpdateError(errors, "Name", "This position name already exist");
                     //return new ApiErrorResult<bool>("This position name already exist");
                 }
                 if (errors.Count() > 0)

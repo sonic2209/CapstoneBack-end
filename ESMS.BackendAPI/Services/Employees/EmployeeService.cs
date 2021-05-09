@@ -86,18 +86,17 @@ namespace ESMS.BackendAPI.Services.Employees
         }
 
         public async Task<ApiResult<string>> Create(EmpCreateRequest request)
-        {
-            UltilitiesService ultilities = new UltilitiesService();
+        {            
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var user = await _userManager.FindByNameAsync(request.UserName);
             if (user != null)
             {
-                ultilities.AddOrUpdateError(errors, "Username", "This username alreadys exists");
+                UltilitiesService.AddOrUpdateError(errors, "Username", "This username alreadys exists");
                 //return new ApiErrorResult<string>("Username: This username already exists");
             }
             if (await _userManager.FindByEmailAsync(request.Email) != null)
             {
-                ultilities.AddOrUpdateError(errors, "Email", "This email already exists");
+                UltilitiesService.AddOrUpdateError(errors, "Email", "This email already exists");
                 //return new ApiErrorResult<string>("Email: This email already exists");
             }
             if (errors.Count > 0)
@@ -115,6 +114,7 @@ namespace ESMS.BackendAPI.Services.Employees
                 PhoneNumber = request.PhoneNumber,
             };
             string password = "Abcd1234$";
+            
             var result = await _userManager.CreateAsync(user, password);
             if (result.Succeeded)
             {
@@ -126,7 +126,10 @@ namespace ESMS.BackendAPI.Services.Employees
                 string empID = user.Id;
                 return new ApiSuccessResult<string>(empID);
             }
-
+            string errorMessage = null;
+            foreach (var error in result.Errors)
+            {
+            }
             return new ApiErrorResult<string>("Register failed");
         }
 
