@@ -1824,7 +1824,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                         {
                                             EmpID = empID,
                                             CertificationID = certification.CertiID,
-                                            DateTaken = DateTime.Parse(certification.DateTaken),
+                                            DateTaken = dateTaken,
                                         };
                                         if (certification.DateEnd.Equals(""))
                                         {
@@ -1873,7 +1873,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                                         }
                                                         //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
                                                     }
-                                                    if (DateTime.Compare(DateTime.Parse(certification.DateEnd).Date, DateTime.Today) < 0)
+                                                    if (DateTime.Compare(dateEnd.Date, DateTime.Today) < 0)
                                                     {
                                                         if (checkHardSkill == false)
                                                         {
