@@ -58,18 +58,17 @@ namespace ESMS.BackendAPI.Services.Skills
 
         public async Task<ApiResult<bool>> Create(SkillCreateRequest request)
         {
-            UltilitiesService ultilities = new UltilitiesService();
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var checkName = await _context.Skills.Where(x => x.SkillName.Equals(request.SkillName))
                 .Select(x => new Skill()).FirstOrDefaultAsync();
             if (checkName != null)
             {
-                ultilities.AddOrUpdateError(errors, "SkillName", "This skill name already exist");
+                UltilitiesService.AddOrUpdateError(errors, "SkillName", "This skill name already exist");
                 //return new ApiErrorResult<bool>("This skill name already exist");
             }
             if (request.SkillType != (int)SkillType.HardSkill && request.SkillType != (int)SkillType.SoftSkill)
             {
-                ultilities.AddOrUpdateError(errors, "SkillType", "Please select skill type(hard skill or soft skill)");
+                UltilitiesService.AddOrUpdateError(errors, "SkillType", "Please select skill type(hard skill or soft skill)");
             }
             if (errors.Count() > 0)
             {
@@ -263,7 +262,6 @@ namespace ESMS.BackendAPI.Services.Skills
 
         public async Task<ApiResult<bool>> Update(int skillID, SkillUpdateRequest request)
         {
-            UltilitiesService ultilities = new UltilitiesService();
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var skill = _context.Skills.Find(skillID);
             if (skill == null) return new ApiErrorResult<bool>("Skill does not exist");
@@ -273,13 +271,13 @@ namespace ESMS.BackendAPI.Services.Skills
                 .Select(x => new Skill()).FirstOrDefaultAsync();
                 if (checkName != null)
                 {
-                    ultilities.AddOrUpdateError(errors, "SkillName", "This skill name already exist");
+                    UltilitiesService.AddOrUpdateError(errors, "SkillName", "This skill name already exist");
                     //return new ApiErrorResult<bool>("This skill name already exist");
                 }
             }
             if (request.SkillType != (int)SkillType.HardSkill && request.SkillType != (int)SkillType.SoftSkill)
             {
-                ultilities.AddOrUpdateError(errors, "SkillType", "Please select skill type(hard skill or soft skill)");
+                UltilitiesService.AddOrUpdateError(errors, "SkillType", "Please select skill type(hard skill or soft skill)");
             }
             else if (!skill.SkillType.Equals((SkillType)request.SkillType))
             {

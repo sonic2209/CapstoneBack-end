@@ -48,28 +48,27 @@ namespace ESMS.BackendAPI.Services.Certifications
 
         public async Task<ApiResult<bool>> Create(CertificationCreateRequest request)
         {
-            UltilitiesService ultilities = new UltilitiesService();
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var checkName = await _context.Certifications.Where(x => x.CertificationName.Equals(request.CertificationName))
                 .Select(x => new Certification()).FirstOrDefaultAsync();
             if (checkName != null)
             {
-                ultilities.AddOrUpdateError(errors, "CertificationName", "This certification name already exists");
+                UltilitiesService.AddOrUpdateError(errors, "CertificationName", "This certification name already exists");
                 //return new ApiErrorResult<bool>("This certification name already exists");
             }
             if (request.SkillID == 0)
             {
-                ultilities.AddOrUpdateError(errors, "SkillID", "Please select skill");
+                UltilitiesService.AddOrUpdateError(errors, "SkillID", "Please select skill");
             }
             else
             {
                 var skill = await _context.Skills.FindAsync(request.SkillID);
-                if (skill == null) ultilities.AddOrUpdateError(errors, "SkillID", "Skill not found");
+                if (skill == null) UltilitiesService.AddOrUpdateError(errors, "SkillID", "Skill not found");
             }
 
             if (request.CertiLevel == 0)
             {
-                ultilities.AddOrUpdateError(errors, "CertiLevel", "Please select certification level");
+                UltilitiesService.AddOrUpdateError(errors, "CertiLevel", "Please select certification level");
             }
 
             if (errors.Count() > 0)
@@ -160,7 +159,6 @@ namespace ESMS.BackendAPI.Services.Certifications
 
         public async Task<ApiResult<bool>> Update(int certificationID, CertificationUpdateRequest request)
         {
-            UltilitiesService ultilities = new UltilitiesService();
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var certification = await _context.Certifications.FindAsync(certificationID);
             if (certification == null) return new ApiErrorResult<bool>("Certification does not exist");
@@ -170,23 +168,23 @@ namespace ESMS.BackendAPI.Services.Certifications
                     .Select(x => new Certification()).FirstOrDefaultAsync();
                 if (checkName != null)
                 {
-                    ultilities.AddOrUpdateError(errors, "CertificationName", "This certification name already exists");
+                    UltilitiesService.AddOrUpdateError(errors, "CertificationName", "This certification name already exists");
                     //return new ApiErrorResult<bool>("this certification name already exists");
                 }
             }
             if (request.SkillID == 0)
             {
-                ultilities.AddOrUpdateError(errors, "SkillID", "Please select skill");
+                UltilitiesService.AddOrUpdateError(errors, "SkillID", "Please select skill");
             }
             else
             {
                 var skill = await _context.Skills.FindAsync(request.SkillID);
-                if (skill == null) ultilities.AddOrUpdateError(errors, "SkillID", "Skill not found");
+                if (skill == null) UltilitiesService.AddOrUpdateError(errors, "SkillID", "Skill not found");
             }
 
             if (request.CertiLevel == 0)
             {
-                ultilities.AddOrUpdateError(errors, "CertiLevel", "Please select certification level");
+                UltilitiesService.AddOrUpdateError(errors, "CertiLevel", "Please select certification level");
             }
 
             if (errors.Count() > 0)
