@@ -86,7 +86,7 @@ namespace ESMS.BackendAPI.Services.Employees
         }
 
         public async Task<ApiResult<string>> Create(EmpCreateRequest request)
-        {            
+        {
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var user = await _userManager.FindByNameAsync(request.UserName);
             if (user != null)
@@ -114,7 +114,7 @@ namespace ESMS.BackendAPI.Services.Employees
                 PhoneNumber = request.PhoneNumber,
             };
             string password = "Abcd1234$";
-            
+
             var result = await _userManager.CreateAsync(user, password);
             if (result.Succeeded)
             {
@@ -135,111 +135,290 @@ namespace ESMS.BackendAPI.Services.Employees
 
         public async Task<ApiResult<bool>> AddEmpPosition(string empID, AddEmpPositionRequest request)
         {
-            foreach (var hardSkill in request.HardSkills)
+            Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
+            if (request.HardSkills.Count() == 0)
             {
-                var skill = await _context.Skills.FindAsync(hardSkill.SkillID);
-                if (skill == null) return new ApiErrorResult<bool>("HardSkill not found");
-                if (skill.Status == false) return new ApiErrorResult<bool>("Skill:" + skill.SkillName + " is disable");
-                if (hardSkill.SkillLevel <= 0)
+                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Employee must have at least 1 hard skill");
+            }
+            else
+            {
+                bool checkHardSkill = false;
+                foreach (var hardSkill in request.HardSkills)
                 {
-                    return new ApiErrorResult<bool>("Please select level for skill " + skill.SkillName);
-                }
-                if (hardSkill.SkillLevel != (int)SkillLevel.BasicKnowledge
-                   && hardSkill.SkillLevel != (int)SkillLevel.LimitedExperience
-                   && hardSkill.SkillLevel != (int)SkillLevel.Practical
-                   && hardSkill.SkillLevel != (int)SkillLevel.AppliedTheory
-                   && hardSkill.SkillLevel != (int)SkillLevel.RecognizedAuthority)
-                {
-                    return new ApiErrorResult<bool>("Please select level from select box only for skill " + skill.SkillName);
-                }
-                var empHardSkill = new EmpSkill()
-                {
-                    EmpID = empID,
-                    SkillID = hardSkill.SkillID,
-                    SkillLevel = (SkillLevel)hardSkill.SkillLevel,
-                    DateStart = DateTime.Now
-                };
-                _context.EmpSkills.Add(empHardSkill);
-                if (hardSkill.EmpCertifications.Count() != 0)
-                {
-                    foreach (var certification in hardSkill.EmpCertifications)
+                    if (hardSkill.SkillID == 0)
                     {
-                        if (certification.CertiID == 0)
+                        if (checkHardSkill == false)
                         {
-                            return new ApiErrorResult<bool>("Please select certification for skill " + skill.SkillName);
+                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Please select hard skill");
+                            checkHardSkill = true;
                         }
-                        var certi = await _context.Certifications.FindAsync(certification.CertiID);
-                        if (certi == null) return new ApiErrorResult<bool>("Certification for skill " + skill.SkillName + " not found");
-                        if (certi.Status == false) return new ApiErrorResult<bool>("Certification:" + certi.CertificationName + " for skill " + skill.SkillName + " is disable");
-                        if (certification.DateTaken.Equals(""))
+                    }
+                    var skill = await _context.Skills.FindAsync(hardSkill.SkillID);
+                    if (skill == null)
+                    {
+                        if (checkHardSkill == false)
                         {
-                            return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - Please input date taken");
+                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "HardSkill not found");
+                            checkHardSkill = true;
                         }
-                        DateTime dateTaken = DateTime.Parse(certification.DateTaken);
-                        if (DateTime.Compare(dateTaken, DateTime.Today) > 0)
+                        //return new ApiErrorResult<bool>("HardSkill not found");
+                    }
+                    else
+                    {
+                        if (skill.Status == false)
                         {
-                            return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is after today");
+                            if (checkHardSkill == false)
+                            {
+                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Skill:" + skill.SkillName + " is disable");
+                                checkHardSkill = true;
+                            }
+                            //return new ApiErrorResult<bool>("Skill:" + skill.SkillName + " is disable");
                         }
-                        var empCertification = new EmpCertification()
+                        if (hardSkill.SkillLevel <= 0)
+                        {
+                            if (checkHardSkill == false)
+                            {
+                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Please select level for skill " + skill.SkillName);
+                                checkHardSkill = true;
+                            }
+                            //return new ApiErrorResult<bool>("Please select level for skill " + skill.SkillName);
+                        }
+                        if (hardSkill.SkillLevel != (int)SkillLevel.BasicKnowledge
+                           && hardSkill.SkillLevel != (int)SkillLevel.LimitedExperience
+                           && hardSkill.SkillLevel != (int)SkillLevel.Practical
+                           && hardSkill.SkillLevel != (int)SkillLevel.AppliedTheory
+                           && hardSkill.SkillLevel != (int)SkillLevel.RecognizedAuthority)
+                        {
+                            if (checkHardSkill == false)
+                            {
+                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Please select level from select box only for skill " + skill.SkillName);
+                                checkHardSkill = true;
+                            }
+                            //return new ApiErrorResult<bool>("Please select level from select box only for skill " + skill.SkillName);
+                        }
+                        var empHardSkill = new EmpSkill()
                         {
                             EmpID = empID,
-                            CertificationID = certification.CertiID,
-                            DateTaken = DateTime.Parse(certification.DateTaken)
+                            SkillID = hardSkill.SkillID,
+                            SkillLevel = (SkillLevel)hardSkill.SkillLevel,
+                            DateStart = DateTime.Now
                         };
-                        if (certification.DateEnd.Equals(""))
+                        _context.EmpSkills.Add(empHardSkill);
+                        if (hardSkill.EmpCertifications.Count() != 0)
                         {
-                            empCertification.DateEnd = null;
-                        }
-                        else
-                        {
-                            if (DateTime.Compare(empCertification.DateTaken.Date, DateTime.Parse(certification.DateEnd).Date) > 0)
+                            foreach (var certification in hardSkill.EmpCertifications)
                             {
-                                return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
+                                DateTime dateTaken = new DateTime();
+                                DateTime dateEnd = new DateTime();
+                                if (certification.CertiID == 0)
+                                {
+                                    if (checkHardSkill == false)
+                                    {
+                                        UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Please select certification for skill " + skill.SkillName);
+                                        checkHardSkill = true;
+                                    }
+                                    //return new ApiErrorResult<bool>("Please select certification for skill " + skill.SkillName);
+                                }
+                                var certi = await _context.Certifications.FindAsync(certification.CertiID);
+                                if (certi == null)
+                                {
+                                    if (checkHardSkill == false)
+                                    {
+                                        UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification for skill " + skill.SkillName + " not found");
+                                        checkHardSkill = true;
+                                    }
+                                    //return new ApiErrorResult<bool>("Certification for skill " + skill.SkillName + " not found");
+                                }
+                                else
+                                {
+                                    if (certi.Status == false)
+                                    {
+                                        if (checkHardSkill == false)
+                                        {
+                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification:" + certi.CertificationName + " for skill " + skill.SkillName + " is disable");
+                                            checkHardSkill = true;
+                                        }
+                                        //return new ApiErrorResult<bool>("Certification:" + certi.CertificationName + " for skill " + skill.SkillName + " is disable");
+                                    }
+                                    if (certification.DateTaken.Equals(""))
+                                    {
+                                        if (checkHardSkill == false)
+                                        {
+                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - Please input date taken");
+                                            checkHardSkill = true;
+                                        }
+                                        //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - Please input date taken");
+                                    }
+                                    else if (!DateTime.TryParse(certification.DateTaken, out dateTaken))
+                                    {
+                                        if (checkHardSkill == false)
+                                        {
+                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is wrong format");
+                                            checkHardSkill = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        dateTaken = DateTime.Parse(certification.DateTaken);
+                                    }
+
+                                    if (DateTime.Compare(dateTaken, DateTime.Today) > 0)
+                                    {
+                                        if (checkHardSkill == false)
+                                        {
+                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is after today");
+                                            checkHardSkill = true;
+                                        }
+                                        //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is after today");
+                                    }
+                                    var empCertification = new EmpCertification()
+                                    {
+                                        EmpID = empID,
+                                        CertificationID = certification.CertiID,
+                                        DateTaken = dateTaken
+                                    };
+                                    if (certification.DateEnd.Equals(""))
+                                    {
+                                        empCertification.DateEnd = null;
+                                    }
+                                    else
+                                    {
+                                        if (!DateTime.TryParse(certification.DateEnd, out dateEnd))
+                                        {
+                                            if (checkHardSkill == false)
+                                            {
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date end is wrong format");
+                                                checkHardSkill = true;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            dateEnd = DateTime.Parse(certification.DateEnd);
+                                        }
+                                        if (DateTime.Compare(empCertification.DateTaken.Date, dateEnd.Date) > 0)
+                                        {
+                                            if (checkHardSkill == false)
+                                            {
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
+                                                checkHardSkill = true;
+                                            }
+                                            //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
+                                        }
+                                        if (DateTime.Compare(dateEnd.Date, DateTime.Today) < 0)
+                                        {
+                                            if (checkHardSkill == false)
+                                            {
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
+                                                checkHardSkill = true;
+                                            }
+                                            //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
+                                        }
+                                        empCertification.DateEnd = dateEnd;
+                                    }
+                                    _context.EmpCertifications.Add(empCertification);
+                                }
                             }
-                            if (DateTime.Compare(DateTime.Parse(certification.DateEnd).Date, DateTime.Today) < 0)
-                            {
-                                return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
-                            }
-                            empCertification.DateEnd = DateTime.Parse(certification.DateEnd);
                         }
-                        _context.EmpCertifications.Add(empCertification);
                     }
                 }
             }
-            foreach (var language in request.Languages)
+            if (request.Languages.Count() == 0)
             {
-                if (language.LangID == 0)
-                {
-                    return new ApiErrorResult<bool>("Please select language");
-                }
-                var lang = await _context.Languages.FindAsync(language.LangID);
-                if (lang == null) return new ApiErrorResult<bool>("Language not found");
-                if (language.LangLevel == 0)
-                {
-                    return new ApiErrorResult<bool>("Please select level for language " + lang.LangName);
-                }
-                var empLanguage = new EmpLanguage()
-                {
-                    EmpID = empID,
-                    LangID = language.LangID,
-                    LangLevel = language.LangLevel
-                };
-                _context.EmpLanguages.Add(empLanguage);
+                UltilitiesService.AddOrUpdateError(errors, "Languages", "Employee must have at least 1 language");
             }
-            if (request.SoftSkills.Count() != 0)
+            else
+            {
+                bool checkLanguage = false;
+                foreach (var language in request.Languages)
+                {
+                    if (language.LangID == 0)
+                    {
+                        if (checkLanguage == false)
+                        {
+                            UltilitiesService.AddOrUpdateError(errors, "Languages", "Please select language");
+                            checkLanguage = true;
+                        }
+                        //return new ApiErrorResult<bool>("Please select language");
+                    }
+                    var lang = await _context.Languages.FindAsync(language.LangID);
+                    if (lang == null)
+                    {
+                        if (checkLanguage == false)
+                        {
+                            UltilitiesService.AddOrUpdateError(errors, "Languages", "Language not found");
+                            checkLanguage = true;
+                        }
+                        //return new ApiErrorResult<bool>("Language not found");
+                    }
+                    else
+                    {
+                        if (language.LangLevel == 0)
+                        {
+                            if (checkLanguage == false)
+                            {
+                                UltilitiesService.AddOrUpdateError(errors, "Languages", "Please select level for language " + lang.LangName);
+                                checkLanguage = true;
+                            }
+                            //return new ApiErrorResult<bool>("Please select level for language " + lang.LangName);
+                        }
+                        var empLanguage = new EmpLanguage()
+                        {
+                            EmpID = empID,
+                            LangID = language.LangID,
+                            LangLevel = language.LangLevel
+                        };
+                        _context.EmpLanguages.Add(empLanguage);
+                    }
+                }
+            }
+            if (request.SoftSkills.Count() == 0)
+            {
+                UltilitiesService.AddOrUpdateError(errors, "SoftSkills", "Employee must have at least 1 soft skill");
+            }
+            else
             {
                 foreach (var softSkill in request.SoftSkills)
                 {
-                    var skill = await _context.Skills.FindAsync(softSkill);
-                    if (skill == null) return new ApiErrorResult<bool>("SoftSkill not found");
-                    if (skill.Status == false) return new ApiErrorResult<bool>("Skill:" + skill.SkillName + " is disable");
-                    var empSoftSkill = new EmpSkill()
+                    bool checkSoftSkill = false;
+                    if (softSkill == 0)
                     {
-                        EmpID = empID,
-                        SkillID = softSkill
-                    };
-                    _context.EmpSkills.Add(empSoftSkill);
+                        if (checkSoftSkill == false)
+                        {
+                            UltilitiesService.AddOrUpdateError(errors, "SoftSkills", "Please select soft skill");
+                            checkSoftSkill = true;
+                        }
+                    }
+                    var skill = await _context.Skills.FindAsync(softSkill);
+                    if (skill == null)
+                    {
+                        if (checkSoftSkill == false)
+                        {
+                            UltilitiesService.AddOrUpdateError(errors, "SoftSkills", "SoftSkill not found");
+                        }
+                        //return new ApiErrorResult<bool>("SoftSkill not found");
+                    }
+                    else
+                    {
+                        if (skill.Status == false)
+                        {
+                            if (checkSoftSkill == false)
+                            {
+                                UltilitiesService.AddOrUpdateError(errors, "SoftSkills", "Skill:" + skill.SkillName + " is disable");
+                            }
+                            //return new ApiErrorResult<bool>("Skill:" + skill.SkillName + " is disable");
+                        }
+                        var empSoftSkill = new EmpSkill()
+                        {
+                            EmpID = empID,
+                            SkillID = softSkill
+                        };
+                        _context.EmpSkills.Add(empSoftSkill);
+                    }
                 }
+            }
+            if (errors.Count() > 0)
+            {
+                return new ApiErrorResult<bool>(errors);
             }
             var result = await _context.SaveChangesAsync();
             if (result == 0)
@@ -1379,6 +1558,7 @@ namespace ESMS.BackendAPI.Services.Employees
 
         public async Task<ApiResult<bool>> UpdateEmpInfo(string empID, AddEmpPositionRequest request)
         {
+            Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var query = from es in _context.EmpSkills
                         join s in _context.Skills on es.SkillID equals s.SkillID
                         select new { es, s };
@@ -1394,17 +1574,19 @@ namespace ESMS.BackendAPI.Services.Employees
                 }).ToListAsync();
             if (request.HardSkills.Count() == 0)
             {
-                if (listHardSkill.Count() != 0)
-                {
-                    foreach (var skill in listHardSkill)
-                    {
-                        skill.DateEnd = DateTime.Now;
-                        _context.EmpSkills.Update(skill);
-                    }
-                }
+                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Employee must have at least 1 hard skill");
+                //if (listHardSkill.Count() != 0)
+                //{
+                //    foreach (var skill in listHardSkill)
+                //    {
+                //        skill.DateEnd = DateTime.Now;
+                //        _context.EmpSkills.Update(skill);
+                //    }
+                //}
             }
             else
             {
+                bool checkHardSkill = false;
                 foreach (var skill in listHardSkill)
                 {
                     var check = false;
@@ -1421,187 +1603,292 @@ namespace ESMS.BackendAPI.Services.Employees
                         _context.EmpSkills.Update(skill);
                     }
                 }
-                foreach (var sk in request.HardSkills)
+                foreach (var hardSkill in request.HardSkills)
                 {
-                    var skill = await _context.Skills.FindAsync(sk.SkillID);
-                    if (skill == null) return new ApiErrorResult<bool>("HardSkill not found");
-                    if (skill.Status == false) return new ApiErrorResult<bool>("Skill:" + skill.SkillName + " is disable");
-                    if (sk.SkillLevel <= 0)
+                    if (hardSkill.SkillID == 0)
                     {
-                        return new ApiErrorResult<bool>("Please select level for skill " + skill.SkillName);
-                    }
-                    if (sk.SkillLevel != (int)SkillLevel.BasicKnowledge
-                       && sk.SkillLevel != (int)SkillLevel.LimitedExperience
-                       && sk.SkillLevel != (int)SkillLevel.Practical
-                       && sk.SkillLevel != (int)SkillLevel.AppliedTheory
-                       && sk.SkillLevel != (int)SkillLevel.RecognizedAuthority)
-                    {
-                        return new ApiErrorResult<bool>("Please select level from select box only for skill " + skill.SkillName);
-                    }
-                    var checkEmpSkill = await _context.EmpSkills.FindAsync(empID, sk.SkillID);
-                    if (checkEmpSkill == null)
-                    {
-                        var empSkill = new EmpSkill()
+                        if (checkHardSkill == false)
                         {
-                            EmpID = empID,
-                            SkillID = sk.SkillID,
-                            SkillLevel = (SkillLevel)sk.SkillLevel,
-                            DateStart = DateTime.Now
-                        };
-                        _context.EmpSkills.Add(empSkill);
+                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Please select hard skill");
+                            checkHardSkill = true;
+                        }
+                    }
+                    var skill = await _context.Skills.FindAsync(hardSkill.SkillID);
+                    if (skill == null)
+                    {
+                        if (checkHardSkill == false)
+                        {
+                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "HardSkill not found");
+                            checkHardSkill = true;
+                        }
+                        //return new ApiErrorResult<bool>("HardSkill not found");
                     }
                     else
                     {
-                        if (checkEmpSkill.DateEnd != null)
+                        if (skill.Status == false)
                         {
-                            checkEmpSkill.DateEnd = null;
-                        }
-                        checkEmpSkill.SkillLevel = (SkillLevel)sk.SkillLevel;
-                        _context.EmpSkills.Update(checkEmpSkill);
-                    }
-                    //Update Certification for that skill
-                    var certiQuery = from ec in _context.EmpCertifications
-                                     join c in _context.Certifications on ec.CertificationID equals c.CertificationID
-                                     select new { ec, c };
-                    var listCerti = await certiQuery.Where(x => x.ec.EmpID.Equals(empID) && x.c.SkillID.Equals(sk.SkillID))
-                                .Select(x => new EmpCertification()
-                                {
-                                    EmpID = x.ec.EmpID,
-                                    CertificationID = x.ec.CertificationID,
-                                    DateTaken = x.ec.DateTaken,
-                                    DateEnd = x.ec.DateEnd
-                                }).ToListAsync();
-                    if (sk.EmpCertifications.Count() == 0)
-                    {
-                        if (listCerti.Count() != 0)
-                        {
-                            foreach (var c in listCerti)
+                            if (checkHardSkill == false)
                             {
-                                _context.EmpCertifications.Remove(c);
+                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Skill:" + skill.SkillName + " is disable");
+                                checkHardSkill = true;
                             }
+                            //return new ApiErrorResult<bool>("Skill:" + skill.SkillName + " is disable");
                         }
-                    }
-                    else
-                    {
-                        if (listCerti.Count() != 0)
+                        if (hardSkill.SkillLevel <= 0)
                         {
-                            foreach (var c in listCerti)
+                            if (checkHardSkill == false)
                             {
-                                var check = false;
-                                foreach (var certi in sk.EmpCertifications)
-                                {
-                                    if (c.CertificationID.Equals(certi.CertiID))
+                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Please select level for skill " + skill.SkillName);
+                                checkHardSkill = true;
+                            }
+                            //return new ApiErrorResult<bool>("Please select level for skill " + skill.SkillName);
+                        }
+                        if (hardSkill.SkillLevel != (int)SkillLevel.BasicKnowledge
+                           && hardSkill.SkillLevel != (int)SkillLevel.LimitedExperience
+                           && hardSkill.SkillLevel != (int)SkillLevel.Practical
+                           && hardSkill.SkillLevel != (int)SkillLevel.AppliedTheory
+                           && hardSkill.SkillLevel != (int)SkillLevel.RecognizedAuthority)
+                        {
+                            if (checkHardSkill == false)
+                            {
+                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Please select level from select box only for skill " + skill.SkillName);
+                                checkHardSkill = true;
+                            }
+                            //return new ApiErrorResult<bool>("Please select level from select box only for skill " + skill.SkillName);
+                        }
+                        var checkEmpSkill = await _context.EmpSkills.FindAsync(empID, hardSkill.SkillID);
+                        if (checkEmpSkill == null)
+                        {
+                            var empSkill = new EmpSkill()
+                            {
+                                EmpID = empID,
+                                SkillID = hardSkill.SkillID,
+                                SkillLevel = (SkillLevel)hardSkill.SkillLevel,
+                                DateStart = DateTime.Now
+                            };
+                            _context.EmpSkills.Add(empSkill);
+                        }
+                        else
+                        {
+                            if (checkEmpSkill.DateEnd != null)
+                            {
+                                checkEmpSkill.DateEnd = null;
+                            }
+                            checkEmpSkill.SkillLevel = (SkillLevel)hardSkill.SkillLevel;
+                            _context.EmpSkills.Update(checkEmpSkill);
+                        }
+                        //Update Certification for that skill
+                        var certiQuery = from ec in _context.EmpCertifications
+                                         join c in _context.Certifications on ec.CertificationID equals c.CertificationID
+                                         select new { ec, c };
+                        var listCerti = await certiQuery.Where(x => x.ec.EmpID.Equals(empID) && x.c.SkillID.Equals(hardSkill.SkillID))
+                                    .Select(x => new EmpCertification()
                                     {
-                                        check = true;
-                                    }
-                                }
-                                if (check == false)
+                                        EmpID = x.ec.EmpID,
+                                        CertificationID = x.ec.CertificationID,
+                                        DateTaken = x.ec.DateTaken,
+                                        DateEnd = x.ec.DateEnd
+                                    }).ToListAsync();
+                        if (hardSkill.EmpCertifications.Count() == 0)
+                        {
+                            if (listCerti.Count() != 0)
+                            {
+                                foreach (var c in listCerti)
                                 {
                                     _context.EmpCertifications.Remove(c);
                                 }
                             }
                         }
-                        foreach (var certification in sk.EmpCertifications)
+                        else
                         {
-                            if (certification.CertiID == 0)
+                            if (listCerti.Count() != 0)
                             {
-                                return new ApiErrorResult<bool>("Please select certification for skill " + skill.SkillName);
-                            }
-                            var certi = await _context.Certifications.FindAsync(certification.CertiID);
-                            if (certi == null) return new ApiErrorResult<bool>("Certification for skill " + skill.SkillName + " not found");
-                            if (certi.Status == false) return new ApiErrorResult<bool>("Certification:" + certi.CertificationName + " for skill " + skill.SkillName + " is disable");
-                            var checkEmpCerti = await _context.EmpCertifications.FindAsync(empID, certification.CertiID);
-                            if (checkEmpCerti == null)
-                            {
-                                if (certification.DateTaken.Equals(""))
+                                foreach (var c in listCerti)
                                 {
-                                    return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - Please input date taken");
-                                }
-                                DateTime dateTaken = DateTime.Parse(certification.DateTaken);
-                                if (DateTime.Compare(dateTaken, DateTime.Today) > 0)
-                                {
-                                    return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is after today");
-                                }
-                                var empCerti = new EmpCertification()
-                                {
-                                    EmpID = empID,
-                                    CertificationID = certification.CertiID,
-                                    DateTaken = DateTime.Parse(certification.DateTaken),
-                                };
-                                if (certification.DateEnd.Equals(""))
-                                {
-                                    empCerti.DateEnd = null;
-                                }
-                                else
-                                {
-                                    if (DateTime.Compare(empCerti.DateTaken.Date, DateTime.Parse(certification.DateEnd).Date) > 0)
+                                    var check = false;
+                                    foreach (var certi in hardSkill.EmpCertifications)
                                     {
-                                        return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
-                                    }
-                                    if (DateTime.Compare(DateTime.Parse(certification.DateEnd).Date, DateTime.Today) < 0)
-                                    {
-                                        return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
-                                    }
-                                    empCerti.DateEnd = DateTime.Parse(certification.DateEnd);
-                                }
-                                _context.EmpCertifications.Add(empCerti);
-                            }
-                            else
-                            {
-                                if (DateTime.Compare(checkEmpCerti.DateTaken.Date, DateTime.Parse(certification.DateTaken).Date) != 0)
-                                {
-                                    if (certification.DateTaken.Equals(""))
-                                    {
-                                        return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - Please input date taken");
-                                    }
-                                    DateTime dateTaken = DateTime.Parse(certification.DateTaken);
-                                    if (DateTime.Compare(dateTaken, DateTime.Today) > 0)
-                                    {
-                                        return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is after today");
-                                    }
-                                    if (!certification.DateEnd.Equals(""))
-                                    {
-                                        if (DateTime.Compare(DateTime.Parse(certification.DateTaken).Date, DateTime.Parse(certification.DateEnd).Date) > 0)
+                                        if (c.CertificationID.Equals(certi.CertiID))
                                         {
-                                            return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is later than date expired");
+                                            check = true;
                                         }
                                     }
-                                    checkEmpCerti.DateTaken = DateTime.Parse(certification.DateTaken);
+                                    if (check == false)
+                                    {
+                                        _context.EmpCertifications.Remove(c);
+                                    }
                                 }
-                                if (certification.DateEnd.Equals(""))
+                            }
+                            foreach (var certification in hardSkill.EmpCertifications)
+                            {
+                                DateTime dateTaken = new DateTime();
+                                DateTime dateEnd = new DateTime();
+                                if (certification.CertiID == 0)
                                 {
-                                    checkEmpCerti.DateEnd = null;
+                                    if (checkHardSkill == false)
+                                    {
+                                        UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Please select certification for skill " + skill.SkillName);
+                                        checkHardSkill = true;
+                                    }
+                                    //return new ApiErrorResult<bool>("Please select certification for skill " + skill.SkillName);
+                                }
+                                var certi = await _context.Certifications.FindAsync(certification.CertiID);
+                                if (certi == null)
+                                {
+                                    if (checkHardSkill == false)
+                                    {
+                                        UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification for skill " + skill.SkillName + " not found");
+                                        checkHardSkill = true;
+                                    }
+                                    //return new ApiErrorResult<bool>("Certification for skill " + skill.SkillName + " not found");
                                 }
                                 else
                                 {
-                                    if (checkEmpCerti.DateEnd != null)
+                                    if (certi.Status == false)
                                     {
-                                        if (DateTime.Compare(DateTime.Parse(checkEmpCerti.DateEnd.ToString()).Date, DateTime.Parse(certification.DateEnd).Date) != 0)
+                                        if (checkHardSkill == false)
                                         {
-                                            if (DateTime.Compare(checkEmpCerti.DateTaken.Date, DateTime.Parse(certification.DateEnd).Date) > 0)
-                                            {
-                                                return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
-                                            }
-                                            if (DateTime.Compare(DateTime.Parse(certification.DateEnd).Date, DateTime.Today) < 0)
-                                            {
-                                                return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
-                                            }
+                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification:" + certi.CertificationName + " for skill " + skill.SkillName + " is disable");
+                                            checkHardSkill = true;
+                                        }
+                                        //return new ApiErrorResult<bool>("Certification:" + certi.CertificationName + " for skill " + skill.SkillName + " is disable");
+                                    }
+                                    if (certification.DateTaken.Equals(""))
+                                    {
+                                        if (checkHardSkill == false)
+                                        {
+                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - Please input date taken");
+                                            checkHardSkill = true;
+                                        }
+                                        //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - Please input date taken");
+                                    }
+                                    else if (!DateTime.TryParse(certification.DateTaken, out dateTaken))
+                                    {
+                                        if (checkHardSkill == false)
+                                        {
+                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is wrong format");
+                                            checkHardSkill = true;
                                         }
                                     }
                                     else
                                     {
-                                        if (DateTime.Compare(checkEmpCerti.DateTaken.Date, DateTime.Parse(certification.DateEnd).Date) > 0)
+                                        dateTaken = DateTime.Parse(certification.DateTaken);
+                                    }
+                                    if (DateTime.Compare(dateTaken, DateTime.Today) > 0)
+                                    {
+                                        if (checkHardSkill == false)
                                         {
-                                            return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
+                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is after today");
+                                            checkHardSkill = true;
                                         }
-                                        if (DateTime.Compare(DateTime.Parse(certification.DateEnd).Date, DateTime.Today) < 0)
+                                        //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is after today");
+                                    }
+
+                                    if (!certification.DateEnd.Equals(""))
+                                    {
+                                        if (!DateTime.TryParse(certification.DateEnd, out dateEnd))
                                         {
-                                            return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
+                                            if (checkHardSkill == false)
+                                            {
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date end is wrong format");
+                                                checkHardSkill = true;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            dateEnd = DateTime.Parse(certification.DateEnd);
+                                        }
+                                        if (DateTime.Compare(dateTaken.Date, dateEnd.Date) > 0)
+                                        {
+                                            if (checkHardSkill == false)
+                                            {
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
+                                                checkHardSkill = true;
+                                            }
+                                            //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
+                                        }
+                                        if (DateTime.Compare(dateEnd.Date, DateTime.Today) < 0)
+                                        {
+                                            if (checkHardSkill == false)
+                                            {
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
+                                                checkHardSkill = true;
+                                            }
+                                            //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
                                         }
                                     }
-                                    checkEmpCerti.DateEnd = DateTime.Parse(certification.DateEnd);
+                                    var checkEmpCerti = await _context.EmpCertifications.FindAsync(empID, certification.CertiID);
+                                    if (checkEmpCerti == null)
+                                    {
+                                        var empCerti = new EmpCertification()
+                                        {
+                                            EmpID = empID,
+                                            CertificationID = certification.CertiID,
+                                            DateTaken = dateTaken,
+                                        };
+                                        if (certification.DateEnd.Equals(""))
+                                        {
+                                            empCerti.DateEnd = null;
+                                        }
+                                        else
+                                        {
+                                            empCerti.DateEnd = dateEnd;
+                                        }
+                                        _context.EmpCertifications.Add(empCerti);
+                                    }
+                                    else
+                                    {
+                                        if (DateTime.Compare(checkEmpCerti.DateTaken.Date, dateTaken.Date) != 0)
+                                        {
+                                            if (!certification.DateEnd.Equals(""))
+                                            {
+                                                if (DateTime.Compare(dateTaken.Date, dateEnd.Date) > 0)
+                                                {
+                                                    if (checkHardSkill == false)
+                                                    {
+                                                        UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is later than date expired");
+                                                        checkHardSkill = true;
+                                                    }
+                                                    //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is later than date expired");
+                                                }
+                                            }
+                                            checkEmpCerti.DateTaken = dateTaken;
+                                        }
+                                        if (certification.DateEnd.Equals(""))
+                                        {
+                                            checkEmpCerti.DateEnd = null;
+                                        }
+                                        else
+                                        {
+                                            if (checkEmpCerti.DateEnd != null)
+                                            {
+                                                if (DateTime.Compare(DateTime.Parse(checkEmpCerti.DateEnd.ToString()).Date, dateEnd.Date) != 0)
+                                                {
+                                                    if (DateTime.Compare(checkEmpCerti.DateTaken.Date, dateEnd.Date) > 0)
+                                                    {
+                                                        if (checkHardSkill == false)
+                                                        {
+                                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
+                                                            checkHardSkill = true;
+                                                        }
+                                                        //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
+                                                    }
+                                                    if (DateTime.Compare(dateEnd.Date, DateTime.Today) < 0)
+                                                    {
+                                                        if (checkHardSkill == false)
+                                                        {
+                                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
+                                                            checkHardSkill = true;
+                                                        }
+                                                        //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
+                                                    }
+                                                }
+                                            }
+                                            checkEmpCerti.DateEnd = dateEnd;
+                                        }
+                                        _context.EmpCertifications.Update(checkEmpCerti);
+                                    }
                                 }
-                                _context.EmpCertifications.Update(checkEmpCerti);
                             }
                         }
                     }
@@ -1616,16 +1903,18 @@ namespace ESMS.BackendAPI.Services.Employees
             }).ToListAsync();
             if (request.Languages.Count() == 0)
             {
-                if (listLanguage.Count() != 0)
-                {
-                    foreach (var lang in listLanguage)
-                    {
-                        _context.EmpLanguages.Remove(lang);
-                    }
-                }
+                UltilitiesService.AddOrUpdateError(errors, "Languages", "Employee must have at least 1 language");
+                //if (listLanguage.Count() != 0)
+                //{
+                //    foreach (var lang in listLanguage)
+                //    {
+                //        _context.EmpLanguages.Remove(lang);
+                //    }
+                //}
             }
             else
             {
+                var checkLanguage = false;
                 if (listLanguage.Count() != 0)
                 {
                     foreach (var lang in listLanguage)
@@ -1644,33 +1933,54 @@ namespace ESMS.BackendAPI.Services.Employees
                         }
                     }
                 }
-                foreach (var el in request.Languages)
+                foreach (var language in request.Languages)
                 {
-                    if (el.LangID == 0)
+                    if (language.LangID == 0)
                     {
-                        return new ApiErrorResult<bool>("Please select language");
+                        if (checkLanguage == false)
+                        {
+                            UltilitiesService.AddOrUpdateError(errors, "Languages", "Please select language");
+                            checkLanguage = true;
+                        }
+                        //return new ApiErrorResult<bool>("Please select language");
                     }
-                    var lang = await _context.Languages.FindAsync(el.LangID);
-                    if (lang == null) return new ApiErrorResult<bool>("Language not found");
-                    if (el.LangLevel == 0)
+                    var lang = await _context.Languages.FindAsync(language.LangID);
+                    if (lang == null)
                     {
-                        return new ApiErrorResult<bool>("Please select level for language " + lang.LangName);
-                    }
-                    var empLang = new EmpLanguage()
-                    {
-                        EmpID = empID,
-                        LangID = el.LangID,
-                        LangLevel = el.LangLevel
-                    };
-                    var checkEmpLang = await _context.EmpLanguages.FindAsync(empID, empLang.LangID);
-                    if (checkEmpLang == null)
-                    {
-                        _context.EmpLanguages.Add(empLang);
+                        if (checkLanguage == false)
+                        {
+                            UltilitiesService.AddOrUpdateError(errors, "Languages", "Language not found");
+                            checkLanguage = true;
+                        }
+                        //return new ApiErrorResult<bool>("Language not found");
                     }
                     else
                     {
-                        checkEmpLang.LangLevel = empLang.LangLevel;
-                        _context.EmpLanguages.Update(checkEmpLang);
+                        if (language.LangLevel == 0)
+                        {
+                            if (checkLanguage == false)
+                            {
+                                UltilitiesService.AddOrUpdateError(errors, "Languages", "Please select level for language " + lang.LangName);
+                                checkLanguage = true;
+                            }
+                            //return new ApiErrorResult<bool>("Please select level for language " + lang.LangName);
+                        }
+                        var empLang = new EmpLanguage()
+                        {
+                            EmpID = empID,
+                            LangID = language.LangID,
+                            LangLevel = language.LangLevel
+                        };
+                        var checkEmpLang = await _context.EmpLanguages.FindAsync(empID, empLang.LangID);
+                        if (checkEmpLang == null)
+                        {
+                            _context.EmpLanguages.Add(empLang);
+                        }
+                        else
+                        {
+                            checkEmpLang.LangLevel = empLang.LangLevel;
+                            _context.EmpLanguages.Update(checkEmpLang);
+                        }
                     }
                 }
             }
@@ -1687,13 +1997,14 @@ namespace ESMS.BackendAPI.Services.Employees
                 }).ToListAsync();
             if (request.SoftSkills.Count() == 0)
             {
-                if (listSoftSkill.Count() != 0)
-                {
-                    foreach (var skill in listSoftSkill)
-                    {
-                        _context.EmpSkills.Remove(skill);
-                    }
-                }
+                UltilitiesService.AddOrUpdateError(errors, "SoftSkills", "Employee must have at least 1 soft skill");
+                //if (listSoftSkill.Count() != 0)
+                //{
+                //    foreach (var skill in listSoftSkill)
+                //    {
+                //        _context.EmpSkills.Remove(skill);
+                //    }
+                //}
             }
             else
             {
@@ -1715,26 +2026,56 @@ namespace ESMS.BackendAPI.Services.Employees
                         }
                     }
                 }
-                foreach (var sk in request.SoftSkills)
+                foreach (var softSkill in request.SoftSkills)
                 {
-                    var skill = await _context.Skills.FindAsync(sk);
-                    if (skill == null) return new ApiErrorResult<bool>("SoftSkill not found");
-                    if (skill.Status == false) return new ApiErrorResult<bool>("Skill:" + skill.SkillName + " is disable");
-                    var checkEmpSkill = await _context.EmpSkills.FindAsync(empID, sk);
-                    if (checkEmpSkill == null)
+                    var checkSoftSkill = false;
+                    if (softSkill == 0)
                     {
-                        var empSkill = new EmpSkill()
+                        if (checkSoftSkill == false)
                         {
-                            EmpID = empID,
-                            SkillID = sk
-                        };
-                        _context.EmpSkills.Add(empSkill);
+                            UltilitiesService.AddOrUpdateError(errors, "SoftSkills", "Please select soft skill");
+                            checkSoftSkill = true;
+                        }
+                    }
+                    var skill = await _context.Skills.FindAsync(softSkill);
+                    if (skill == null)
+                    {
+                        if (checkSoftSkill == false)
+                        {
+                            UltilitiesService.AddOrUpdateError(errors, "SoftSkills", "SoftSkill not found");
+                        }
+                        //return new ApiErrorResult<bool>("SoftSkill not found");
                     }
                     else
                     {
-                        _context.EmpSkills.Update(checkEmpSkill);
+                        if (skill.Status == false)
+                        {
+                            if (checkSoftSkill == false)
+                            {
+                                UltilitiesService.AddOrUpdateError(errors, "SoftSkills", "Skill:" + skill.SkillName + " is disable");
+                            }
+                            //return new ApiErrorResult<bool>("Skill:" + skill.SkillName + " is disable");
+                        }
+                        var checkEmpSkill = await _context.EmpSkills.FindAsync(empID, softSkill);
+                        if (checkEmpSkill == null)
+                        {
+                            var empSkill = new EmpSkill()
+                            {
+                                EmpID = empID,
+                                SkillID = softSkill
+                            };
+                            _context.EmpSkills.Add(empSkill);
+                        }
+                        else
+                        {
+                            _context.EmpSkills.Update(checkEmpSkill);
+                        }
                     }
                 }
+            }
+            if (errors.Count() != 0)
+            {
+                return new ApiErrorResult<bool>(errors);
             }
 
             var result = await _context.SaveChangesAsync();
