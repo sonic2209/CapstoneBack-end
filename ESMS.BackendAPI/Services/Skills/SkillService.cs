@@ -68,7 +68,7 @@ namespace ESMS.BackendAPI.Services.Skills
             }
             if (request.SkillType != (int)SkillType.HardSkill && request.SkillType != (int)SkillType.SoftSkill)
             {
-                ultilities.AddOrUpdateError(errors, "SkillType", "Please select skill type(hard skill or soft skill)");
+                UltilitiesService.AddOrUpdateError(errors, "SkillType", "Please select skill type(hard skill or soft skill)");
             }
             if (errors.Count() > 0)
             {
@@ -277,7 +277,7 @@ namespace ESMS.BackendAPI.Services.Skills
             }
             if (request.SkillType != (int)SkillType.HardSkill && request.SkillType != (int)SkillType.SoftSkill)
             {
-                ultilities.AddOrUpdateError(errors, "SkillType", "Please select skill type(hard skill or soft skill)");
+                UltilitiesService.AddOrUpdateError(errors, "SkillType", "Please select skill type(hard skill or soft skill)");
             }
             else if (!skill.SkillType.Equals((SkillType)request.SkillType))
             {

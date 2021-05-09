@@ -58,17 +58,17 @@ namespace ESMS.BackendAPI.Services.Certifications
             }
             if (request.SkillID == 0)
             {
-                ultilities.AddOrUpdateError(errors, "SkillID", "Please select skill");
+                UltilitiesService.AddOrUpdateError(errors, "SkillID", "Please select skill");
             }
             else
             {
                 var skill = await _context.Skills.FindAsync(request.SkillID);
-                if (skill == null) ultilities.AddOrUpdateError(errors, "SkillID", "Skill not found");
+                if (skill == null) UltilitiesService.AddOrUpdateError(errors, "SkillID", "Skill not found");
             }
 
             if (request.CertiLevel == 0)
             {
-                ultilities.AddOrUpdateError(errors, "CertiLevel", "Please select certification level");
+                UltilitiesService.AddOrUpdateError(errors, "CertiLevel", "Please select certification level");
             }
 
             if (errors.Count() > 0)
@@ -174,17 +174,17 @@ namespace ESMS.BackendAPI.Services.Certifications
             }
             if (request.SkillID == 0)
             {
-                ultilities.AddOrUpdateError(errors, "SkillID", "Please select skill");
+                UltilitiesService.AddOrUpdateError(errors, "SkillID", "Please select skill");
             }
             else
             {
                 var skill = await _context.Skills.FindAsync(request.SkillID);
-                if (skill == null) ultilities.AddOrUpdateError(errors, "SkillID", "Skill not found");
+                if (skill == null) UltilitiesService.AddOrUpdateError(errors, "SkillID", "Skill not found");
             }
 
             if (request.CertiLevel == 0)
             {
-                ultilities.AddOrUpdateError(errors, "CertiLevel", "Please select certification level");
+                UltilitiesService.AddOrUpdateError(errors, "CertiLevel", "Please select certification level");
             }
 
             if (errors.Count() > 0)
