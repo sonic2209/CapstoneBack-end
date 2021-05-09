@@ -56,6 +56,21 @@ namespace ESMS.BackendAPI.Services.Certifications
                 UltilitiesService.AddOrUpdateError(errors, "CertificationName", "This certification name already exists");
                 //return new ApiErrorResult<bool>("This certification name already exists");
             }
+            if (request.SkillID == 0)
+            {
+                ultilities.AddOrUpdateError(errors, "SkillID", "Please select skill");
+            }
+            else
+            {
+                var skill = await _context.Skills.FindAsync(request.SkillID);
+                if (skill == null) ultilities.AddOrUpdateError(errors, "SkillID", "Skill not found");
+            }
+
+            if (request.CertiLevel == 0)
+            {
+                ultilities.AddOrUpdateError(errors, "CertiLevel", "Please select certification level");
+            }
+
             if (errors.Count() > 0)
             {
                 return new ApiErrorResult<bool>(errors);
@@ -156,12 +171,27 @@ namespace ESMS.BackendAPI.Services.Certifications
                     UltilitiesService.AddOrUpdateError(errors, "CertificationName", "This certification name already exists");
                     //return new ApiErrorResult<bool>("this certification name already exists");
                 }
-                if (errors.Count() > 0)
-                {
-                    return new ApiErrorResult<bool>(errors);
-                }
-                certification.CertificationName = request.CertificationName;
             }
+            if (request.SkillID == 0)
+            {
+                ultilities.AddOrUpdateError(errors, "SkillID", "Please select skill");
+            }
+            else
+            {
+                var skill = await _context.Skills.FindAsync(request.SkillID);
+                if (skill == null) ultilities.AddOrUpdateError(errors, "SkillID", "Skill not found");
+            }
+
+            if (request.CertiLevel == 0)
+            {
+                ultilities.AddOrUpdateError(errors, "CertiLevel", "Please select certification level");
+            }
+
+            if (errors.Count() > 0)
+            {
+                return new ApiErrorResult<bool>(errors);
+            }
+            certification.CertificationName = request.CertificationName;
             certification.Description = request.Description;
             certification.SkillID = request.SkillID;
             certification.CertiLevel = request.CertiLevel;

@@ -11,7 +11,7 @@ namespace ESMS.BackendAPI.ViewModels.Skill
         public SkillUpdateRequestValidator()
         {
             RuleFor(x => x.SkillName).NotEmpty().WithMessage("Name cannot be empty")
-                .MaximumLength(200).WithMessage("Name cannot exceed 200 characters");
+                .MaximumLength(100).WithMessage("Name cannot exceed 100 characters");
         }
     }
 }

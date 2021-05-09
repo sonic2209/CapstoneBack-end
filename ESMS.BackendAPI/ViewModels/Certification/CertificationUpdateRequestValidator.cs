@@ -10,8 +10,10 @@ namespace ESMS.BackendAPI.ViewModels.Certification
     {
         public CertificationUpdateRequestValidator()
         {
-            RuleFor(x => x.CertificationName).NotEmpty().WithMessage("Name cannot be empty");
-            RuleFor(x => x.Description).NotEmpty().WithMessage("Description cannot be empty");
+            RuleFor(x => x.CertificationName).NotEmpty().WithMessage("Name cannot be empty")
+                .MaximumLength(100).WithMessage("Name cannot exceed 100 characters");
+            RuleFor(x => x.Description).NotEmpty().WithMessage("Description cannot be empty")
+                .MaximumLength(1000).WithMessage("Description cannot exceed 1000 characters");
         }
     }
 }

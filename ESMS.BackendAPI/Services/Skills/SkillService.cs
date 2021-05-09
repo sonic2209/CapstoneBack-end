@@ -66,6 +66,10 @@ namespace ESMS.BackendAPI.Services.Skills
                 UltilitiesService.AddOrUpdateError(errors, "SkillName", "This skill name already exist");
                 //return new ApiErrorResult<bool>("This skill name already exist");
             }
+            if (request.SkillType != (int)SkillType.HardSkill && request.SkillType != (int)SkillType.SoftSkill)
+            {
+                ultilities.AddOrUpdateError(errors, "SkillType", "Please select skill type(hard skill or soft skill)");
+            }
             if (errors.Count() > 0)
             {
                 return new ApiErrorResult<bool>(errors);
@@ -270,13 +274,12 @@ namespace ESMS.BackendAPI.Services.Skills
                     UltilitiesService.AddOrUpdateError(errors, "SkillName", "This skill name already exist");
                     //return new ApiErrorResult<bool>("This skill name already exist");
                 }
-                if (errors.Count() > 0)
-                {
-                    return new ApiErrorResult<bool>(errors);
-                }
-                skill.SkillName = request.SkillName;
             }
-            if (!skill.SkillType.Equals((SkillType)request.SkillType))
+            if (request.SkillType != (int)SkillType.HardSkill && request.SkillType != (int)SkillType.SoftSkill)
+            {
+                ultilities.AddOrUpdateError(errors, "SkillType", "Please select skill type(hard skill or soft skill)");
+            }
+            else if (!skill.SkillType.Equals((SkillType)request.SkillType))
             {
                 if (skill.SkillType.Equals(SkillType.HardSkill))
                 {
@@ -297,6 +300,11 @@ namespace ESMS.BackendAPI.Services.Skills
                     }
                 }
             }
+            if (errors.Count() > 0)
+            {
+                return new ApiErrorResult<bool>(errors);
+            }
+            skill.SkillName = request.SkillName;
             skill.SkillType = (SkillType)request.SkillType;
             _context.Skills.Update(skill);
             var result = await _context.SaveChangesAsync();
