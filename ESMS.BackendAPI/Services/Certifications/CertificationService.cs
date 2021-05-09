@@ -48,13 +48,12 @@ namespace ESMS.BackendAPI.Services.Certifications
 
         public async Task<ApiResult<bool>> Create(CertificationCreateRequest request)
         {
-            UltilitiesService ultilities = new UltilitiesService();
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var checkName = await _context.Certifications.Where(x => x.CertificationName.Equals(request.CertificationName))
                 .Select(x => new Certification()).FirstOrDefaultAsync();
             if (checkName != null)
             {
-                ultilities.AddOrUpdateError(errors, "CertificationName", "This certification name already exists");
+                UltilitiesService.AddOrUpdateError(errors, "CertificationName", "This certification name already exists");
                 //return new ApiErrorResult<bool>("This certification name already exists");
             }
             if (errors.Count() > 0)
@@ -145,7 +144,6 @@ namespace ESMS.BackendAPI.Services.Certifications
 
         public async Task<ApiResult<bool>> Update(int certificationID, CertificationUpdateRequest request)
         {
-            UltilitiesService ultilities = new UltilitiesService();
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var certification = await _context.Certifications.FindAsync(certificationID);
             if (certification == null) return new ApiErrorResult<bool>("Certification does not exist");
@@ -155,7 +153,7 @@ namespace ESMS.BackendAPI.Services.Certifications
                     .Select(x => new Certification()).FirstOrDefaultAsync();
                 if (checkName != null)
                 {
-                    ultilities.AddOrUpdateError(errors, "CertificationName", "This certification name already exists");
+                    UltilitiesService.AddOrUpdateError(errors, "CertificationName", "This certification name already exists");
                     //return new ApiErrorResult<bool>("this certification name already exists");
                 }
                 if (errors.Count() > 0)
