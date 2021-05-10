@@ -36,5 +36,6 @@ namespace ESMS.BackendAPI.Services.Employees
         Task<ApiResult<LoadEmpInfoVM>> LoadEmpInfo(string empID);
 
         Task<ApiResult<List<ProjectVM>>> SingleCandidateSuggest(string empID);
+        Task<ApiResult<bool>> ChangePassword(string id, ChangePasswordRequest request);
     }
 }

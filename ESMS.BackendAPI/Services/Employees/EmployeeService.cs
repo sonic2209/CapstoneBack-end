@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using PasswordGenerator;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -44,21 +45,18 @@ namespace ESMS.BackendAPI.Services.Employees
             _context = context;
             _projectService = projectService;
         }
-
-        public EmployeeService()
-        {
-        }
+        
 
         public async Task<ApiResult<LoginVm>> Authenticate(LoginRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
-                return new ApiErrorResult<LoginVm>("Account does not exist");
+                return new ApiErrorResult<LoginVm>("This account does not exist");
 
             var result = await _signInManager.PasswordSignInAsync(user, request.Password, request.RememberMe, true);
             if (!result.Succeeded)
             {
-                return new ApiErrorResult<LoginVm>("Email or password is not correct");
+                return new ApiErrorResult<LoginVm>("Password is not correct");
             }
             var roles = await _userManager.GetRolesAsync(user);
             var claims = new[]
@@ -113,24 +111,36 @@ namespace ESMS.BackendAPI.Services.Employees
                 UserName = request.UserName,
                 PhoneNumber = request.PhoneNumber,
             };
+            var pwd = new Password().IncludeLowercase().IncludeUppercase().IncludeNumeric().LengthRequired(8);
+            var presult = pwd.Next();
             string password = "Abcd1234$";
 
+            string errorMessage = null;
             var result = await _userManager.CreateAsync(user, password);
             if (result.Succeeded)
             {
                 if (await _userManager.IsInRoleAsync(user, request.RoleName) == false)
-                {
-                    await _userManager.AddToRoleAsync(user, request.RoleName);
+                {                    
+                    var addtoroleResult = await _userManager.AddToRoleAsync(user, request.RoleName);
+                    if (!addtoroleResult.Succeeded)
+                    {
+                        foreach (var error in result.Errors)
+                        {
+                            errorMessage += error.Description + "\n";
+                        }
+                        return new ApiErrorResult<string>("Register failed:" + errorMessage);
+                    }
                 }
                 user = await _userManager.FindByNameAsync(request.UserName);
                 string empID = user.Id;
                 return new ApiSuccessResult<string>(empID);
             }
-            string errorMessage = null;
+            
             foreach (var error in result.Errors)
             {
+                errorMessage += error.Description + "\n";
             }
-            return new ApiErrorResult<string>("Register failed");
+            return new ApiErrorResult<string>("Register failed" + errorMessage);
         }
 
         public async Task<ApiResult<bool>> AddEmpPosition(string empID, AddEmpPositionRequest request)
@@ -2147,6 +2157,31 @@ namespace ESMS.BackendAPI.Services.Employees
                 }
             }
             return new ApiSuccessResult<LoadEmpInfoVM>(info);
+        }
+
+        public async Task<ApiResult<bool>> ChangePassword(string id, ChangePasswordRequest request)
+        {
+            Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+            {
+                return new ApiErrorResult<bool> ("This account does not exist");
+            }
+            var result1 = _userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, request.CurrentPassword);
+            if (result1 != PasswordVerificationResult.Success)
+            {
+                UltilitiesService.AddOrUpdateError(errors, "CurrentPassword", "Your current password is not correct");
+            }
+            if (errors.Count > 0)
+            {
+                return new ApiErrorResult<bool>(errors);
+            }
+            var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+            if (result.Succeeded)
+            {
+                return new ApiSuccessResult<bool>();
+            }
+            return new ApiErrorResult<bool>("Change password failed");
         }
     }
 }

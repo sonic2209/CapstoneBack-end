@@ -24,14 +24,14 @@ namespace ESMS.BackendAPI.ViewModels.Employees
             RuleFor(x => x.IdentityNumber).NotEmpty().WithMessage("Identity Number can not be empty").Matches("^[0-9]{10,12}$").WithMessage("Identity number format must be from 10 to 12 digits");
             RuleFor(x => x.Address).NotEmpty().WithMessage("Address can not be empty").MaximumLength(100).WithMessage("Address can not exceed 100 characters");
 
-            //rulefor(x => x).custom((request, context) =>
+            //RuleFor(x => x).Custom((request, context) =>
             //{
             //    if (request.password != request.confirmpassword)
             //    {
-            //        context.addfailure(nameof(request.confirmpassword),"confirm password must match with password");
+            //        context.addfailure(nameof(request.confirmpassword), "confirm password must match with password");
             //    }
             //});
-            
+
         }
     }
 }

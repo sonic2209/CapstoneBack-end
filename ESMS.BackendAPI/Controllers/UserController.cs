@@ -64,6 +64,19 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(result);
         }
 
+        [HttpPut("ChangePassword/{id}")]
+        public async Task<IActionResult> ChangePassword(string id, [FromBody] ChangePasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+            var result = await _userService.ChangePassword(id, request);
+            if (!result.IsSuccessed)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, result);
+            }
+            return Ok(result);
+        }
+
         [HttpPost("candidate/{projectID}")]
         public async Task<IActionResult> SuggestCandidate(int projectID, [FromBody] SuggestCadidateRequest request)
         {
