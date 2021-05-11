@@ -26,6 +26,7 @@ namespace ESMS.BackendAPI.Services.Projects
         public async Task<ApiResult<int>> Create(string empID, ProjectCreateRequest request)
         {
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
+            bool checkProjectName = false;
             bool checkDateBegin = false;
             bool checkDateEnd = false;
             var project = await _context.Projects.FindAsync(request.ProjectID);
@@ -33,17 +34,27 @@ namespace ESMS.BackendAPI.Services.Projects
             DateTime dateEstimatedEnd = DateTime.Parse(request.DateEstimatedEnd);
             if (project != null)
             {
+                if (request.ProjectName.All(char.IsDigit))
+                {
+                    UltilitiesService.AddOrUpdateError(errors, "ProjectName", "Name can not be digits only");
+                    checkProjectName = true;
+                }
                 if (!project.ProjectName.Equals(request.ProjectName))
                 {
                     var checkName = _context.Projects.Where(x => x.ProjectName.Equals(request.ProjectName)).Select(x => new Project()).FirstOrDefault();
                     if (checkName != null)
                     {
-                        UltilitiesService.AddOrUpdateError(errors, "projectName", "This name already exist");
+                        if (checkProjectName == false)
+                        {
+                            UltilitiesService.AddOrUpdateError(errors, "ProjectName", "This name already exist");
+                        }
                         //return new ApiErrorResult<int>("projectName : This project name already exist");
                     }
-                    project.ProjectName = request.ProjectName;
                 }
-                project.Description = request.Description;
+                if (request.Description.All(char.IsDigit))
+                {
+                    UltilitiesService.AddOrUpdateError(errors, "Description", "Description can not be digits only");
+                }
                 var checkProjectDate = await _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished
                 && x.ProjectID != project.ProjectID).OrderBy(x => x.DateEstimatedEnd)
                 .Select(x => new Project()
@@ -143,6 +154,8 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     return new ApiErrorResult<int>(errors);
                 }
+                project.ProjectName = request.ProjectName;
+                project.Description = request.Description;
                 project.DateBegin = dateBegin;
                 project.DateEstimatedEnd = dateEstimatedEnd;
                 project.ProjectTypeID = request.ProjectTypeID;
@@ -156,12 +169,24 @@ namespace ESMS.BackendAPI.Services.Projects
             }
             else
             {
+                if (request.ProjectName.All(char.IsDigit))
+                {
+                    UltilitiesService.AddOrUpdateError(errors, "ProjectName", "Name can not be digits only");
+                    checkProjectName = true;
+                }
                 var checkName = _context.Projects.Where(x => x.ProjectName.Equals(request.ProjectName))
                     .Select(x => new Project()).FirstOrDefault();
                 if (checkName != null)
                 {
-                    UltilitiesService.AddOrUpdateError(errors, "projectName", "This name already exist");
+                    if (checkProjectName == false)
+                    {
+                        UltilitiesService.AddOrUpdateError(errors, "projectName", "This name already exist");
+                    }
                     //return new ApiErrorResult<int>("projectName : This project name already exist");
+                }
+                if (request.Description.All(char.IsDigit))
+                {
+                    UltilitiesService.AddOrUpdateError(errors, "Description", "Description can not be digits only");
                 }
                 var checkProjectDate = await _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
                     .OrderBy(x => x.DateEstimatedEnd).Select(x => new Project()
@@ -639,14 +664,17 @@ namespace ESMS.BackendAPI.Services.Projects
             var project = await _context.Projects.FindAsync(projectID);
             if (project == null) return new ApiErrorResult<bool>("Project does not exist");
 
-            DateTime dateEstimatedEnd = DateTime.Parse(request.DateEstimatedEnd); ;
-            project.Description = request.Description;
+            DateTime dateEstimatedEnd = DateTime.Parse(request.DateEstimatedEnd);
+            if (request.Description.All(char.IsDigit))
+            {
+                UltilitiesService.AddOrUpdateError(errors, "Description", "Description can not be digits only");
+            }
 
             if (DateTime.Compare(project.DateEstimatedEnd.Date, dateEstimatedEnd.Date) != 0)
             {
                 if (DateTime.Compare(project.DateEstimatedEnd.Date, dateEstimatedEnd.Date) < 0)
                 {
-                    UltilitiesService.AddOrUpdateError(errors, "dateEstimatedEnd", "Estimated end date cannot be delayed");
+                    UltilitiesService.AddOrUpdateError(errors, "dateEstimatedEnd", "Estimated end date can not be delayed");
                     //return new ApiErrorResult<bool>("Estimated End Date cannot be delayed");
                 }
                 else if (DateTime.Compare(project.DateBegin.AddDays(30).Date, dateEstimatedEnd.Date) > 0)
@@ -675,12 +703,13 @@ namespace ESMS.BackendAPI.Services.Projects
                 //    }
                 //}
             }
-            project.ProjectTypeID = request.TypeID;
-            project.ProjectFieldID = request.FieldID;
             if (errors.Count() > 0)
             {
                 return new ApiErrorResult<bool>(errors);
             }
+            project.Description = request.Description;
+            project.ProjectTypeID = request.TypeID;
+            project.ProjectFieldID = request.FieldID;
             _context.Projects.Update(project);
             var result = await _context.SaveChangesAsync();
             if (result == 0)
