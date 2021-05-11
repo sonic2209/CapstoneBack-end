@@ -542,6 +542,32 @@ namespace ESMS.BackendAPI.Services.Employees
             }
         }
 
+        public ApiResult<PagedResult<MatchViewModel>> SuggestCandidatePaging(List<MatchViewModel> listMatch, GetSuggestEmpPagingRequest request)
+        {
+            {
+                var query = listMatch;
+                if (!string.IsNullOrEmpty(request.Keyword))
+                {
+                    query = query.Where(x => x.EmpName.Contains(request.Keyword)).ToList();
+                }
+                //3.Paging
+                int totalRow = query.Count;
+
+                var data = query.Skip((request.PageIndex - 1) * request.PageSize)
+                    .Take(request.PageSize)
+                    .ToList();
+
+                //4.Select and projection
+                var pagedResult = new PagedResult<MatchViewModel>()
+                {
+                    TotalRecords = totalRow,
+                    PageIndex = request.PageIndex,
+                    PageSize = request.PageSize,
+                    Items = data
+                };
+                return new ApiSuccessResult<PagedResult<MatchViewModel>>(pagedResult);
+            }
+        }
         public async Task<ApiResult<List<CandidateViewModel>>> SuggestCandidate(int projectID, SuggestCadidateRequest request)
         {
             List<CandidateViewModel> result = new List<CandidateViewModel>();

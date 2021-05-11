@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using ESMS.BackendAPI.Services.Employees;
 using ESMS.BackendAPI.ViewModels.Employees;
+using ESMS.BackendAPI.ViewModels.Employees.Suggestion;
 using ESMS.ViewModels.System.Employees;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -103,6 +105,14 @@ namespace ESMS.BackendAPI.Controllers
         public async Task<IActionResult> GetAllPaging([FromQuery] GetEmpPagingRequest request)
         {
             var products = await _userService.GetEmpsPaging(request);
+            return Ok(products);
+        }
+
+        
+        [HttpPut("candidate/paging")]
+        public IActionResult GetCandidatePaging([FromBody] List<MatchViewModel> listMatch, [FromQuery] GetSuggestEmpPagingRequest request)
+        {
+            var products = _userService.SuggestCandidatePaging(listMatch, request);
             return Ok(products);
         }
 

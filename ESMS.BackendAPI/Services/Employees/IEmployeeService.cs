@@ -1,5 +1,6 @@
 ﻿using ESMS.BackendAPI.ViewModels.Common;
 using ESMS.BackendAPI.ViewModels.Employees;
+using ESMS.BackendAPI.ViewModels.Employees.Suggestion;
 using ESMS.BackendAPI.ViewModels.Employees.Suggestion.SingleCandidate;
 using ESMS.BackendAPI.ViewModels.Project;
 using ESMS.ViewModels.System.Employees;
@@ -21,6 +22,7 @@ namespace ESMS.BackendAPI.Services.Employees
         Task<ApiResult<List<CandidateViewModel>>> SuggestCandidate(int projectID, SuggestCadidateRequest request);
         Task<ApiResult<List<CandidateViewModel>>> SuggestCandidateWithoutMinimumPoint(int projectID, SuggestCadidateRequest request);
 
+        ApiResult<PagedResult<MatchViewModel>> SuggestCandidatePaging(List<MatchViewModel> listMatch, GetSuggestEmpPagingRequest request);
         Task<ApiResult<PagedResult<EmpVm>>> GetEmpsPaging(GetEmpPagingRequest request);
 
         Task<ApiResult<EmpVm>> GetById(string id);
@@ -37,5 +39,6 @@ namespace ESMS.BackendAPI.Services.Employees
 
         Task<ApiResult<List<ProjectVM>>> SingleCandidateSuggest(string empID);
         Task<ApiResult<bool>> ChangePassword(string id, ChangePasswordRequest request);
+
     }
 }
