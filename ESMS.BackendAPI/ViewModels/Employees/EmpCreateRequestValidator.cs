@@ -38,7 +38,7 @@ namespace ESMS.BackendAPI.ViewModels.Employees
                 .When(x => !String.IsNullOrWhiteSpace(x.IdentityNumber));
 
             RuleFor(x => x.Address).NotEmpty().WithMessage("Address can not be empty");
-            RuleFor(x => x.Address).MaximumLength(100).WithMessage("Address can not exceed 100 characters")
+            RuleFor(x => x.Address).MaximumLength(100).WithMessage("Address can not exceed 100 characters")//.Matches(@"^(?=[^A-Za-z]*[A-Za-z])[\x00-\x7F]*$")
            .When(x => !String.IsNullOrWhiteSpace(x.Address));
             //RuleFor(x => x).Custom((request, context) =>
             //{

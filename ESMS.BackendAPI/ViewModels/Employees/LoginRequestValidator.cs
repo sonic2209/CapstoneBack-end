@@ -15,9 +15,9 @@ namespace ESMS.BackendAPI.ViewModels.Employees
                 .When(x => !String.IsNullOrWhiteSpace(x.Email));
 
             RuleFor(x => x.Password).NotEmpty().WithMessage("Password can not be empty");
-            RuleFor(x => x.Password).NotEmpty().WithMessage("Password can not be empty")
+            RuleFor(x => x.Password)
                 .MinimumLength(6).WithMessage("Password needs to have at least 6 characters")
-                .When(x => !String.IsNullOrWhiteSpace(x.Email)); 
+                .When(x => !String.IsNullOrWhiteSpace(x.Password)); 
         }
     }
 }
