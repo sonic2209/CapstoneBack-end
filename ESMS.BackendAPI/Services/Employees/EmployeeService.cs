@@ -89,7 +89,7 @@ namespace ESMS.BackendAPI.Services.Employees
             var user = await _userManager.FindByNameAsync(request.UserName);
             if (user != null)
             {
-                UltilitiesService.AddOrUpdateError(errors, "Username", "This username alreadys exists");
+                UltilitiesService.AddOrUpdateError(errors, "UserName", "This username alreadys exists");
                 //return new ApiErrorResult<string>("Username: This username already exists");
             }
             if (await _userManager.FindByEmailAsync(request.Email) != null)

@@ -15,16 +15,15 @@ namespace ESMS.BackendAPI.ViewModels.Employees
                 .Matches(@"^(?:[^\W\d_]| )+$").WithMessage("Name can not contain digits or special characters")
                 .When(x => !String.IsNullOrWhiteSpace(x.Name));
 
-            RuleFor(x => x.Email).NotEmpty().WithMessage("Email can not be empty").MaximumLength(50).WithMessage("Email can not exceed 50 characters")
-                .Matches(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$").WithMessage("Email is not in the correct format");
+            RuleFor(x => x.Email).NotEmpty().WithMessage("Email can not be empty");
             RuleFor(x => x.Email).MaximumLength(50).WithMessage("Email can not exceed 50 characters")
                 .Matches(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$").WithMessage("Email is not in the correct format").When(x => !String.IsNullOrWhiteSpace(x.Email));
 
-            RuleFor(x => x.PhoneNumber).NotEmpty().WithMessage("Phone number can not be empty").Matches(@"(0[1-9])+([0-9]{8})\b").WithMessage("Phone number must contain 10 digits starting off with 0");
+            RuleFor(x => x.PhoneNumber).NotEmpty().WithMessage("Phone number can not be empty");
             RuleFor(x => x.PhoneNumber).Matches(@"(0[1-9])+([0-9]{8})\b").WithMessage("Phone number must contain 10 digits starting off with 0")
             .When(x => !String.IsNullOrWhiteSpace(x.PhoneNumber));
 
-            RuleFor(x => x.IdentityNumber).NotEmpty().WithMessage("Identity Number can not be empty");
+            RuleFor(x => x.IdentityNumber).NotEmpty().WithMessage("Identity number can not be empty");
             RuleFor(x => x.IdentityNumber).Matches("^[0-9]{10,12}$").WithMessage("Identity number format must be from 10 to 12 digits")
                 .When(x => !String.IsNullOrWhiteSpace(x.IdentityNumber));
 
