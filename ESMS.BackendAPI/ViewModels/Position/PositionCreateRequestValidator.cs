@@ -10,10 +10,15 @@ namespace ESMS.BackendAPI.ViewModels.Position
     {
         public PositionCreateRequestValidator()
         {
-            RuleFor(x => x.Name).NotEmpty().WithMessage("Name cannot be empty")
-                .MaximumLength(100).WithMessage("Name cannot exceed 100 characters");
-            RuleFor(x => x.Description).NotEmpty().WithMessage("Description cannot be empty")
-                .MaximumLength(1000).WithMessage("Description cannot exceed 1000 characters");
+            RuleFor(x => x.Name).NotEmpty().WithMessage("Name cannot be empty");
+            RuleFor(x => x.Name).MaximumLength(100).WithMessage("Name can not exceed 100 characters")
+                .Matches(@"^(?:[^\W\d_]| )+$").WithMessage("Name can not contain digits or special characters")
+                .When(x => !String.IsNullOrWhiteSpace(x.Name));
+
+            RuleFor(x => x.Description).NotEmpty().WithMessage("Description cannot be empty");
+            RuleFor(x => x.Description).MaximumLength(1000).WithMessage("Description cannot exceed 1000 characters")
+                .Matches(@"^(?:[^\W\d_]| )+$").WithMessage("Description can not contain digits or special characters")
+                .When(x => !String.IsNullOrWhiteSpace(x.Description));
         }
     }
 }

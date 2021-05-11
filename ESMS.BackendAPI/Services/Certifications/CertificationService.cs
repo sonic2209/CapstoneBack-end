@@ -29,7 +29,7 @@ namespace ESMS.BackendAPI.Services.Certifications
                     .Select(x => x.EmpID).ToListAsync();
                 if (empCertification.Count() != 0)
                 {
-                    return new ApiErrorResult<bool>("This certification is assigned to some employees");
+                    return new ApiErrorResult<bool>("This certificate is assigned to some employees");
                 }
                 certification.Status = false;
             }
@@ -41,7 +41,7 @@ namespace ESMS.BackendAPI.Services.Certifications
             var result = await _context.SaveChangesAsync();
             if (result == 0)
             {
-                return new ApiErrorResult<bool>("Update certification failed");
+                return new ApiErrorResult<bool>("Update certificate failed");
             }
             return new ApiSuccessResult<bool>();
         }
@@ -53,23 +53,12 @@ namespace ESMS.BackendAPI.Services.Certifications
                 .Select(x => new Certification()).FirstOrDefaultAsync();
             if (checkName != null)
             {
-                UltilitiesService.AddOrUpdateError(errors, "CertificationName", "This certification name already exists");
+                UltilitiesService.AddOrUpdateError(errors, "CertificationName", "This name already exists");
                 //return new ApiErrorResult<bool>("This certification name already exists");
             }
-            if (request.SkillID == 0)
-            {
-                UltilitiesService.AddOrUpdateError(errors, "SkillID", "Please select skill");
-            }
-            else
-            {
-                var skill = await _context.Skills.FindAsync(request.SkillID);
-                if (skill == null) UltilitiesService.AddOrUpdateError(errors, "SkillID", "Skill not found");
-            }
 
-            if (request.CertiLevel == 0)
-            {
-                UltilitiesService.AddOrUpdateError(errors, "CertiLevel", "Please select certification level");
-            }
+            var skill = await _context.Skills.FindAsync(request.SkillID);
+            if (skill == null) UltilitiesService.AddOrUpdateError(errors, "SkillID", "Skill not found");
 
             if (errors.Count() > 0)
             {
@@ -86,7 +75,7 @@ namespace ESMS.BackendAPI.Services.Certifications
             var result = await _context.SaveChangesAsync();
             if (result == 0)
             {
-                return new ApiErrorResult<bool>("Create certification failed");
+                return new ApiErrorResult<bool>("Create certificate failed");
             }
             return new ApiSuccessResult<bool>();
         }
@@ -106,7 +95,7 @@ namespace ESMS.BackendAPI.Services.Certifications
                 CertiLevel = x.c.CertiLevel,
                 Status = x.c.Status
             }).FirstOrDefaultAsync();
-            if (certificationVm == null) return new ApiErrorResult<CertificationViewModel>("Certification does not exist");
+            if (certificationVm == null) return new ApiErrorResult<CertificationViewModel>("Certificate does not exist");
             return new ApiSuccessResult<CertificationViewModel>(certificationVm);
         }
 
@@ -161,31 +150,19 @@ namespace ESMS.BackendAPI.Services.Certifications
         {
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var certification = await _context.Certifications.FindAsync(certificationID);
-            if (certification == null) return new ApiErrorResult<bool>("Certification does not exist");
+            if (certification == null) return new ApiErrorResult<bool>("Certificate does not exist");
             if (!certification.CertificationName.Equals(request.CertificationName))
             {
                 var checkName = await _context.Certifications.Where(x => x.CertificationName.Equals(request.CertificationName))
                     .Select(x => new Certification()).FirstOrDefaultAsync();
                 if (checkName != null)
                 {
-                    UltilitiesService.AddOrUpdateError(errors, "CertificationName", "This certification name already exists");
+                    UltilitiesService.AddOrUpdateError(errors, "CertificationName", "This name already exists");
                     //return new ApiErrorResult<bool>("this certification name already exists");
                 }
             }
-            if (request.SkillID == 0)
-            {
-                UltilitiesService.AddOrUpdateError(errors, "SkillID", "Please select skill");
-            }
-            else
-            {
-                var skill = await _context.Skills.FindAsync(request.SkillID);
-                if (skill == null) UltilitiesService.AddOrUpdateError(errors, "SkillID", "Skill not found");
-            }
-
-            if (request.CertiLevel == 0)
-            {
-                UltilitiesService.AddOrUpdateError(errors, "CertiLevel", "Please select certification level");
-            }
+            var skill = await _context.Skills.FindAsync(request.SkillID);
+            if (skill == null) UltilitiesService.AddOrUpdateError(errors, "SkillID", "Skill not found");
 
             if (errors.Count() > 0)
             {
@@ -199,7 +176,7 @@ namespace ESMS.BackendAPI.Services.Certifications
             var result = await _context.SaveChangesAsync();
             if (result == 0)
             {
-                return new ApiErrorResult<bool>("Update certification failed");
+                return new ApiErrorResult<bool>("Update certificate failed");
             }
             return new ApiSuccessResult<bool>();
         }

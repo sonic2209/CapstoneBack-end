@@ -3,6 +3,7 @@ using ESMS.BackendAPI.ViewModels.Common;
 using ESMS.BackendAPI.ViewModels.Position;
 using ESMS.Data.EF;
 using ESMS.Data.Entities;
+using ESMS.Data.Enums;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,12 +22,15 @@ namespace ESMS.BackendAPI.Services.Positions
 
         public async Task<ApiResult<bool>> ChangeStatus(int positionID)
         {
+            var posQuery = from rp in _context.RequiredPositions
+                           join p in _context.Projects on rp.ProjectID equals p.ProjectID
+                           select new { rp, p };
             var position = await _context.Positions.FindAsync(positionID);
             if (position == null) new ApiErrorResult<bool>("Position does not exist");
             if (position.Status)
             {
-                var requiredPosition = await _context.RequiredPositions.Where(x => x.PositionID.Equals(position.PosID))
-                    .Select(x => x.ID).ToListAsync();
+                var requiredPosition = await posQuery.Where(x => x.rp.PositionID.Equals(position.PosID) && x.p.Status != ProjectStatus.Finished)
+                    .Select(x => x.rp.ID).ToListAsync();
                 if (requiredPosition.Count() != 0)
                 {
                     return new ApiErrorResult<bool>("This position is in project's requirement");
@@ -53,7 +57,7 @@ namespace ESMS.BackendAPI.Services.Positions
                 .Select(x => new Position()).FirstOrDefaultAsync();
             if (checkName != null)
             {
-                UltilitiesService.AddOrUpdateError(errors, "Name", "This position name already exist");
+                UltilitiesService.AddOrUpdateError(errors, "Name", "This name already exist");
                 //return new ApiErrorResult<bool>("This position name already exist");
             }
             if (errors.Count() > 0)
@@ -143,7 +147,7 @@ namespace ESMS.BackendAPI.Services.Positions
                  .Select(x => new Position()).FirstOrDefaultAsync();
                 if (checkName != null)
                 {
-                    UltilitiesService.AddOrUpdateError(errors, "Name", "This position name already exist");
+                    UltilitiesService.AddOrUpdateError(errors, "Name", "This name already exist");
                     //return new ApiErrorResult<bool>("This position name already exist");
                 }
                 if (errors.Count() > 0)

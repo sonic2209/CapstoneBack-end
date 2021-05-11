@@ -25,6 +25,11 @@ namespace ESMS.BackendAPI.Services.Skills
 
         public async Task<ApiResult<bool>> ChangeStatus(int skillID)
         {
+            var skillQuery = from s in _context.Skills
+                             join rs in _context.RequiredSkills on s.SkillID equals rs.SkillID
+                             join rp in _context.RequiredPositions on rs.RequiredPositionID equals rp.ID
+                             join p in _context.Projects on rp.ProjectID equals p.ProjectID
+                             select new { s, rs, p };
             var skill = _context.Skills.Find(skillID);
             if (skill == null) return new ApiErrorResult<bool>("Skill does not exist");
             if (skill.Status)
@@ -35,8 +40,8 @@ namespace ESMS.BackendAPI.Services.Skills
                 {
                     return new ApiErrorResult<bool>("This skill is assigned to some employees");
                 }
-                var requiredSkill = await _context.RequiredSkills.Where(x => x.SkillID.Equals(skillID))
-                    .Select(x => new RequiredSkill()).ToListAsync();
+                var requiredSkill = await skillQuery.Where(x => x.rs.SkillID.Equals(skillID) && x.p.Status != ProjectStatus.Finished)
+                    .Select(x => x.s.SkillID).ToListAsync();
                 if (requiredSkill.Count() != 0)
                 {
                     return new ApiErrorResult<bool>("This skill is in project's requirement");
@@ -63,7 +68,7 @@ namespace ESMS.BackendAPI.Services.Skills
                 .Select(x => new Skill()).FirstOrDefaultAsync();
             if (checkName != null)
             {
-                UltilitiesService.AddOrUpdateError(errors, "SkillName", "This skill name already exist");
+                UltilitiesService.AddOrUpdateError(errors, "SkillName", "This name already exist");
                 //return new ApiErrorResult<bool>("This skill name already exist");
             }
             if (request.SkillType != (int)SkillType.HardSkill && request.SkillType != (int)SkillType.SoftSkill)
@@ -176,7 +181,7 @@ namespace ESMS.BackendAPI.Services.Skills
             var query = from mp in _context.MinPosInProjects
                         join s in _context.Skills on mp.SkillID equals s.SkillID
                         select new { mp, s };
-            var skills = await query.Where(x => x.mp.TypeID.Equals(typeID) && x.mp.PosID.Equals(posID))
+            var skills = await query.Where(x => x.mp.TypeID.Equals(typeID) && x.mp.PosID.Equals(posID) && x.s.Status.Equals(true))
                 .Select(x => new HardSkillVM()
                 {
                     SkillID = x.mp.SkillID,
@@ -234,7 +239,7 @@ namespace ESMS.BackendAPI.Services.Skills
 
         public async Task<ApiResult<List<ListSkillViewModel>>> GetSkills(int skillType)
         {
-            var skills = await _context.Skills.Where(x => x.SkillType.Equals((SkillType)skillType)).Select(x => new ListSkillViewModel()
+            var skills = await _context.Skills.Where(x => x.SkillType.Equals((SkillType)skillType) && x.Status.Equals(true)).Select(x => new ListSkillViewModel()
             {
                 SkillID = x.SkillID,
                 SkillName = x.SkillName
@@ -251,7 +256,7 @@ namespace ESMS.BackendAPI.Services.Skills
             var query = from sp in _context.SkillInProjectFields
                         join s in _context.Skills on sp.SkillID equals s.SkillID
                         select new { sp, s };
-            var skills = await query.Where(x => x.sp.FieldID.Equals(fieldID))
+            var skills = await query.Where(x => x.sp.FieldID.Equals(fieldID) && x.s.Status.Equals(true))
                 .Select(x => x.sp.SkillID).ToListAsync();
             if (skills.Count() == 0)
             {
@@ -271,7 +276,7 @@ namespace ESMS.BackendAPI.Services.Skills
                 .Select(x => new Skill()).FirstOrDefaultAsync();
                 if (checkName != null)
                 {
-                    UltilitiesService.AddOrUpdateError(errors, "SkillName", "This skill name already exist");
+                    UltilitiesService.AddOrUpdateError(errors, "SkillName", "This name already exist");
                     //return new ApiErrorResult<bool>("This skill name already exist");
                 }
             }
@@ -283,20 +288,16 @@ namespace ESMS.BackendAPI.Services.Skills
             {
                 if (skill.SkillType.Equals(SkillType.HardSkill))
                 {
-                    var checkSkill = await _context.MinPosInProjects.Where(x => x.SkillID.Equals(skill.SkillID))
-                         .Select(x => new MinPosInProject()).ToListAsync();
-                    if (checkSkill.Count() != 0)
+                    if (request.HardSkillOption.Count() != 0)
                     {
-                        return new ApiErrorResult<bool>("Cannot change skill type");
+                        UltilitiesService.AddOrUpdateError(errors, "SkillType", "Can not change type, please remove all this previous type(HardSkill)'s option");
                     }
                 }
-                if (skill.SkillType.Equals(SkillType.SoftSkill))
+                else if (skill.SkillType.Equals(SkillType.SoftSkill))
                 {
-                    var checkSkill = await _context.SkillInProjectFields.Where(x => x.SkillID.Equals(skill.SkillID))
-                         .Select(x => new SkillInProjectField()).ToListAsync();
-                    if (checkSkill.Count() != 0)
+                    if (request.SoftSkillOption.Count() != 0)
                     {
-                        return new ApiErrorResult<bool>("Cannot change skill type");
+                        UltilitiesService.AddOrUpdateError(errors, "SkillType", "Can not change type, please remove all this previous type(HardSkill)'s option");
                     }
                 }
             }
@@ -312,20 +313,34 @@ namespace ESMS.BackendAPI.Services.Skills
             {
                 return new ApiErrorResult<bool>("Update skill failed");
             }
-            if (request.SkillType.Equals((int)SkillType.HardSkill))
-            {
-                var MinPos = await _context.MinPosInProjects.Where(x => x.SkillID.Equals(skillID))
+            var listMinPos = await _context.MinPosInProjects.Where(x => x.SkillID.Equals(skillID))
                     .Select(x => new MinPosInProject()
                     {
                         SkillID = x.SkillID,
                         TypeID = x.TypeID,
                         PosID = x.PosID
                     }).ToListAsync();
+            var skillInFields = await _context.SkillInProjectFields.Where(x => x.SkillID.Equals(skillID))
+                    .Select(x => new SkillInProjectField()
+                    {
+                        SkillID = x.SkillID,
+                        FieldID = x.FieldID
+                    }).ToListAsync();
+
+            if (request.SkillType.Equals((int)SkillType.HardSkill))
+            {
+                if (skillInFields.Count() != 0)
+                {
+                    foreach (var sf in skillInFields)
+                    {
+                        _context.SkillInProjectFields.Remove(sf);
+                    }
+                }
                 if (request.HardSkillOption.Count() != 0)
                 {
-                    if (MinPos.Count() != 0)
+                    if (listMinPos.Count() != 0)
                     {
-                        foreach (var mp in MinPos)
+                        foreach (var mp in listMinPos)
                         {
                             var check = false;
                             foreach (var type in request.HardSkillOption)
@@ -374,9 +389,9 @@ namespace ESMS.BackendAPI.Services.Skills
                 }
                 else
                 {
-                    if (MinPos.Count() != 0)
+                    if (listMinPos.Count() != 0)
                     {
-                        foreach (var mp in MinPos)
+                        foreach (var mp in listMinPos)
                         {
                             _context.MinPosInProjects.Remove(mp);
                         }
@@ -390,12 +405,13 @@ namespace ESMS.BackendAPI.Services.Skills
             }
             if (request.SkillType.Equals((int)SkillType.SoftSkill))
             {
-                var skillInFields = await _context.SkillInProjectFields.Where(x => x.SkillID.Equals(skillID))
-                    .Select(x => new SkillInProjectField()
+                if (listMinPos.Count() != 0)
+                {
+                    foreach (var mp in listMinPos)
                     {
-                        SkillID = x.SkillID,
-                        FieldID = x.FieldID
-                    }).ToListAsync();
+                        _context.MinPosInProjects.Remove(mp);
+                    }
+                }
                 if (request.SoftSkillOption.Count() != 0)
                 {
                     if (skillInFields.Count() != 0)
