@@ -61,7 +61,7 @@ namespace ESMS.BackendAPI.Controllers
             var result = await _userService.Update(id, request);
             if (!result.IsSuccessed)
             {
-                return BadRequest(result);
+                return StatusCode(StatusCodes.Status403Forbidden, result);
             }
             return Ok(result);
         }
