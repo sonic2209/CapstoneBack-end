@@ -43,12 +43,6 @@ namespace ESMS.BackendAPI.Services.Projects
 
         Task<ApiResult<List<ProjectFieldViewModel>>> GetProjectFields();
 
-        Task<ApiResult<string>> CheckStatus(AddRequiredPositionRequest request);
-
-        Task<ApiResult<StatisticViewModel>> GetStatistics();
-
-        Task<ApiResult<List<PosInProject>>> GetStatisticsByEmpID(string empID);
-
         Task<ApiResult<bool>> CheckProject();
 
         List<ProjectVM> GetMissEmpProjects(string empID);

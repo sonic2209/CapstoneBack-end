@@ -60,10 +60,6 @@ namespace ESMS.BackendAPI.Services.Positions
                 UltilitiesService.AddOrUpdateError(errors, "Name", "This name already exist");
                 //return new ApiErrorResult<bool>("This position name already exist");
             }
-            if (request.Description.All(char.IsDigit))
-            {
-                UltilitiesService.AddOrUpdateError(errors, "Description", "Description can not be digits only");
-            }
             if (errors.Count() > 0)
             {
                 return new ApiErrorResult<bool>(errors);
@@ -155,11 +151,6 @@ namespace ESMS.BackendAPI.Services.Positions
                     //return new ApiErrorResult<bool>("This position name already exist");
                 }
             }
-            if (request.Description.All(char.IsDigit))
-            {
-                UltilitiesService.AddOrUpdateError(errors, "Description", "Description can not be digits only");
-            }
-
             if (errors.Count() > 0)
             {
                 return new ApiErrorResult<bool>(errors);

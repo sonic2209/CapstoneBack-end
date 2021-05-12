@@ -78,7 +78,7 @@ namespace ESMS.BackendAPI.Controllers
             var result = await _skillService.ChangeStatus(skillID);
             if (!result.IsSuccessed)
             {
-                return BadRequest(result);
+                return StatusCode(StatusCodes.Status400BadRequest, result);
             }
             return Ok(result);
         }

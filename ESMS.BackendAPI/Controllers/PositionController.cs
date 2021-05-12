@@ -85,10 +85,9 @@ namespace ESMS.BackendAPI.Controllers
                 return BadRequest();
             }
             var result = await _positionService.ChangeStatus(positionID);
-
             if (!result.IsSuccessed)
             {
-                return BadRequest(result);
+                return StatusCode(StatusCodes.Status400BadRequest, result);
             }
             return Ok(result);
         }
