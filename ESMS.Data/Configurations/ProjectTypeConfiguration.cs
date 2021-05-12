@@ -13,7 +13,7 @@ namespace ESMS.Data.Configurations
         {
             builder.ToTable("ProjectTypes");
             builder.HasKey(x => x.ID);
-            builder.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            builder.Property(x => x.Name).HasMaxLength(100).IsRequired();
         }
     }
 }

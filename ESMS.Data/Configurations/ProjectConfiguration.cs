@@ -16,8 +16,8 @@ namespace ESMS.Data.Configurations
             builder.HasKey(x => x.ProjectID);
             builder.Property(x => x.ProjectID).UseIdentityColumn();
             builder.HasIndex(x => x.ProjectName).IsUnique();
-            builder.Property(x => x.ProjectName).HasMaxLength(200).IsRequired();
-            builder.Property(x => x.Description).IsRequired();
+            builder.Property(x => x.ProjectName).HasMaxLength(100).IsRequired();
+            builder.Property(x => x.Description).HasMaxLength(1000).IsRequired();
             builder.Property(x => x.Status).HasDefaultValue(ProjectStatus.Pending);
             builder.Property(x => x.DateBegin).HasColumnType("date");
             builder.Property(x => x.DateEstimatedEnd).HasColumnType("date");

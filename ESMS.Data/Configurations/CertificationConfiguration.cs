@@ -14,8 +14,8 @@ namespace ESMS.Data.Configurations
             builder.ToTable("Certifications");
             builder.HasKey(x => x.CertificationID);
             builder.Property(x => x.CertificationID).UseIdentityColumn();
-            builder.Property(x => x.CertificationName).IsRequired();
-            builder.Property(x => x.Description).IsRequired();
+            builder.Property(x => x.CertificationName).HasMaxLength(200).IsRequired();
+            builder.Property(x => x.Description).HasMaxLength(1000).IsRequired();
             builder.Property(x => x.Status).HasDefaultValue(true);
             builder.HasOne(x => x.Skill).WithMany(x => x.Certifications).HasForeignKey(x => x.SkillID);
         }

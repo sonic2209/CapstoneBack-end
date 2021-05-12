@@ -13,9 +13,9 @@ namespace ESMS.Data.Configurations
         public void Configure(EntityTypeBuilder<Employee> builder)
         {
             builder.ToTable("Employees");
-            builder.Property(x => x.Name).HasMaxLength(200).IsRequired();
-            builder.Property(x => x.Address).IsRequired();
-            builder.Property(x => x.IdentityNumber).HasMaxLength(200).IsRequired();
+            builder.Property(x => x.Name).HasMaxLength(50).IsRequired();
+            builder.Property(x => x.Address).HasMaxLength(100).IsRequired();
+            builder.Property(x => x.IdentityNumber).HasMaxLength(12).IsRequired();
             builder.Property(x => x.Status).HasDefaultValue(EmployeeStatus.OnGoing);
             builder.Property(x => x.Id).ValueGeneratedOnAdd();
         }

@@ -14,8 +14,8 @@ namespace ESMS.Data.Configurations
             builder.ToTable("Positions");
             builder.HasKey(x => x.PosID);
             builder.Property(x => x.PosID).UseIdentityColumn();
-            builder.Property(x => x.Name).HasMaxLength(200).IsRequired();
-            builder.Property(x => x.Description).IsRequired();
+            builder.Property(x => x.Name).HasMaxLength(100).IsRequired();
+            builder.Property(x => x.Description).HasMaxLength(1000).IsRequired();
             builder.Property(x => x.Status).HasDefaultValue(true);
         }
     }
