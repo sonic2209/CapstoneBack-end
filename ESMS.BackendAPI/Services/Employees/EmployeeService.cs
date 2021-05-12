@@ -828,6 +828,14 @@ namespace ESMS.BackendAPI.Services.Employees
                             listMatchDetail.Add(matchDetail);
                         }
                     }
+                    listMatchDetail = listMatchDetail.OrderByDescending(x => x.OverallMatch).ToList();
+                    for (int i =0; i< requiredPosition.CandidateNeeded; i++)
+                    {
+                        if (listMatchDetail[i] != null)
+                        {
+                            listMatchDetail[i].IsHighest = true;
+                        }
+                    } 
                     //}
                     result.Add(new CandidateViewModel()
                     {

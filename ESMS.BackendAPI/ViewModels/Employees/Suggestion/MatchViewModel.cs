@@ -10,6 +10,7 @@ namespace ESMS.BackendAPI.ViewModels.Employees.Suggestion
     {
         public string EmpID { get; set; }
         public string EmpName { get; set; }
+        public bool IsHighest { get; set; } = false;
         public double LanguageMatch { get; set; }
         public double SoftSkillMatch { get; set; }
         public double HardSkillMatch { get; set; }
