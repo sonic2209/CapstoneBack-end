@@ -71,10 +71,10 @@ namespace ESMS.BackendAPI.Services.Skills
                 UltilitiesService.AddOrUpdateError(errors, "SkillName", "This name already exist");
                 //return new ApiErrorResult<bool>("This skill name already exist");
             }
-            if (request.SkillType != (int)SkillType.HardSkill && request.SkillType != (int)SkillType.SoftSkill)
-            {
-                UltilitiesService.AddOrUpdateError(errors, "SkillType", "Please select skill type(hard skill or soft skill)");
-            }
+            //if (request.SkillType != (int)SkillType.HardSkill && request.SkillType != (int)SkillType.SoftSkill)
+            //{
+            //    UltilitiesService.AddOrUpdateError(errors, "SkillType", "Please select hard skill or soft skill only");
+            //}
             if (errors.Count() > 0)
             {
                 return new ApiErrorResult<bool>(errors);

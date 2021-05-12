@@ -12,7 +12,6 @@ namespace ESMS.BackendAPI.ViewModels.Certification
         {
             RuleFor(x => x.CertificationName).NotEmpty().WithMessage("Name can not be empty");
             RuleFor(x => x.CertificationName).MaximumLength(100).WithMessage("Name can not exceed 100 characters")
-                .Matches(@"^(?:[^\W\d_]| )+$").WithMessage("Name can not contain digits or special characters")
                 .When(x => !String.IsNullOrWhiteSpace(x.CertificationName));
 
             RuleFor(x => x.Description).NotEmpty().WithMessage("Description can not be empty");

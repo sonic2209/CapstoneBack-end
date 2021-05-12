@@ -109,7 +109,7 @@ namespace ESMS.BackendAPI.Services.Certifications
             }
             int totalRow = await query.CountAsync();
             var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
-                .Take(request.PageSize)
+                .Take(request.PageSize).OrderBy(x => x.s.SkillID)
                 .Select(x => new CertificationViewModel()
                 {
                     CertificationID = x.c.CertificationID,

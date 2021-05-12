@@ -726,6 +726,11 @@ namespace ESMS.BackendAPI.Services.Projects
                     return message;
                 }
                 message = position.Name + " - ";
+                string positionMessage = "";
+                if (pos.CandidateNeeded <= 0)
+                {
+                    positionMessage += position.Name + " - Please select candidate needs higher than 0";
+                }
                 string hardSkillMessage = "";
                 string softSkillMessage = "";
                 string languageMessage = "";
@@ -804,9 +809,17 @@ namespace ESMS.BackendAPI.Services.Projects
                         }
                     }
                 }
-                if (!hardSkillMessage.Equals("") || !languageMessage.Equals("") || !softSkillMessage.Equals(""))
+                if (!positionMessage.Equals("") || !hardSkillMessage.Equals("") || !languageMessage.Equals("") || !softSkillMessage.Equals(""))
                 {
                     string text = "";
+                    if (!positionMessage.Equals(""))
+                    {
+                        text += positionMessage;
+                        if (!hardSkillMessage.Equals("") || !languageMessage.Equals("") || !softSkillMessage.Equals(""))
+                        {
+                            text += ", ";
+                        }
+                    }
                     if (!hardSkillMessage.Equals(""))
                     {
                         text += hardSkillMessage;
