@@ -9,6 +9,9 @@ namespace ESMS.BackendAPI.ViewModels.Project
     {
         public int ProjectID { get; set; }
         public string ProjectName { get; set; }
+        public DateTime DateBegin { get; set; }
+        public DateTime DateEstimatedEnd { get; set; }
+        public DateTime? DateEnd { get; set; }
         public string PosName { get; set; }
         public DateTime? DateIn { get; set; }
     }

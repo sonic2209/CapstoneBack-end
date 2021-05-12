@@ -729,7 +729,7 @@ namespace ESMS.BackendAPI.Services.Projects
                 string positionMessage = "";
                 if (pos.CandidateNeeded <= 0)
                 {
-                    positionMessage += position.Name + " - Please select candidate needs higher than 0";
+                    positionMessage = "Please select candidate needs higher than 0";
                 }
                 string hardSkillMessage = "";
                 string softSkillMessage = "";
@@ -1377,6 +1377,9 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     ProjectID = x.p.ProjectID,
                     ProjectName = x.p.ProjectName,
+                    DateBegin = x.p.DateBegin,
+                    DateEstimatedEnd = x.p.DateEstimatedEnd,
+                    DateEnd = x.p.DateEnd,
                     DateIn = x.ep.DateIn
                 }).ToListAsync();
             var posQuery = from po in _context.Positions

@@ -45,7 +45,6 @@ namespace ESMS.BackendAPI.Services.Employees
             _context = context;
             _projectService = projectService;
         }
-        
 
         public async Task<ApiResult<LoginVm>> Authenticate(LoginRequest request)
         {
@@ -120,7 +119,7 @@ namespace ESMS.BackendAPI.Services.Employees
             if (result.Succeeded)
             {
                 if (await _userManager.IsInRoleAsync(user, request.RoleName) == false)
-                {                    
+                {
                     var addtoroleResult = await _userManager.AddToRoleAsync(user, request.RoleName);
                     if (!addtoroleResult.Succeeded)
                     {
@@ -135,7 +134,7 @@ namespace ESMS.BackendAPI.Services.Employees
                 string empID = user.Id;
                 return new ApiSuccessResult<string>(empID);
             }
-            
+
             foreach (var error in result.Errors)
             {
                 errorMessage += error.Description + Environment.NewLine;
@@ -224,7 +223,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 {
                                     if (checkHardSkill == false)
                                     {
-                                        UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Please select certification for skill " + skill.SkillName);
+                                        UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Please select certificate for skill " + skill.SkillName);
                                         checkHardSkill = true;
                                     }
                                     //return new ApiErrorResult<bool>("Please select certification for skill " + skill.SkillName);
@@ -234,7 +233,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 {
                                     if (checkHardSkill == false)
                                     {
-                                        UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification for skill " + skill.SkillName + " not found");
+                                        UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificatie for skill " + skill.SkillName + " not found");
                                         checkHardSkill = true;
                                     }
                                     //return new ApiErrorResult<bool>("Certification for skill " + skill.SkillName + " not found");
@@ -245,7 +244,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                     {
                                         if (checkHardSkill == false)
                                         {
-                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification:" + certi.CertificationName + " for skill " + skill.SkillName + " is disable");
+                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " is disable");
                                             checkHardSkill = true;
                                         }
                                         //return new ApiErrorResult<bool>("Certification:" + certi.CertificationName + " for skill " + skill.SkillName + " is disable");
@@ -254,7 +253,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                     {
                                         if (checkHardSkill == false)
                                         {
-                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - Please input date taken");
+                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - Please input date taken");
                                             checkHardSkill = true;
                                         }
                                         //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - Please input date taken");
@@ -263,7 +262,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                     {
                                         if (checkHardSkill == false)
                                         {
-                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is wrong format");
+                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is wrong format");
                                             checkHardSkill = true;
                                         }
                                     }
@@ -276,7 +275,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                     {
                                         if (checkHardSkill == false)
                                         {
-                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is after today");
+                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is after today");
                                             checkHardSkill = true;
                                         }
                                         //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is after today");
@@ -297,7 +296,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                         {
                                             if (checkHardSkill == false)
                                             {
-                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date end is wrong format");
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date end is wrong format");
                                                 checkHardSkill = true;
                                             }
                                         }
@@ -309,7 +308,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                         {
                                             if (checkHardSkill == false)
                                             {
-                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
                                                 checkHardSkill = true;
                                             }
                                             //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
@@ -318,7 +317,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                         {
                                             if (checkHardSkill == false)
                                             {
-                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
                                                 checkHardSkill = true;
                                             }
                                             //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
@@ -568,6 +567,7 @@ namespace ESMS.BackendAPI.Services.Employees
                 return new ApiSuccessResult<PagedResult<MatchViewModel>>(pagedResult);
             }
         }
+
         public async Task<ApiResult<List<CandidateViewModel>>> SuggestCandidate(int projectID, SuggestCadidateRequest request)
         {
             List<CandidateViewModel> result = new List<CandidateViewModel>();
@@ -829,13 +829,13 @@ namespace ESMS.BackendAPI.Services.Employees
                         }
                     }
                     listMatchDetail = listMatchDetail.OrderByDescending(x => x.OverallMatch).ToList();
-                    for (int i =0; i< requiredPosition.CandidateNeeded; i++)
+                    for (int i = 0; i < requiredPosition.CandidateNeeded; i++)
                     {
                         if (listMatchDetail[i] != null)
                         {
                             listMatchDetail[i].IsHighest = true;
                         }
-                    } 
+                    }
                     //}
                     result.Add(new CandidateViewModel()
                     {
@@ -1799,7 +1799,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 {
                                     if (checkHardSkill == false)
                                     {
-                                        UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Please select certification for skill " + skill.SkillName);
+                                        UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Please select certificate for skill " + skill.SkillName);
                                         checkHardSkill = true;
                                     }
                                     //return new ApiErrorResult<bool>("Please select certification for skill " + skill.SkillName);
@@ -1809,7 +1809,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 {
                                     if (checkHardSkill == false)
                                     {
-                                        UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification for skill " + skill.SkillName + " not found");
+                                        UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate for skill " + skill.SkillName + " not found");
                                         checkHardSkill = true;
                                     }
                                     //return new ApiErrorResult<bool>("Certification for skill " + skill.SkillName + " not found");
@@ -1820,7 +1820,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                     {
                                         if (checkHardSkill == false)
                                         {
-                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification:" + certi.CertificationName + " for skill " + skill.SkillName + " is disable");
+                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " is disable");
                                             checkHardSkill = true;
                                         }
                                         //return new ApiErrorResult<bool>("Certification:" + certi.CertificationName + " for skill " + skill.SkillName + " is disable");
@@ -1829,7 +1829,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                     {
                                         if (checkHardSkill == false)
                                         {
-                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - Please input date taken");
+                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - Please input date taken");
                                             checkHardSkill = true;
                                         }
                                         //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - Please input date taken");
@@ -1838,7 +1838,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                     {
                                         if (checkHardSkill == false)
                                         {
-                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is wrong format");
+                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is wrong format");
                                             checkHardSkill = true;
                                         }
                                     }
@@ -1850,7 +1850,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                     {
                                         if (checkHardSkill == false)
                                         {
-                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is after today");
+                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is after today");
                                             checkHardSkill = true;
                                         }
                                         //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is after today");
@@ -1862,7 +1862,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                         {
                                             if (checkHardSkill == false)
                                             {
-                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date end is wrong format");
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date end is wrong format");
                                                 checkHardSkill = true;
                                             }
                                         }
@@ -1874,7 +1874,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                         {
                                             if (checkHardSkill == false)
                                             {
-                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
                                                 checkHardSkill = true;
                                             }
                                             //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
@@ -1883,7 +1883,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                         {
                                             if (checkHardSkill == false)
                                             {
-                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
                                                 checkHardSkill = true;
                                             }
                                             //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
@@ -1918,7 +1918,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                                 {
                                                     if (checkHardSkill == false)
                                                     {
-                                                        UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is later than date expired");
+                                                        UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is later than date expired");
                                                         checkHardSkill = true;
                                                     }
                                                     //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is later than date expired");
@@ -1940,7 +1940,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                                     {
                                                         if (checkHardSkill == false)
                                                         {
-                                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
+                                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
                                                             checkHardSkill = true;
                                                         }
                                                         //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
@@ -1949,7 +1949,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                                     {
                                                         if (checkHardSkill == false)
                                                         {
-                                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
+                                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
                                                             checkHardSkill = true;
                                                         }
                                                         //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
@@ -2227,7 +2227,7 @@ namespace ESMS.BackendAPI.Services.Employees
             var user = await _userManager.FindByIdAsync(id.ToString());
             if (user == null)
             {
-                return new ApiErrorResult<bool> ("This account does not exist");
+                return new ApiErrorResult<bool>("This account does not exist");
             }
             var result1 = _userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, request.CurrentPassword);
             if (result1 != PasswordVerificationResult.Success)
