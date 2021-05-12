@@ -126,9 +126,9 @@ namespace ESMS.BackendAPI.Services.Employees
                     {
                         foreach (var error in result.Errors)
                         {
-                            errorMessage += error.Description + "\n";
+                            errorMessage += error.Description + Environment.NewLine;
                         }
-                        return new ApiErrorResult<string>("Register failed:" + errorMessage);
+                        return new ApiErrorResult<string>("Register failed: " + errorMessage);
                     }
                 }
                 user = await _userManager.FindByNameAsync(request.UserName);
@@ -138,9 +138,9 @@ namespace ESMS.BackendAPI.Services.Employees
             
             foreach (var error in result.Errors)
             {
-                errorMessage += error.Description + "\n";
+                errorMessage += error.Description + Environment.NewLine;
             }
-            return new ApiErrorResult<string>("Register failed" + errorMessage);
+            return new ApiErrorResult<string>("Register failed: " + errorMessage);
         }
 
         public async Task<ApiResult<bool>> AddEmpPosition(string empID, AddEmpPositionRequest request)
@@ -1510,9 +1510,15 @@ namespace ESMS.BackendAPI.Services.Employees
 
         public async Task<ApiResult<bool>> Update(string id, EmpUpdateRequest request)
         {
+            Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
+
             if (await _userManager.Users.AnyAsync(x => x.Email.Equals(request.Email) && x.Id != id))
             {
-                return new ApiErrorResult<bool>("Email existed");
+                UltilitiesService.AddOrUpdateError(errors, "Email", "Email already exists");
+            }
+            if (errors.Count > 0)
+            {
+                return new ApiErrorResult<bool>(errors);
             }
             var user = await _userManager.FindByIdAsync(id.ToString());
             user.IdentityNumber = request.IdentityNumber;
@@ -1522,22 +1528,44 @@ namespace ESMS.BackendAPI.Services.Employees
             user.PhoneNumber = request.PhoneNumber;
             var result = await _userManager.UpdateAsync(user);
             var roles = await _userManager.GetRolesAsync(user);
+
+            string errorMessage = null;
             if (await _userManager.IsInRoleAsync(user, request.RoleName) == false)
             {
                 foreach (string rolename in roles)
                 {
                     if (await _userManager.IsInRoleAsync(user, rolename) == true)
                     {
-                        await _userManager.RemoveFromRoleAsync(user, rolename);
+                        var removefromroleResult = await _userManager.RemoveFromRoleAsync(user, rolename);
+                        if (!removefromroleResult.Succeeded)
+                        {
+                            foreach (var error in result.Errors)
+                            {
+                                errorMessage += error.Description + Environment.NewLine;
+                            }
+                            return new ApiErrorResult<bool>("Update user failed: " + errorMessage);
+                        }
                     }
                 }
-                await _userManager.AddToRoleAsync(user, request.RoleName);
+                var addtoroleResult = await _userManager.AddToRoleAsync(user, request.RoleName);
+                if (!addtoroleResult.Succeeded)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        errorMessage += error.Description + Environment.NewLine;
+                    }
+                    return new ApiErrorResult<bool>("Update user failed: " + errorMessage);
+                }
             }
             if (result.Succeeded)
             {
                 return new ApiSuccessResult<bool>();
             }
-            return new ApiErrorResult<bool>("Update user failed");
+            foreach (var error in result.Errors)
+            {
+                errorMessage += error.Description + Environment.NewLine;
+            }
+            return new ApiErrorResult<bool>("Update user failed: " + errorMessage);
         }
 
         public async Task<ApiResult<EmpInfoViewModel>> GetEmpInfo(string empID)
@@ -2210,12 +2238,19 @@ namespace ESMS.BackendAPI.Services.Employees
             {
                 return new ApiErrorResult<bool>(errors);
             }
+
+            string errorMessage = null;
+
             var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
             if (result.Succeeded)
             {
                 return new ApiSuccessResult<bool>();
             }
-            return new ApiErrorResult<bool>("Change password failed");
+            foreach (var error in result.Errors)
+            {
+                errorMessage += error.Description + Environment.NewLine;
+            }
+            return new ApiErrorResult<bool>("Change password failed" + errorMessage);
         }
     }
 }
