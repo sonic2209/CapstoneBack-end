@@ -138,7 +138,7 @@ namespace ESMS.BackendAPI.Controllers
             var result = await _projectService.ChangeStatus(projectID);
             if (!result.IsSuccessed)
             {
-                return BadRequest(result);
+                return StatusCode(StatusCodes.Status400BadRequest, result);
             }
             return Ok(result);
         }
@@ -188,20 +188,6 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(result);
         }
 
-        [HttpPost("checkStatus")]
-        public async Task<IActionResult> CheckStatus([FromBody] AddRequiredPositionRequest request)
-        {
-            var message = await _projectService.CheckStatus(request);
-            return Ok(message);
-        }
-
-        [HttpGet("getStatistics")]
-        public async Task<IActionResult> GetStatistics()
-        {
-            var result = await _projectService.GetStatistics();
-            return Ok(result);
-        }
-
         [HttpGet("getMissEmpPos")]
         public async Task<IActionResult> GetMissEmpPos()
         {
@@ -213,13 +199,6 @@ namespace ESMS.BackendAPI.Controllers
         public async Task<IActionResult> GetSkillInPos(int posID)
         {
             var result = await _projectService.GetSkillInPos(posID);
-            return Ok(result);
-        }
-
-        [HttpGet("getStatistics/{empID}")]
-        public async Task<IActionResult> GetStatisticsByEmpID(string empID)
-        {
-            var result = await _projectService.GetStatisticsByEmpID(empID);
             return Ok(result);
         }
 

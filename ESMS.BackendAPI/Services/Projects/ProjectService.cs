@@ -30,11 +30,12 @@ namespace ESMS.BackendAPI.Services.Projects
             bool checkDateBegin = false;
             bool checkDateEnd = false;
             var project = await _context.Projects.FindAsync(request.ProjectID);
+            var checkText = new string(request.ProjectName.Where(c => !Char.IsWhiteSpace(c)).ToArray());
             DateTime dateBegin = DateTime.Parse(request.DateBegin);
             DateTime dateEstimatedEnd = DateTime.Parse(request.DateEstimatedEnd);
             if (project != null)
             {
-                if (request.ProjectName.All(char.IsDigit))
+                if (checkText.All(char.IsDigit))
                 {
                     UltilitiesService.AddOrUpdateError(errors, "ProjectName", "Name can not be digits only");
                     checkProjectName = true;
@@ -50,10 +51,6 @@ namespace ESMS.BackendAPI.Services.Projects
                         }
                         //return new ApiErrorResult<int>("projectName : This project name already exist");
                     }
-                }
-                if (request.Description.All(char.IsDigit))
-                {
-                    UltilitiesService.AddOrUpdateError(errors, "Description", "Description can not be digits only");
                 }
                 var checkProjectDate = await _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished
                 && x.ProjectID != project.ProjectID).OrderBy(x => x.DateEstimatedEnd)
@@ -169,7 +166,7 @@ namespace ESMS.BackendAPI.Services.Projects
             }
             else
             {
-                if (request.ProjectName.All(char.IsDigit))
+                if (checkText.All(char.IsDigit))
                 {
                     UltilitiesService.AddOrUpdateError(errors, "ProjectName", "Name can not be digits only");
                     checkProjectName = true;
@@ -183,10 +180,6 @@ namespace ESMS.BackendAPI.Services.Projects
                         UltilitiesService.AddOrUpdateError(errors, "ProjectName", "This name already exist");
                     }
                     //return new ApiErrorResult<int>("projectName : This project name already exist");
-                }
-                if (request.Description.All(char.IsDigit))
-                {
-                    UltilitiesService.AddOrUpdateError(errors, "Description", "Description can not be digits only");
                 }
                 var checkProjectDate = await _context.Projects.Where(x => x.ProjectManagerID.Equals(empID) && x.Status != ProjectStatus.Finished)
                     .OrderBy(x => x.DateEstimatedEnd).Select(x => new Project()
@@ -719,8 +712,137 @@ namespace ESMS.BackendAPI.Services.Projects
             return new ApiSuccessResult<bool>();
         }
 
+        private string CheckStatus(AddRequiredPositionRequest request)
+        {
+            string message = "";
+            foreach (var pos in request.RequiredPositions)
+            {
+                if (pos.PosID == 0) return "Please select position";
+                var position = _context.Positions.Find(pos.PosID);
+                if (position == null) return "Position not found";
+                if (!position.Status)
+                {
+                    message = "Position " + position.Name + " is not enable";
+                    return message;
+                }
+                message = position.Name + " - ";
+                string hardSkillMessage = "";
+                string softSkillMessage = "";
+                string languageMessage = "";
+                if (pos.HardSkills.Count() == 0)
+                {
+                    hardSkillMessage = "Must have at least 1 hard skill";
+                }
+                else
+                {
+                    foreach (var hardSkill in pos.HardSkills)
+                    {
+                        if (hardSkill.HardSkillID == 0)
+                        {
+                            hardSkillMessage = "Please select hard skill";
+                            break;
+                        }
+                        var skill = _context.Skills.Find(hardSkill.HardSkillID);
+                        if (skill == null)
+                        {
+                            hardSkillMessage = "Hard skill not found";
+                            break;
+                        }
+                        if (!skill.Status)
+                        {
+                            hardSkillMessage = "Skill " + skill.SkillName + " is not enable";
+                            break;
+                        }
+                    }
+                }
+
+                if (pos.Language.Count() == 0)
+                {
+                    languageMessage = "Must have at least 1 language";
+                }
+                else
+                {
+                    foreach (var lang in pos.Language)
+                    {
+                        if (lang.LangID == 0)
+                        {
+                            languageMessage = "Please select language";
+                            break;
+                        }
+                        var language = _context.Languages.Find(lang.LangID);
+                        if (language == null)
+                        {
+                            languageMessage = "Language not found";
+                            break;
+                        }
+                    }
+                }
+
+                if (pos.SoftSkillIDs.Count() == 0)
+                {
+                    softSkillMessage = "Must have at least 1 soft skill";
+                }
+                else
+                {
+                    foreach (var id in pos.SoftSkillIDs)
+                    {
+                        if (id == 0)
+                        {
+                            softSkillMessage = "Please select soft skill";
+                            break;
+                        }
+                        var skill = _context.Skills.Find(id);
+                        if (skill == null)
+                        {
+                            softSkillMessage = "Soft skill not found";
+                            break;
+                        }
+                        if (!skill.Status)
+                        {
+                            softSkillMessage = "Skill " + skill.SkillName + " is not enable";
+                            break;
+                        }
+                    }
+                }
+                if (!hardSkillMessage.Equals("") || !languageMessage.Equals("") || !softSkillMessage.Equals(""))
+                {
+                    string text = "";
+                    if (!hardSkillMessage.Equals(""))
+                    {
+                        text += hardSkillMessage;
+                        if (!languageMessage.Equals("") || !softSkillMessage.Equals(""))
+                            text += ", ";
+                    }
+                    if (!languageMessage.Equals(""))
+                    {
+                        text += languageMessage;
+                        if (!softSkillMessage.Equals(""))
+                            text += ", ";
+                    }
+                    if (!softSkillMessage.Equals(""))
+                    {
+                        text += softSkillMessage;
+                    }
+                    message += text;
+                    break;
+                }
+                else
+                {
+                    message = "";
+                }
+            }
+            return message;
+        }
+
         public async Task<ApiResult<List<RequiredPositionDetail>>> AddRequiredPosition(int projectID, AddRequiredPositionRequest request)
         {
+            Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
+            string message = CheckStatus(request);
+            if (!message.Equals(""))
+            {
+                UltilitiesService.AddOrUpdateError(errors, "RequiredPositions", message);
+                return new ApiErrorResult<List<RequiredPositionDetail>>(errors);
+            }
             foreach (var position in request.RequiredPositions)
             {
                 var requiredPosition = new RequiredPosition()
@@ -761,9 +883,6 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     foreach (var softSkill in position.SoftSkillIDs)
                     {
-                        var skill = await _context.Skills.FindAsync(softSkill);
-                        if (skill == null) return new ApiErrorResult<List<RequiredPositionDetail>>("SoftSkill not found");
-                        if (skill.Status == false) return new ApiErrorResult<List<RequiredPositionDetail>>("SoftSkill:" + skill.SkillName + " is disable");
                         requiredSkill = new RequiredSkill()
                         {
                             RequiredPositionID = requiredPosition.ID,
@@ -781,9 +900,6 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     foreach (var hardSkill in position.HardSkills)
                     {
-                        var skill = await _context.Skills.FindAsync(hardSkill.HardSkillID);
-                        if (skill == null) return new ApiErrorResult<List<RequiredPositionDetail>>("HardSkill not found");
-                        if (skill.Status == false) return new ApiErrorResult<List<RequiredPositionDetail>>("HardSkill:" + skill.SkillName + " is disable");
                         requiredSkill = new RequiredSkill()
                         {
                             RequiredPositionID = requiredPosition.ID,
@@ -1285,134 +1401,6 @@ namespace ESMS.BackendAPI.Services.Projects
             return new ApiSuccessResult<List<ProjectTypeViewModel>>(data);
         }
 
-        public async Task<ApiResult<string>> CheckStatus(AddRequiredPositionRequest request)
-        {
-            string message;
-            foreach (var pos in request.RequiredPositions)
-            {
-                var position = await _context.Positions.FindAsync(pos.PosID);
-                if (position == null) return new ApiErrorResult<string>("position not found");
-                if (!position.Status)
-                {
-                    message = "Position " + position.Name + " is not enable";
-                    return new ApiErrorResult<string>(message);
-                }
-                foreach (var hardSkill in pos.HardSkills)
-                {
-                    var skill = await _context.Skills.FindAsync(hardSkill.HardSkillID);
-                    if (!skill.Status)
-                    {
-                        message = "Skill " + skill.SkillName + " is not enable";
-                        return new ApiErrorResult<string>(message);
-                    }
-                }
-                foreach (var lang in pos.Language)
-                {
-                    var language = await _context.Languages.FindAsync(lang.LangID);
-                    if (language == null) return new ApiErrorResult<string>("Language not found");
-                }
-                if (pos.SoftSkillIDs.Count() != 0)
-                {
-                    foreach (var id in pos.SoftSkillIDs)
-                    {
-                        var skill = await _context.Skills.FindAsync(id);
-                        if (!skill.Status)
-                        {
-                            message = "Skill " + skill.SkillName + " is not enable";
-                            return new ApiErrorResult<string>(message);
-                        }
-                    }
-                }
-            }
-            message = "Success!";
-            return new ApiSuccessResult<string>(message);
-        }
-
-        public async Task<ApiResult<StatisticViewModel>> GetStatistics()
-        {
-            var projectByTypes = new List<ProjectByType>();
-            var employeeByProjects = new List<EmployeeByProject>();
-            var employeeByPositions = new List<EmployeeByPosition>();
-            var employeeByHardSkills = new List<EmployeeByHardSkill>();
-            var projectByStatuses = new List<ProjectByStatus>();
-            var listStatus = Enum.GetValues(typeof(ProjectStatus));
-            var projectTypes = await _context.ProjectTypes.Select(x => new ProjectType()
-            {
-                ID = x.ID,
-                Name = x.Name
-            }).ToListAsync();
-            foreach (var type in projectTypes)
-            {
-                var listProject = await _context.Projects.Where(x => x.ProjectTypeID.Equals(type.ID))
-                    .Select(x => new Project()).ToListAsync();
-                var projectByType = new ProjectByType()
-                {
-                    Name = type.Name,
-                    Nop = listProject.Count()
-                };
-                projectByTypes.Add(projectByType);
-            }
-            var projects = await _context.Projects.Select(x => new Project()
-            {
-                ProjectID = x.ProjectID,
-                ProjectName = x.ProjectName
-            }).ToListAsync();
-            foreach (var p in projects)
-            {
-                var listEmp = await _context.EmpPositionInProjects
-                    .Select(x => new EmpPositionInProject()).ToListAsync();
-                var employeeByProject = new EmployeeByProject()
-                {
-                    Name = p.ProjectName,
-                    Noe = listEmp.Count()
-                };
-                employeeByProjects.Add(employeeByProject);
-            }
-            var positions = await _context.Positions.Select(x => new Position()
-            {
-                PosID = x.PosID,
-                Name = x.Name,
-            }).ToListAsync();
-            var hardSkills = await _context.Skills.Where(x => x.SkillType.Equals(SkillType.HardSkill))
-                .Select(x => new Skill()
-                {
-                    SkillID = x.SkillID,
-                    SkillName = x.SkillName
-                }).ToListAsync();
-            foreach (var s in hardSkills)
-            {
-                var listEmp = await _context.EmpSkills.Where(x => x.SkillID.Equals(s.SkillID))
-                    .Select(x => new EmpSkill()).ToListAsync();
-                var employeeByHardSkill = new EmployeeByHardSkill()
-                {
-                    Name = s.SkillName,
-                    Noe = listEmp.Count()
-                };
-                employeeByHardSkills.Add(employeeByHardSkill);
-            }
-            var topHardSkills = (from hs in employeeByHardSkills
-                                 orderby hs.Noe descending
-                                 select hs).Take(10).ToList();
-            foreach (var status in listStatus)
-            {
-                var listProject = await _context.Projects.Where(x => x.Status.Equals((ProjectStatus)status)).Select(x => new Project()).ToListAsync();
-                ProjectByStatus projectByStatus = new ProjectByStatus()
-                {
-                    Status = (int)status,
-                    Nop = listProject.Count()
-                };
-                projectByStatuses.Add(projectByStatus);
-            }
-            var statisticVM = new StatisticViewModel()
-            {
-                ProjectByTypes = projectByTypes,
-                EmployeeByProjects = employeeByProjects,
-                EmployeeByHardSkills = topHardSkills,
-                ProjectByStatuses = projectByStatuses
-            };
-            return new ApiSuccessResult<StatisticViewModel>(statisticVM);
-        }
-
         public async Task<ApiResult<List<CandidateInProject>>> GetCandidates(int projectID)
         {
             var query = from rp in _context.RequiredPositions
@@ -1456,63 +1444,6 @@ namespace ESMS.BackendAPI.Services.Projects
                 }
             }
             return new ApiSuccessResult<List<CandidateInProject>>(positions);
-        }
-
-        public async Task<ApiResult<List<PosInProject>>> GetStatisticsByEmpID(string empID)
-        {
-            var posInProjects = new List<PosInProject>();
-            var listPosLevel = Enum.GetValues(typeof(PositionLevel));
-            var listProject = await _context.Projects.Where(x => x.ProjectManagerID.Equals(empID))
-                .Select(x => new Project()
-                {
-                    ProjectID = x.ProjectID,
-                    ProjectName = x.ProjectName,
-                    DateCreated = x.DateCreated,
-                    DateEnd = x.DateEnd
-                }).ToListAsync();
-            var query = from rp in _context.RequiredPositions
-                        join po in _context.Positions on rp.PositionID equals po.PosID
-                        select new { rp, po };
-            foreach (var p in listProject)
-            {
-                var listEmpByPos = new List<EmployeeByPosition>();
-                var listEmpByPosLevel = new List<EmployeeByPosLevel>();
-                foreach (var level in listPosLevel)
-                {
-                    var empByPosLevel = new EmployeeByPosLevel()
-                    {
-                        PositionLevel = (int)level,
-                        Noe = 0
-                    };
-                    listEmpByPosLevel.Add(empByPosLevel);
-                }
-                var listPosition = await query.Where(x => x.rp.ProjectID.Equals(p.ProjectID))
-                    .Select(x => new Position()
-                    {
-                        PosID = x.rp.PositionID,
-                        Name = x.po.Name
-                    }).Distinct().ToListAsync();
-                foreach (var pos in listPosition)
-                {
-                    var listEmp = await _context.EmpPositionInProjects
-                        .Select(x => x.EmpID).ToListAsync();
-                    var empByPos = new EmployeeByPosition()
-                    {
-                        Name = pos.Name,
-                        Noe = listEmp.Count()
-                    };
-                }
-                var posInProject = new PosInProject()
-                {
-                    Name = p.ProjectName,
-                    DateCreated = p.DateCreated,
-                    DateEnd = p.DateEnd,
-                    EmployeeByPositions = listEmpByPos,
-                    EmployeeByPosLevels = listEmpByPosLevel
-                };
-                posInProjects.Add(posInProject);
-            }
-            return new ApiSuccessResult<List<PosInProject>>(posInProjects);
         }
 
         public async Task<ApiResult<List<RequiredPositionVM>>> GetRequiredPositions(int projectID)

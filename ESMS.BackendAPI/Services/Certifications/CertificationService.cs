@@ -56,11 +56,6 @@ namespace ESMS.BackendAPI.Services.Certifications
                 UltilitiesService.AddOrUpdateError(errors, "CertificationName", "This name already exists");
                 //return new ApiErrorResult<bool>("This certification name already exists");
             }
-
-            if (request.Description.All(char.IsDigit))
-            {
-                UltilitiesService.AddOrUpdateError(errors, "Description", "Description can not be digits only");
-            }
             var skill = await _context.Skills.FindAsync(request.SkillID);
             if (skill == null) UltilitiesService.AddOrUpdateError(errors, "SkillID", "Skill not found");
 
@@ -164,10 +159,6 @@ namespace ESMS.BackendAPI.Services.Certifications
                     UltilitiesService.AddOrUpdateError(errors, "CertificationName", "This name already exists");
                     //return new ApiErrorResult<bool>("this certification name already exists");
                 }
-            }
-            if (request.Description.All(char.IsDigit))
-            {
-                UltilitiesService.AddOrUpdateError(errors, "Description", "Description can not be digits only");
             }
             var skill = await _context.Skills.FindAsync(request.SkillID);
             if (skill == null) UltilitiesService.AddOrUpdateError(errors, "SkillID", "Skill not found");
