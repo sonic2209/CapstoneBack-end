@@ -112,7 +112,7 @@ namespace ESMS.BackendAPI.Services.Employees
             };
             var pwd = new Password().IncludeLowercase().IncludeUppercase().IncludeNumeric().LengthRequired(8);
             var presult = pwd.Next();
-            string password = "Abcd1234$";
+            string password = "Abcd1234";
 
             string errorMessage = null;
             var result = await _userManager.CreateAsync(user, password);
@@ -489,7 +489,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             select new { u, r, ur };
                 if (!string.IsNullOrEmpty(request.Keyword))
                 {
-                    query = query.Where(x => (x.u.UserName.Contains(request.Keyword) || x.u.Name.Contains(request.Keyword) || x.u.PhoneNumber.Contains(request.Keyword)
+                    query = query.Where(x => (x.u.UserName.ToLower().Contains(request.Keyword.ToLower()) || x.u.Name.ToLower().Contains(request.Keyword.ToLower()) || x.u.PhoneNumber.Contains(request.Keyword)
                     || x.u.Email.Contains(request.Keyword)) && x.r.Name == request.RoleName);
                 }
                 else
@@ -547,7 +547,7 @@ namespace ESMS.BackendAPI.Services.Employees
                 var query = listMatch;
                 if (!string.IsNullOrEmpty(request.Keyword))
                 {
-                    query = query.Where(x => x.EmpName.Contains(request.Keyword)).ToList();
+                    query = query.Where(x => x.EmpName.ToLower().Contains(request.Keyword.ToLower())).ToList();
                 }
                 //3.Paging
                 int totalRow = query.Count;
