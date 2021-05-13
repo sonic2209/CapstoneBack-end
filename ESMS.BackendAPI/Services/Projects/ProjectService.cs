@@ -1305,7 +1305,6 @@ namespace ESMS.BackendAPI.Services.Projects
                                     {
                                         empInPos.DateIn = DateTime.Now;
                                         requiredPos.MissingEmployee -= 1;
-                                        empInPos.Note = null;
                                     }
                                     empInPos.Status = ConfirmStatus.Accept;
                                     _context.EmpPositionInProjects.Update(empInPos);
@@ -1320,9 +1319,20 @@ namespace ESMS.BackendAPI.Services.Projects
                     }
                     else
                     {
-                        empInPos.Status = ConfirmStatus.Reject;
-                        empInPos.Note = id.Note;
-                        _context.EmpPositionInProjects.Update(empInPos);
+                        if (empInPos != null)
+                        {
+                            empInPos.Status = ConfirmStatus.Reject;
+                            if (empInPos.Note == null)
+                            {
+                                empInPos.Note = "";
+                            }
+                            if (!empInPos.Note.Equals(""))
+                            {
+                                empInPos.Note += ", ";
+                            }
+                            empInPos.Note += id.Note + "(" + DateTime.Today.ToString("dd-MM-yyyy") + ")";
+                            _context.EmpPositionInProjects.Update(empInPos);
+                        }
                     }
                 }
                 if (listNotAvalEmp.Count() != 0)
@@ -1914,6 +1924,13 @@ namespace ESMS.BackendAPI.Services.Projects
                     Status = x.ep.Status,
                     RejectReason = x.ep.Note
                 }).ToListAsync();
+            foreach (var e in employees)
+            {
+                if (e.Status.Equals(ConfirmStatus.Accept))
+                {
+                    e.RejectReason = null;
+                }
+            }
             return new ApiSuccessResult<List<EmpInProject>>(employees);
         }
 
