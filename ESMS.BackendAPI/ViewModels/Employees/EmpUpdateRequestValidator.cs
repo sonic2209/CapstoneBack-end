@@ -11,7 +11,9 @@ namespace ESMS.BackendAPI.ViewModels.Employees
         public EmpUpdateRequestValidator()
         {
             RuleFor(x => x.Name).NotEmpty().WithMessage("Name can not be empty");            
-            RuleFor(x => x.Name).MaximumLength(50).WithMessage("Name can not exceed 50 characters")
+            RuleFor(x => x.Name)
+                .MinimumLength(3).WithMessage("Name must contain at least 3 characters")
+                .MaximumLength(50).WithMessage("Name can not exceed 50 characters")
                 .Matches(@"^(?:[^\W\d_]| )+$").WithMessage("Name can not contain digits or special characters")
                 .When(x => !String.IsNullOrWhiteSpace(x.Name));
 

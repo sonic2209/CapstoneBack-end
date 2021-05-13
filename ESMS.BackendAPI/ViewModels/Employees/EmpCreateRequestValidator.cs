@@ -11,7 +11,9 @@ namespace ESMS.BackendAPI.ViewModels.Employees
         {
             RuleFor(x => x.Name).NotEmpty().WithMessage("Name can not be empty");
                 //Matches(@"/^[a-zA-Z\s]*$/");
-            RuleFor(x => x.Name).MaximumLength(50).WithMessage("Name can not exceed 50 characters")
+            RuleFor(x => x.Name)
+                .MinimumLength(3).WithMessage("Name must contain at least 3 characters")
+                .MaximumLength(50).WithMessage("Name can not exceed 50 characters")
                 .Matches(@"^(?:[^\W\d_]| )+$").WithMessage("Name can not contain digits or special characters")
                 .When(x => !String.IsNullOrWhiteSpace(x.Name));
 
@@ -27,6 +29,7 @@ namespace ESMS.BackendAPI.ViewModels.Employees
 
             RuleFor(x => x.UserName).NotEmpty().WithMessage("Username can not be empty");
             RuleFor(x => x.UserName)
+                .MinimumLength(4).WithMessage("Username must contain at least 4 characters")
                 .MaximumLength(20).WithMessage("Username can not exceeds 20 characters")
                 .When(x => !String.IsNullOrWhiteSpace(x.UserName));
             //RuleFor(x => x.Password).NotEmpty().WithMessage("Password can not be empty")
