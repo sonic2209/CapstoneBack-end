@@ -47,7 +47,7 @@ namespace ESMS.BackendAPI.Services.Projects
                     {
                         if (checkProjectName == false)
                         {
-                            UltilitiesService.AddOrUpdateError(errors, "ProjectName", "This name already exist");
+                            UltilitiesService.AddOrUpdateError(errors, "ProjectName", "This name already exists");
                         }
                         //return new ApiErrorResult<int>("projectName : This project name already exist");
                     }
