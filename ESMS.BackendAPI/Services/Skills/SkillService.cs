@@ -68,7 +68,7 @@ namespace ESMS.BackendAPI.Services.Skills
                 .Select(x => new Skill()).FirstOrDefaultAsync();
             if (checkName != null)
             {
-                UltilitiesService.AddOrUpdateError(errors, "SkillName", "This name already exist");
+                UltilitiesService.AddOrUpdateError(errors, "SkillName", "This name already exists");
                 //return new ApiErrorResult<bool>("This skill name already exist");
             }
             //if (request.SkillType != (int)SkillType.HardSkill && request.SkillType != (int)SkillType.SoftSkill)
@@ -276,7 +276,7 @@ namespace ESMS.BackendAPI.Services.Skills
                 .Select(x => new Skill()).FirstOrDefaultAsync();
                 if (checkName != null)
                 {
-                    UltilitiesService.AddOrUpdateError(errors, "SkillName", "This name already exist");
+                    UltilitiesService.AddOrUpdateError(errors, "SkillName", "This name already exists");
                     //return new ApiErrorResult<bool>("This skill name already exist");
                 }
             }

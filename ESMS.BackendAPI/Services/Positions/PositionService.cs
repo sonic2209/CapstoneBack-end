@@ -57,7 +57,7 @@ namespace ESMS.BackendAPI.Services.Positions
                 .Select(x => new Position()).FirstOrDefaultAsync();
             if (checkName != null)
             {
-                UltilitiesService.AddOrUpdateError(errors, "Name", "This name already exist");
+                UltilitiesService.AddOrUpdateError(errors, "Name", "This name already exists");
                 //return new ApiErrorResult<bool>("This position name already exist");
             }
             if (errors.Count() > 0)
@@ -147,7 +147,7 @@ namespace ESMS.BackendAPI.Services.Positions
                  .Select(x => new Position()).FirstOrDefaultAsync();
                 if (checkName != null)
                 {
-                    UltilitiesService.AddOrUpdateError(errors, "Name", "This name already exist");
+                    UltilitiesService.AddOrUpdateError(errors, "Name", "This name already exists");
                     //return new ApiErrorResult<bool>("This position name already exist");
                 }
             }

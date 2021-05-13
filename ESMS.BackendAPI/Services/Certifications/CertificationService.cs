@@ -22,7 +22,7 @@ namespace ESMS.BackendAPI.Services.Certifications
         public async Task<ApiResult<bool>> ChangeStatus(int certificationID)
         {
             var certification = await _context.Certifications.FindAsync(certificationID);
-            if (certification == null) return new ApiErrorResult<bool>("Certification does not exist");
+            if (certification == null) return new ApiErrorResult<bool>("Certificate does not exist");
             if (certification.Status)
             {
                 var empCertification = await _context.EmpCertifications.Where(x => x.CertificationID.Equals(certificationID))
