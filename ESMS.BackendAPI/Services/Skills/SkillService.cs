@@ -280,24 +280,20 @@ namespace ESMS.BackendAPI.Services.Skills
                     //return new ApiErrorResult<bool>("This skill name already exist");
                 }
             }
-            if (request.SkillType != (int)SkillType.HardSkill && request.SkillType != (int)SkillType.SoftSkill)
-            {
-                UltilitiesService.AddOrUpdateError(errors, "SkillType", "Please select skill type(hard skill or soft skill)");
-            }
             else if (!skill.SkillType.Equals((SkillType)request.SkillType))
             {
                 if (skill.SkillType.Equals(SkillType.HardSkill))
                 {
                     if (request.HardSkillOption.Count() != 0)
                     {
-                        UltilitiesService.AddOrUpdateError(errors, "SkillType", "Can not change type, please remove all this previous type(HardSkill)'s option");
+                        UltilitiesService.AddOrUpdateError(errors, "SkillType", "Can not change type, please remove all this previous type(hard skill)'s option");
                     }
                 }
                 else if (skill.SkillType.Equals(SkillType.SoftSkill))
                 {
                     if (request.SoftSkillOption.Count() != 0)
                     {
-                        UltilitiesService.AddOrUpdateError(errors, "SkillType", "Can not change type, please remove all this previous type(HardSkill)'s option");
+                        UltilitiesService.AddOrUpdateError(errors, "SkillType", "Can not change type, please remove all this previous type(soft skill)'s option");
                     }
                 }
             }
