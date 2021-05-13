@@ -468,7 +468,7 @@ namespace ESMS.BackendAPI.Services.Employees
             }
             var empVm = new EmpVm()
             {
-                Email = user.Email,
+                Email = user.Email.ToLower(),
                 PhoneNumber = user.PhoneNumber,
                 Name = user.Name,
                 Address = user.Address,
@@ -503,7 +503,7 @@ namespace ESMS.BackendAPI.Services.Employees
                     .Take(request.PageSize)
                     .Select(x => new EmpVm()
                     {
-                        Email = x.u.Email,
+                        Email = x.u.Email.ToLower(),
                         PhoneNumber = x.u.PhoneNumber,
                         Name = x.u.Name,
                         Id = x.u.Id,
