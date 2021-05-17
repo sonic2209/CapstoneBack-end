@@ -849,14 +849,15 @@ namespace ESMS.BackendAPI.Services.Employees
                             matchDetail.IsHighest = true;
                         }
                     }
-                    else { 
-                    for (int i = 0; i < requiredPosition.CandidateNeeded; i++)
+                    else
                     {
-                        if (listMatchDetail[i] != null)
+                        for (int i = 0; i < requiredPosition.CandidateNeeded; i++)
                         {
-                            listMatchDetail[i].IsHighest = true;
+                            if (listMatchDetail[i] != null)
+                            {
+                                listMatchDetail[i].IsHighest = true;
+                            }
                         }
-                    }
                     }
                     //}
                     result.Add(new CandidateViewModel()
@@ -2352,7 +2353,7 @@ namespace ESMS.BackendAPI.Services.Employees
             };
             return empVm;
         }
-        public async Task<FileModel> ExportEmployeeInfo (string id)
+        public async Task<FileModel> ExportEmployeeInfo(string id)
         {
             var result = new FileModel();
             var user = await GetEmpById(id);
@@ -2365,7 +2366,7 @@ namespace ESMS.BackendAPI.Services.Employees
             ExcelService.InsertTextExistingExcel(excelPath, user.IdentityNumber, "C", 2);
             ExcelService.InsertTextExistingExcel(excelPath, user.Email, "D", 2);
             ExcelService.InsertTextExistingExcel(excelPath, user.PhoneNumber, "E", 2);
-           
+
             var data = File.ReadAllBytes(excelPath);
             result.FileName = "export";
             result.Id = "export";
@@ -2390,7 +2391,7 @@ namespace ESMS.BackendAPI.Services.Employees
                 Name = ExcelService.GetCellValue(filePath, "Sheet1", "A2"),
                 Address = ExcelService.GetCellValue(filePath, "Sheet1", "B2"),
                 IdentityNumber = ExcelService.GetCellValue(filePath, "Sheet1", "C2"),
-                Email = ExcelService.GetCellValue(filePath, "Sheet1", "D2"),               
+                Email = ExcelService.GetCellValue(filePath, "Sheet1", "D2"),
                 PhoneNumber = ExcelService.GetCellValue(filePath, "Sheet1", "E2"),
                 DateCreated = DateTime.Now,
             };
@@ -2419,4 +2420,5 @@ namespace ESMS.BackendAPI.Services.Employees
             }
             return new ApiErrorResult<bool>("Register failed: " + errorMessage);
         }
+    }
 }
