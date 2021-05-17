@@ -11,6 +11,7 @@ using ESMS.Data.EF;
 using ESMS.Data.Entities;
 using ESMS.Data.Enums;
 using ESMS.ViewModels.System.Employees;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,6 +20,7 @@ using PasswordGenerator;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
@@ -34,6 +36,7 @@ namespace ESMS.BackendAPI.Services.Employees
         private readonly IConfiguration _config;
         private readonly ESMSDbContext _context;
         private readonly IProjectService _projectService;
+        private readonly string FILE_LOCATION = Path.Combine($"Excel");
 
         public EmployeeService(UserManager<Employee> userManager, SignInManager<Employee> signInManager,
             RoleManager<Role> roleManager, IConfiguration config, ESMSDbContext context, IProjectService projectService)
@@ -829,12 +832,21 @@ namespace ESMS.BackendAPI.Services.Employees
                         }
                     }
                     listMatchDetail = listMatchDetail.OrderByDescending(x => x.OverallMatch).ToList();
+                    if (listMatchDetail.Count < requiredPosition.CandidateNeeded)
+                    {
+                        foreach (var matchDetail in listMatchDetail)
+                        {
+                            matchDetail.IsHighest = true;
+                        }
+                    }
+                    else { 
                     for (int i = 0; i < requiredPosition.CandidateNeeded; i++)
                     {
                         if (listMatchDetail[i] != null)
                         {
                             listMatchDetail[i].IsHighest = true;
                         }
+                    }
                     }
                     //}
                     result.Add(new CandidateViewModel()
@@ -2252,5 +2264,140 @@ namespace ESMS.BackendAPI.Services.Employees
             }
             return new ApiErrorResult<bool>("Change password failed" + errorMessage);
         }
-    }
+        public async Task<string> HandleFile(IFormFile file, string productId)
+        {
+            //if (file.Length > MaxFileSize)
+            //{
+            //    throw new Exception("File size too large. File name: " + file.FileName);
+            //}
+
+            string fileType = "image/jpeg";
+            if (file.ContentType != null && !string.IsNullOrEmpty(file.ContentType))
+            {
+                fileType = file.ContentType;
+            }
+
+            //var image = new ProductImage()
+            //{
+            //    ProductId = productId,
+            //    FileExtension = Path.GetExtension(file.FileName),
+            //    FileType = fileType
+            //};
+
+            //_dbContext.ProductImages.Add(image);
+
+            var pictureName = $"{productId}{Path.GetExtension(file.FileName)}";
+
+            using (var fileStream = new FileStream(Path.Combine(FILE_LOCATION, pictureName), FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+                fileStream.Flush();
+                fileStream.Close();
+            }
+            return productId;
+        }
+
+        public FileModel GetFileById()
+        {
+            var result = new FileModel();
+            //var productImage = _dbContext.ProductImages.FirstOrDefault(e => e.Id == fileId);
+
+            //if (productImage == null)
+            //{
+            //    throw new Exception("Invalid Id");
+            //}
+
+            var data = File.ReadAllBytes(FILE_LOCATION + "/" + "Book1.xlsx");
+            result.FileName = "Tuan";
+            result.Id = "Tuan";
+            result.Data = data;
+            result.FileType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+            return result;
+        }
+        private async Task<EmpVm> GetEmpById(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+            {
+                return null;
+            }
+            var empVm = new EmpVm()
+            {
+                Email = user.Email.ToLower(),
+                PhoneNumber = user.PhoneNumber,
+                Name = user.Name,
+                Address = user.Address,
+                IdentityNumber = user.IdentityNumber,
+                UserName = user.UserName,
+            };
+            return empVm;
+        }
+        public async Task<FileModel> ExportEmployeeInfo (string id)
+        {
+            var result = new FileModel();
+            var user = await GetEmpById(id);
+            var excelName = "export.xlsx";
+            var excelPath = Path.Combine(FILE_LOCATION, excelName);
+
+            ExcelService.CreateExcelFile(excelPath, "Sheet1");
+            ExcelService.InsertTextExistingExcel(excelPath, user.Name, "A", 2);
+            ExcelService.InsertTextExistingExcel(excelPath, user.Address, "B", 2);
+            ExcelService.InsertTextExistingExcel(excelPath, user.IdentityNumber, "C", 2);
+            ExcelService.InsertTextExistingExcel(excelPath, user.Email, "D", 2);
+            ExcelService.InsertTextExistingExcel(excelPath, user.PhoneNumber, "E", 2);
+           
+            var data = File.ReadAllBytes(excelPath);
+            result.FileName = "export";
+            result.Id = "export";
+            result.Data = data;
+            result.FileType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+            return result;
+        }
+        public async Task<ApiResult<bool>> ImportEmployeeInfo(IFormFile file)
+        {
+            var fileName = "importTemp.xlsx";
+            var filePath = Path.Combine(FILE_LOCATION, fileName);
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+                fileStream.Flush();
+                fileStream.Close();
+            }
+            var user = new Employee()
+            {
+                Name = ExcelService.GetCellValue(filePath, "Sheet1", "A2"),
+                Address = ExcelService.GetCellValue(filePath, "Sheet1", "B2"),
+                IdentityNumber = ExcelService.GetCellValue(filePath, "Sheet1", "C2"),
+                Email = ExcelService.GetCellValue(filePath, "Sheet1", "D2"),               
+                PhoneNumber = ExcelService.GetCellValue(filePath, "Sheet1", "E2"),
+                DateCreated = DateTime.Now,
+            };
+            string password = "Abcd1234";
+            string errorMessage = null;
+            var result = await _userManager.CreateAsync(user, password);
+            if (result.Succeeded)
+            {
+                if (await _userManager.IsInRoleAsync(user, "Employee") == false)
+                {
+                    var addtoroleResult = await _userManager.AddToRoleAsync(user, "Employee");
+                    if (!addtoroleResult.Succeeded)
+                    {
+                        foreach (var error in result.Errors)
+                        {
+                            errorMessage += error.Description + Environment.NewLine;
+                        }
+                        return new ApiErrorResult<bool>("Register failed: " + errorMessage);
+                    }
+                }
+                return new ApiSuccessResult<bool>();
+            }
+            foreach (var error in result.Errors)
+            {
+                errorMessage += error.Description + Environment.NewLine;
+            }
+            return new ApiErrorResult<bool>("Register failed: " + errorMessage);
+        }
 }

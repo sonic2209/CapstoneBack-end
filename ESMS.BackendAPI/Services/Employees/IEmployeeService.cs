@@ -4,6 +4,7 @@ using ESMS.BackendAPI.ViewModels.Employees.Suggestion;
 using ESMS.BackendAPI.ViewModels.Employees.Suggestion.SingleCandidate;
 using ESMS.BackendAPI.ViewModels.Project;
 using ESMS.ViewModels.System.Employees;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -39,6 +40,10 @@ namespace ESMS.BackendAPI.Services.Employees
 
         Task<ApiResult<List<ProjectVM>>> SingleCandidateSuggest(string empID);
         Task<ApiResult<bool>> ChangePassword(string id, ChangePasswordRequest request);
+        FileModel GetFileById();
+        Task<string> HandleFile(IFormFile file, string productId);
 
+        Task<FileModel> ExportEmployeeInfo(string id);
+        Task<ApiResult<bool>> ImportEmployeeInfo(IFormFile file);
     }
 }
