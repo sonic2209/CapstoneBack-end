@@ -108,7 +108,6 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(products);
         }
 
-        
         [HttpPut("candidate/paging")]
         public IActionResult GetCandidatePaging([FromBody] List<MatchViewModel> listMatch, [FromQuery] GetSuggestEmpPagingRequest request)
         {

@@ -307,6 +307,16 @@ namespace ESMS.BackendAPI.Services.Employees
                                         {
                                             dateEnd = DateTime.Parse(certification.DateEnd);
                                         }
+
+                                        if (DateTime.Compare(dateTaken.Date, dateEnd.Date) == 0)
+                                        {
+                                            if (checkHardSkill == false)
+                                            {
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is same as date taken");
+                                                checkHardSkill = true;
+                                            }
+                                            //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
+                                        }
                                         if (DateTime.Compare(empCertification.DateTaken.Date, dateEnd.Date) > 0)
                                         {
                                             if (checkHardSkill == false)
@@ -1891,6 +1901,15 @@ namespace ESMS.BackendAPI.Services.Employees
                                             }
                                             //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
                                         }
+                                        if (DateTime.Compare(dateTaken.Date, dateEnd.Date) == 0)
+                                        {
+                                            if (checkHardSkill == false)
+                                            {
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is same as date taken");
+                                                checkHardSkill = true;
+                                            }
+                                            //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
+                                        }
                                         if (DateTime.Compare(dateEnd.Date, DateTime.Today) < 0)
                                         {
                                             if (checkHardSkill == false)
@@ -1922,52 +1941,52 @@ namespace ESMS.BackendAPI.Services.Employees
                                     }
                                     else
                                     {
-                                        if (DateTime.Compare(checkEmpCerti.DateTaken.Date, dateTaken.Date) != 0)
-                                        {
-                                            if (!certification.DateEnd.Equals(""))
-                                            {
-                                                if (DateTime.Compare(dateTaken.Date, dateEnd.Date) > 0)
-                                                {
-                                                    if (checkHardSkill == false)
-                                                    {
-                                                        UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is later than date expired");
-                                                        checkHardSkill = true;
-                                                    }
-                                                    //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is later than date expired");
-                                                }
-                                            }
-                                            checkEmpCerti.DateTaken = dateTaken;
-                                        }
+                                        checkEmpCerti.DateTaken = dateTaken;
+                                        //if (DateTime.Compare(checkEmpCerti.DateTaken.Date, dateTaken.Date) != 0)
+                                        //{
+                                        //    if (!certification.DateEnd.Equals(""))
+                                        //    {
+                                        //        if (DateTime.Compare(dateTaken.Date, dateEnd.Date) > 0)
+                                        //        {
+                                        //            if (checkHardSkill == false)
+                                        //            {
+                                        //                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is later than date expired");
+                                        //                checkHardSkill = true;
+                                        //            }
+                                        //            //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date taken is later than date expired");
+                                        //        }
+                                        //    }
+                                        //}
                                         if (certification.DateEnd.Equals(""))
                                         {
                                             checkEmpCerti.DateEnd = null;
                                         }
                                         else
                                         {
-                                            if (checkEmpCerti.DateEnd != null)
-                                            {
-                                                if (DateTime.Compare(DateTime.Parse(checkEmpCerti.DateEnd.ToString()).Date, dateEnd.Date) != 0)
-                                                {
-                                                    if (DateTime.Compare(checkEmpCerti.DateTaken.Date, dateEnd.Date) > 0)
-                                                    {
-                                                        if (checkHardSkill == false)
-                                                        {
-                                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
-                                                            checkHardSkill = true;
-                                                        }
-                                                        //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
-                                                    }
-                                                    if (DateTime.Compare(dateEnd.Date, DateTime.Today) < 0)
-                                                    {
-                                                        if (checkHardSkill == false)
-                                                        {
-                                                            UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
-                                                            checkHardSkill = true;
-                                                        }
-                                                        //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
-                                                    }
-                                                }
-                                            }
+                                            //if (checkEmpCerti.DateEnd != null)
+                                            //{
+                                            //    if (DateTime.Compare(DateTime.Parse(checkEmpCerti.DateEnd.ToString()).Date, dateEnd.Date) != 0)
+                                            //    {
+                                            //        if (DateTime.Compare(checkEmpCerti.DateTaken.Date, dateEnd.Date) > 0)
+                                            //        {
+                                            //            if (checkHardSkill == false)
+                                            //            {
+                                            //                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
+                                            //                checkHardSkill = true;
+                                            //            }
+                                            //            //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
+                                            //        }
+                                            //        if (DateTime.Compare(dateEnd.Date, DateTime.Today) < 0)
+                                            //        {
+                                            //            if (checkHardSkill == false)
+                                            //            {
+                                            //                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
+                                            //                checkHardSkill = true;
+                                            //            }
+                                            //            //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " has expired");
+                                            //        }
+                                            //    }
+                                            //}
                                             checkEmpCerti.DateEnd = dateEnd;
                                         }
                                         _context.EmpCertifications.Update(checkEmpCerti);

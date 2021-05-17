@@ -108,9 +108,8 @@ namespace ESMS.BackendAPI.Services.Certifications
                 query = query.Where(x => x.c.CertificationName.Contains(request.Keyword));
             }
             int totalRow = await query.CountAsync();
-            var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
-                .Take(request.PageSize).OrderBy(x => x.s.SkillID)
-                .Select(x => new CertificationViewModel()
+            var data = await query.OrderBy(x => x.c.SkillID).ThenBy(x => x.c.CertiLevel).Skip((request.PageIndex - 1) * request.PageSize)
+                .Take(request.PageSize).Select(x => new CertificationViewModel()
                 {
                     CertificationID = x.c.CertificationID,
                     CertificationName = x.c.CertificationName,
@@ -120,7 +119,6 @@ namespace ESMS.BackendAPI.Services.Certifications
                     CertiLevel = x.c.CertiLevel,
                     Status = x.c.Status
                 }).ToListAsync();
-
             var pagedResult = new PagedResult<CertificationViewModel>()
             {
                 TotalRecords = totalRow,

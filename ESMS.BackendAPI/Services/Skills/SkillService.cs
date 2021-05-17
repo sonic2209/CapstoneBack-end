@@ -75,6 +75,30 @@ namespace ESMS.BackendAPI.Services.Skills
             //{
             //    UltilitiesService.AddOrUpdateError(errors, "SkillType", "Please select hard skill or soft skill only");
             //}
+            if (request.SkillType.Equals((int)SkillType.HardSkill))
+            {
+                if (request.HardSkillOption.Count() != 0)
+                {
+                    foreach (var option in request.HardSkillOption)
+                    {
+                        if (option.ProjectType == 0 && option.Position.Count() == 0)
+                        {
+                            UltilitiesService.AddOrUpdateError(errors, "HardSkillOption", "Please select type and position");
+                            break;
+                        }
+                        if (option.ProjectType == 0)
+                        {
+                            UltilitiesService.AddOrUpdateError(errors, "HardSkillOption", "Please select type");
+                            break;
+                        }
+                        if (option.Position.Count() == 0)
+                        {
+                            UltilitiesService.AddOrUpdateError(errors, "HardSkillOption", "Please select position");
+                            break;
+                        }
+                    }
+                }
+            }
             if (errors.Count() > 0)
             {
                 return new ApiErrorResult<bool>(errors);
@@ -294,6 +318,30 @@ namespace ESMS.BackendAPI.Services.Skills
                     if (request.SoftSkillOption.Count() != 0)
                     {
                         UltilitiesService.AddOrUpdateError(errors, "SkillType", "Can not change type, please remove all this previous type(soft skill)'s option");
+                    }
+                }
+            }
+            if (request.SkillType.Equals((int)SkillType.HardSkill))
+            {
+                if (request.HardSkillOption.Count() != 0)
+                {
+                    foreach (var option in request.HardSkillOption)
+                    {
+                        if (option.ProjectType == 0 && option.Position.Count() == 0)
+                        {
+                            UltilitiesService.AddOrUpdateError(errors, "HardSkillOption", "Please select type and position");
+                            break;
+                        }
+                        if (option.ProjectType == 0)
+                        {
+                            UltilitiesService.AddOrUpdateError(errors, "HardSkillOption", "Please select type");
+                            break;
+                        }
+                        if (option.Position.Count() == 0)
+                        {
+                            UltilitiesService.AddOrUpdateError(errors, "HardSkillOption", "Please select position");
+                            break;
+                        }
                     }
                 }
             }
