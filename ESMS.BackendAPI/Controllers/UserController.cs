@@ -184,7 +184,7 @@ namespace ESMS.BackendAPI.Controllers
             var rs = await _userService.ExportEmployeeInfo(userId);
             return File(rs.Data, rs.FileType, rs.FileName + ".xlsx");
         }
-        [HttpPut("ProductImage/{productId}")]
+        [HttpPut("Import")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> ImportEmployeeInfo([FromForm] IFormFile file)
         {
