@@ -689,7 +689,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                         };
                                         //if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
                                         //{
-                                        Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)) + ((int)emphs.SkillLevel - hardskill.SkillLevel)) * hardskill.Priority / (18 * requiredPosition.HardSkills.Count);
+                                        Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)+1) + ((int)emphs.SkillLevel - hardskill.SkillLevel)+1) * hardskill.Priority / (21 * requiredPosition.HardSkills.Count);
                                         //match += Math.Round(Hardskillmatch, 2);
                                         //}
                                         //else
@@ -1291,7 +1291,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 };
                                 //if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
                                 //{
-                                Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)) + ((int)emphs.SkillLevel - hardskill.SkillLevel)) * hardskill.Priority / (18 * requiredPosition.HardSkills.Count);
+                                Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)+1) + ((int)emphs.SkillLevel - hardskill.SkillLevel)+1) * hardskill.Priority / (21 * requiredPosition.HardSkills.Count);
 
                                 //}
                                 //else
