@@ -13,11 +13,7 @@ namespace ESMS.BackendAPI.ViewModels.Project
             RuleFor(x => x.Description).MaximumLength(1000).WithMessage("Description can not exceed 1000 characters")
                 .When(x => !String.IsNullOrWhiteSpace(x.Description));
 
-            RuleFor(x => x.TypeID).NotEmpty().WithMessage("Please select type");
-
-            RuleFor(x => x.FieldID).NotEmpty().WithMessage("Please select field");
-
-            RuleFor(x => x.DateEstimatedEnd).NotEmpty().WithMessage("Estimated end date can not be empty");
+            RuleFor(x => x.DateEstimatedEnd).NotEmpty().WithMessage("Please input estimated end date");
             RuleFor(x => x.DateEstimatedEnd).Must(CheckDate).WithMessage("Estimated end date must be a valid date")
                 .When(x => !String.IsNullOrWhiteSpace(x.DateEstimatedEnd));
         }
