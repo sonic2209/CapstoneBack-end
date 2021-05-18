@@ -266,6 +266,22 @@ namespace ESMS.BackendAPI.Ultilities
             }
             return value;
         }
+        // Retrieve a List of all the sheets in a workbook.
+        // The Sheets class contains a collection of 
+        // OpenXmlElement objects, each representing one of 
+        // the sheets.
+        public static Sheets GetAllWorksheets(string fileName)
+        {
+            Sheets theSheets = null;
+
+            using (SpreadsheetDocument document =
+                SpreadsheetDocument.Open(fileName, false))
+            {
+                WorkbookPart wbPart = document.WorkbookPart;
+                theSheets = wbPart.Workbook.Sheets;
+            }
+            return theSheets;
+        }
     }
 }
 

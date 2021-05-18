@@ -2317,7 +2317,7 @@ namespace ESMS.BackendAPI.Services.Employees
             return productId;
         }
 
-        public FileModel GetFileById()
+        public FileModel GetEmpTemplate()
         {
             var result = new FileModel();
             //var productImage = _dbContext.ProductImages.FirstOrDefault(e => e.Id == fileId);
@@ -2327,9 +2327,9 @@ namespace ESMS.BackendAPI.Services.Employees
             //    throw new Exception("Invalid Id");
             //}
 
-            var data = File.ReadAllBytes(FILE_LOCATION + "/" + "Book1.xlsx");
-            result.FileName = "Tuan";
-            result.Id = "Tuan";
+            var data = File.ReadAllBytes(FILE_LOCATION + "/" + "EmpTemplate.xlsx");
+            result.FileName = "Template";
+            result.Id = "Template";
             result.Data = data;
             result.FileType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
@@ -2357,15 +2357,14 @@ namespace ESMS.BackendAPI.Services.Employees
         {
             var result = new FileModel();
             var user = await GetEmpById(id);
-            var excelName = "export.xlsx";
+            var excelName = "tempEmpTemplate.xlsx";
             var excelPath = Path.Combine(FILE_LOCATION, excelName);
-
-            ExcelService.CreateExcelFile(excelPath, "Sheet1");
-            ExcelService.InsertTextExistingExcel(excelPath, user.Name, "A", 2);
-            ExcelService.InsertTextExistingExcel(excelPath, user.Address, "B", 2);
-            ExcelService.InsertTextExistingExcel(excelPath, user.IdentityNumber, "C", 2);
-            ExcelService.InsertTextExistingExcel(excelPath, user.Email, "D", 2);
-            ExcelService.InsertTextExistingExcel(excelPath, user.PhoneNumber, "E", 2);
+           
+            ExcelService.InsertTextExistingExcel(excelPath, user.Name, "B", 10);
+            ExcelService.InsertTextExistingExcel(excelPath, user.Address, "C", 10);
+            ExcelService.InsertTextExistingExcel(excelPath, user.IdentityNumber, "D", 10);
+            ExcelService.InsertTextExistingExcel(excelPath, user.Email, "E", 10);
+            ExcelService.InsertTextExistingExcel(excelPath, user.PhoneNumber, "F", 10);
 
             var data = File.ReadAllBytes(excelPath);
             result.FileName = "export";
@@ -2377,7 +2376,7 @@ namespace ESMS.BackendAPI.Services.Employees
         }
         public async Task<ApiResult<bool>> ImportEmployeeInfo(IFormFile file)
         {
-            var fileName = "importTemp.xlsx";
+            var fileName = "importTemp"+ Path.GetExtension(file.FileName);
             var filePath = Path.Combine(FILE_LOCATION, fileName);
 
             using (var fileStream = new FileStream(filePath, FileMode.Create))
@@ -2388,11 +2387,12 @@ namespace ESMS.BackendAPI.Services.Employees
             }
             var user = new Employee()
             {
-                Name = ExcelService.GetCellValue(filePath, "Sheet1", "A2"),
-                Address = ExcelService.GetCellValue(filePath, "Sheet1", "B2"),
-                IdentityNumber = ExcelService.GetCellValue(filePath, "Sheet1", "C2"),
-                Email = ExcelService.GetCellValue(filePath, "Sheet1", "D2"),
-                PhoneNumber = ExcelService.GetCellValue(filePath, "Sheet1", "E2"),
+                UserName = "test",
+                Name = ExcelService.GetCellValue(filePath, "Sheet1", "B10"),
+                Address = ExcelService.GetCellValue(filePath, "Sheet1", "C10"),
+                IdentityNumber = ExcelService.GetCellValue(filePath, "Sheet1", "D10"),
+                Email = ExcelService.GetCellValue(filePath, "Sheet1", "E10"),
+                PhoneNumber = ExcelService.GetCellValue(filePath, "Sheet1", "F10"),
                 DateCreated = DateTime.Now,
             };
             string password = "Abcd1234";
@@ -2420,5 +2420,6 @@ namespace ESMS.BackendAPI.Services.Employees
             }
             return new ApiErrorResult<bool>("Register failed: " + errorMessage);
         }
+
     }
 }

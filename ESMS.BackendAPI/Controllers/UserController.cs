@@ -165,23 +165,10 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(result);
         }
 
-        //[HttpGet("ProductImage/{fileId}")]
-        //public IActionResult GetProductImageById(string fileId)
-        //{
-        //        var rs = _userService.GetFileById();
-        //        return File(rs.Data, rs.FileType, rs.FileName + ".xlsx");   
-        //}
-        //[HttpPut("ProductImage/{productId}")]
-        //[Consumes("multipart/form-data")]
-        //public async Task<IActionResult> UploadProductImage([FromForm] IFormFile files, string productId)
-        //{
-        //    var result = await _userService.HandleFile(files, productId);
-        //    return Ok(result);
-        //}
-        [HttpGet("Export/{userId}")]
-        public async Task<IActionResult> ExportEmployeeInfo (string userId)
+        [HttpGet("template")]
+        public IActionResult GetEmpTemplate()
         {
-            var rs = await _userService.ExportEmployeeInfo(userId);
+            var rs = _userService.GetEmpTemplate();
             return File(rs.Data, rs.FileType, rs.FileName + ".xlsx");
         }
         [HttpPut("Import")]
@@ -195,5 +182,22 @@ namespace ESMS.BackendAPI.Controllers
             }
             return Ok(result);
         }
+        [HttpGet("Export/{userId}")]
+        public async Task<IActionResult> ExportEmployeeInfo (string userId)
+        {
+            var rs = await _userService.ExportEmployeeInfo(userId);
+            return File(rs.Data, rs.FileType, rs.FileName + ".xlsx");
+        }
+        //[HttpPut("Import")]
+        //[Consumes("multipart/form-data")]
+        //public async Task<IActionResult> ImportEmployeeInfo([FromForm] IFormFile file)
+        //{
+        //    var result = await _userService.ImportEmployeeInfo(file);
+        //    if (!result.IsSuccessed)
+        //    {
+        //        return StatusCode(StatusCodes.Status403Forbidden, result);
+        //    }
+        //    return Ok(result);
+        //}
     }
 }

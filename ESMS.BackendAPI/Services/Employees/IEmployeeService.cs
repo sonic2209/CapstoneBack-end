@@ -40,7 +40,7 @@ namespace ESMS.BackendAPI.Services.Employees
 
         Task<ApiResult<List<ProjectVM>>> SingleCandidateSuggest(string empID);
         Task<ApiResult<bool>> ChangePassword(string id, ChangePasswordRequest request);
-        FileModel GetFileById();
+        FileModel GetEmpTemplate();
         Task<string> HandleFile(IFormFile file, string productId);
 
         Task<FileModel> ExportEmployeeInfo(string id);
