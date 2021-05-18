@@ -2384,7 +2384,7 @@ namespace ESMS.BackendAPI.Services.Employees
                 await file.CopyToAsync(fileStream);
                 fileStream.Flush();
                 fileStream.Close();
-            }
+            } 
             var user = new Employee()
             {
                 UserName = "test",
