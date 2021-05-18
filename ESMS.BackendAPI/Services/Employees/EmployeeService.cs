@@ -2328,6 +2328,7 @@ namespace ESMS.BackendAPI.Services.Employees
             //}
 
             var data = File.ReadAllBytes(FILE_LOCATION + "/" + "EmpTemplate.xlsx");
+
             result.FileName = "Template";
             result.Id = "Template";
             result.Data = data;
