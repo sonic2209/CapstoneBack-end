@@ -147,23 +147,23 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(result);
         }
 
-        [HttpGet("loadEmpInfo/{empID}")]
-        public async Task<IActionResult> LoadEmpInfo(string empID)
-        {
-            var result = await _userService.LoadEmpInfo(empID);
-            return Ok(result);
-        }
+        //[HttpGet("loadEmpInfo/{empID}")]
+        //public async Task<IActionResult> LoadEmpInfo(string empID)
+        //{
+        //    var result = await _userService.LoadEmpInfo(empID);
+        //    return Ok(result);
+        //}
 
-        [HttpPost("updateEmpInfo/{empID}")]
-        public async Task<IActionResult> UpdateEmpInfo(string empID, [FromBody] AddEmpPositionRequest request)
-        {
-            var result = await _userService.UpdateEmpInfo(empID, request);
-            if (!result.IsSuccessed)
-            {
-                return StatusCode(StatusCodes.Status400BadRequest, result);
-            }
-            return Ok(result);
-        }
+        //[HttpPost("updateEmpInfo/{empID}")]
+        //public async Task<IActionResult> UpdateEmpInfo(string empID, [FromBody] AddEmpPositionRequest request)
+        //{
+        //    var result = await _userService.UpdateEmpInfo(empID, request);
+        //    if (!result.IsSuccessed)
+        //    {
+        //        return StatusCode(StatusCodes.Status400BadRequest, result);
+        //    }
+        //    return Ok(result);
+        //}
 
         [HttpGet("template")]
         public IActionResult GetEmpTemplate()
@@ -188,16 +188,5 @@ namespace ESMS.BackendAPI.Controllers
             var rs = await _userService.ExportEmployeeInfo(userId);
             return File(rs.Data, rs.FileType, rs.FileName + ".xlsx");
         }
-        //[HttpPut("Import")]
-        //[Consumes("multipart/form-data")]
-        //public async Task<IActionResult> ImportEmployeeInfo([FromForm] IFormFile file)
-        //{
-        //    var result = await _userService.ImportEmployeeInfo(file);
-        //    if (!result.IsSuccessed)
-        //    {
-        //        return StatusCode(StatusCodes.Status403Forbidden, result);
-        //    }
-        //    return Ok(result);
-        //}
     }
 }
