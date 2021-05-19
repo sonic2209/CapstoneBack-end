@@ -43,7 +43,7 @@ namespace ESMS.BackendAPI.Services.Employees
         FileModel GetEmpTemplate();
         Task<string> HandleFile(IFormFile file, string productId);
 
-        Task<FileModel> ExportEmployeeInfo(string id);
+        Task<ApiResult<EmpVm>> ExportEmployeeInfo(string id);
         Task<ApiResult<bool>> ImportEmployeeInfo(IFormFile file);
     }
 }

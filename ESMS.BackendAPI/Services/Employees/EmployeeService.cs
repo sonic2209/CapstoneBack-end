@@ -2352,26 +2352,52 @@ namespace ESMS.BackendAPI.Services.Employees
             };
             return empVm;
         }
-        public async Task<FileModel> ExportEmployeeInfo(string id)
+        //public async Task<FileModel> ExportEmployeeInfo(string id)
+        //{
+        //    var result = new FileModel();
+        //    var user = await GetEmpById(id);
+        //    var excelName = "tempEmpTemplate.xlsx";
+        //    var excelPath = Path.Combine(FILE_LOCATION, excelName);
+
+        //    ExcelService.InsertTextExistingExcel(excelPath, user.Name, "B", 10);
+        //    ExcelService.InsertTextExistingExcel(excelPath, user.Address, "C", 10);
+        //    ExcelService.InsertTextExistingExcel(excelPath, user.IdentityNumber, "D", 10);
+        //    ExcelService.InsertTextExistingExcel(excelPath, user.Email, "E", 10);
+        //    ExcelService.InsertTextExistingExcel(excelPath, user.PhoneNumber, "F", 10);
+
+        //    var data = File.ReadAllBytes(excelPath);
+        //    result.FileName = "export";
+        //    result.Id = "export";
+        //    result.Data = data;
+        //    result.FileType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+        //    return result;
+        //}
+        public async Task<ApiResult<EmpVm>> ExportEmployeeInfo(string id)
         {
-            var result = new FileModel();
-            var user = await GetEmpById(id);
-            var excelName = "tempEmpTemplate.xlsx";
-            var excelPath = Path.Combine(FILE_LOCATION, excelName);
-           
-            ExcelService.InsertTextExistingExcel(excelPath, user.Name, "B", 10);
-            ExcelService.InsertTextExistingExcel(excelPath, user.Address, "C", 10);
-            ExcelService.InsertTextExistingExcel(excelPath, user.IdentityNumber, "D", 10);
-            ExcelService.InsertTextExistingExcel(excelPath, user.Email, "E", 10);
-            ExcelService.InsertTextExistingExcel(excelPath, user.PhoneNumber, "F", 10);
-
-            var data = File.ReadAllBytes(excelPath);
-            result.FileName = "export";
-            result.Id = "export";
-            result.Data = data;
-            result.FileType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-
-            return result;
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+            {
+                return new ApiErrorResult<EmpVm>("User does not exist");
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            string currentRole = null;
+            if (roles.Count > 0)
+            {
+                currentRole = roles[0];
+            }
+            var empVm = new EmpVm()
+            {
+                Email = user.Email.ToLower(),
+                PhoneNumber = user.PhoneNumber,
+                Name = user.Name,
+                Address = user.Address,
+                IdentityNumber = user.IdentityNumber,
+                UserName = user.UserName,
+                Id = user.Id,
+                RoleName = currentRole
+            };
+            return new ApiSuccessResult<EmpVm>(empVm);
         }
         public async Task<ApiResult<bool>> ImportEmployeeInfo(IFormFile file)
         {
