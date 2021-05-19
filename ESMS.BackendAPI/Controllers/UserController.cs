@@ -185,8 +185,9 @@ namespace ESMS.BackendAPI.Controllers
         [HttpGet("Export/{userId}")]
         public async Task<IActionResult> ExportEmployeeInfo (string userId)
         {
-            var rs = await _userService.ExportEmployeeInfo(userId);
-            return File(rs.Data, rs.FileType, rs.FileName + ".xlsx");
+            var rs = await _userService.GetEmpInfo(userId);
+            return Ok(rs);
+            //return File(rs.Data, rs.FileType, rs.FileName + ".xlsx");
         }
     }
 }
