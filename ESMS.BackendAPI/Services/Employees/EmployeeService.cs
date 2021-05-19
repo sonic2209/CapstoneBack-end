@@ -2356,8 +2356,13 @@ namespace ESMS.BackendAPI.Services.Employees
         public async Task<FileModel> ExportEmployeeInfo(string id)
         {
             var result = new FileModel();
+            
             var user = await GetEmpById(id);
-            var excelName = "tempEmpTemplate.xlsx";
+                if (user == null)
+                {
+                    throw new Exception("Invalid Id");
+                }
+                var excelName = "tempEmpTemplate.xlsx";
             var excelPath = Path.Combine(FILE_LOCATION, excelName);
 
             ExcelService.InsertTextExistingExcel(excelPath, user.Name, "B", 10);

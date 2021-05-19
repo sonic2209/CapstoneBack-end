@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ESMS.BackendAPI.Services.Employees;
 using ESMS.BackendAPI.ViewModels.Employees;
@@ -185,9 +186,14 @@ namespace ESMS.BackendAPI.Controllers
         [HttpGet("Export/{userId}")]
         public async Task<IActionResult> ExportEmployeeInfo (string userId)
         {
-            var rs = await _userService.ExportEmployeeInfo(userId);
-            return Ok(rs);
-            //return File(rs.Data, rs.FileType, rs.FileName + ".xlsx");
+            try { 
+            var rs = await _userService.ExportEmployeeInfo(userId);            
+            return File(rs.Data, rs.FileType, rs.FileName + ".xlsx");
+            } 
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, e.Message);
+            }
         }
     }
 }
