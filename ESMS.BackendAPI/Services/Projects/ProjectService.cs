@@ -289,11 +289,12 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     return new ApiErrorResult<int>(errors);
                 }
+                TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
                 project = new Project()
                 {
                     ProjectName = request.ProjectName,
                     Description = request.Description,
-                    DateCreated = DateTime.Now,
+                    DateCreated = TimeZoneInfo.ConvertTime(DateTime.Now, tzi),
                     DateBegin = dateBegin,
                     DateEstimatedEnd = dateEstimatedEnd,
                     Status = ProjectStatus.Pending,
@@ -747,9 +748,9 @@ namespace ESMS.BackendAPI.Services.Projects
                 }
                 message = position.Name + " - ";
                 string positionMessage = "";
-                if (pos.CandidateNeeded <= 0)
+                if (pos.CandidateNeeded <= 0 || pos.CandidateNeeded > 100)
                 {
-                    positionMessage = "Please select candidate needs higher than 0";
+                    positionMessage = "Please select candidate needs from 1 to 100";
                 }
                 string hardSkillMessage = "";
                 string softSkillMessage = "";
@@ -876,6 +877,7 @@ namespace ESMS.BackendAPI.Services.Projects
                 UltilitiesService.AddOrUpdateError(errors, "RequiredPositions", message);
                 return new ApiErrorResult<List<RequiredPositionDetail>>(errors);
             }
+            TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
             foreach (var position in request.RequiredPositions)
             {
                 var requiredPosition = new RequiredPosition()
@@ -884,7 +886,7 @@ namespace ESMS.BackendAPI.Services.Projects
                     ProjectID = projectID,
                     CandidateNeeded = position.CandidateNeeded,
                     MissingEmployee = position.CandidateNeeded,
-                    DateCreated = DateTime.Now
+                    DateCreated = TimeZoneInfo.ConvertTime(DateTime.Now, tzi)
                 };
                 _context.RequiredPositions.Add(requiredPosition);
                 var result = await _context.SaveChangesAsync();
@@ -959,7 +961,7 @@ namespace ESMS.BackendAPI.Services.Projects
             if (project == null) return new ApiErrorResult<int>("Project does not exist");
 
             project.Status = ProjectStatus.Finished;
-            project.DateEnd = DateTime.Now;
+            project.DateEnd = DateTime.UtcNow;
             _context.Projects.Update(project);
             var empQuery = from ep in _context.EmpPositionInProjects
                            join rp in _context.RequiredPositions on ep.RequiredPositionID equals rp.ID
@@ -977,7 +979,7 @@ namespace ESMS.BackendAPI.Services.Projects
             {
                 if (emp.DateIn != null)
                 {
-                    emp.DateOut = DateTime.Now;
+                    emp.DateOut = DateTime.UtcNow;
                     _context.EmpPositionInProjects.Update(emp);
                 }
                 else
@@ -1313,7 +1315,7 @@ namespace ESMS.BackendAPI.Services.Projects
                                     {
                                         EmpID = id.EmpID,
                                         RequiredPositionID = position.RequiredPosID,
-                                        DateIn = DateTime.Now,
+                                        DateIn = DateTime.UtcNow,
                                         Status = ConfirmStatus.Accept
                                     };
                                     _context.EmpPositionInProjects.Add(empInPos);
@@ -1323,7 +1325,7 @@ namespace ESMS.BackendAPI.Services.Projects
                                 {
                                     if (empInPos.Status != ConfirmStatus.Accept)
                                     {
-                                        empInPos.DateIn = DateTime.Now;
+                                        empInPos.DateIn = DateTime.UtcNow;
                                         requiredPos.MissingEmployee -= 1;
                                     }
                                     empInPos.Status = ConfirmStatus.Accept;
