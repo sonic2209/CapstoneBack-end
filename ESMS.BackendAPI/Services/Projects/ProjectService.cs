@@ -961,7 +961,8 @@ namespace ESMS.BackendAPI.Services.Projects
             if (project == null) return new ApiErrorResult<int>("Project does not exist");
 
             project.Status = ProjectStatus.Finished;
-            project.DateEnd = DateTime.UtcNow;
+            TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            project.DateEnd = TimeZoneInfo.ConvertTime(DateTime.Now, tzi);
             _context.Projects.Update(project);
             var empQuery = from ep in _context.EmpPositionInProjects
                            join rp in _context.RequiredPositions on ep.RequiredPositionID equals rp.ID
@@ -979,7 +980,7 @@ namespace ESMS.BackendAPI.Services.Projects
             {
                 if (emp.DateIn != null)
                 {
-                    emp.DateOut = DateTime.UtcNow;
+                    emp.DateOut = TimeZoneInfo.ConvertTime(DateTime.Now, tzi);
                     _context.EmpPositionInProjects.Update(emp);
                 }
                 else
@@ -1206,6 +1207,7 @@ namespace ESMS.BackendAPI.Services.Projects
                 if (pos == null) return new ApiErrorResult<List<string>>("Position not found");
                 if (pos.Status == false) return new ApiErrorResult<List<string>>("Position:" + pos.Name + " is disable");
                 var requiredPos = await _context.RequiredPositions.FindAsync(position.RequiredPosID);
+                TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
                 foreach (var id in position.EmpIDs)
                 {
                     var employee = await _context.Employees.FindAsync(id.EmpID);
@@ -1315,7 +1317,7 @@ namespace ESMS.BackendAPI.Services.Projects
                                     {
                                         EmpID = id.EmpID,
                                         RequiredPositionID = position.RequiredPosID,
-                                        DateIn = DateTime.UtcNow,
+                                        DateIn = TimeZoneInfo.ConvertTime(DateTime.Now, tzi),
                                         Status = ConfirmStatus.Accept
                                     };
                                     _context.EmpPositionInProjects.Add(empInPos);
@@ -1325,7 +1327,7 @@ namespace ESMS.BackendAPI.Services.Projects
                                 {
                                     if (empInPos.Status != ConfirmStatus.Accept)
                                     {
-                                        empInPos.DateIn = DateTime.UtcNow;
+                                        empInPos.DateIn = TimeZoneInfo.ConvertTime(DateTime.Now, tzi);
                                         requiredPos.MissingEmployee -= 1;
                                     }
                                     empInPos.Status = ConfirmStatus.Accept;
