@@ -49,20 +49,21 @@ namespace ESMS.BackendAPI.Services.Employees
             _projectService = projectService;
         }
 
-        public async Task<ApiResult<LoginVm>> Authenticate(LoginRequest request)
+        public async Task<ApiResult<string>> Authenticate(LoginRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
-                return new ApiErrorResult<LoginVm>("This account does not exist");
+                return new ApiErrorResult<string>("This account does not exist");
 
             var result = await _signInManager.PasswordSignInAsync(user, request.Password, request.RememberMe, true);
             if (!result.Succeeded)
             {
-                return new ApiErrorResult<LoginVm>("Password is not correct");
+                return new ApiErrorResult<string>("Password is not correct");
             }
             var roles = await _userManager.GetRolesAsync(user);
             var claims = new[]
             {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Email,user.Email),
                 new Claim(ClaimTypes.GivenName, user.Name),
                 new Claim(ClaimTypes.Name,user.UserName),
@@ -77,11 +78,8 @@ namespace ESMS.BackendAPI.Services.Employees
                 expires: DateTime.Now.AddHours(3),
                 signingCredentials: creds);
 
-            return new ApiSuccessResult<LoginVm>(new LoginVm()
-            {
-                EmpId = user.Id,
-                Token = new JwtSecurityTokenHandler().WriteToken(token)
-            }
+            return new ApiSuccessResult<string>(           
+                new JwtSecurityTokenHandler().WriteToken(token)           
             );
         }
 
