@@ -2392,13 +2392,13 @@ namespace ESMS.BackendAPI.Services.Employees
                 fileStream.Flush();
                 fileStream.Close();
             }
-            var sheetName = ExcelService.GetFirstWorksheetsName(filePath);
+            string sheetName = ExcelService.GetFirstWorksheetsName(filePath);
             string username = sheetName;
-            string name = ExcelService.GetCellValue(filePath, "Sheet1", "B10");
-            string address = ExcelService.GetCellValue(filePath, "Sheet1", "C10");
-            string identityNumber = ExcelService.GetCellValue(filePath, "Sheet1", "D10");
-            string email = ExcelService.GetCellValue(filePath, "Sheet1", "E10");
-            string phoneNumber = ExcelService.GetCellValue(filePath, "Sheet1", "F10");
+            string name = ExcelService.GetCellValue(filePath, sheetName, "B10");
+            string address = ExcelService.GetCellValue(filePath, sheetName, "C10");
+            string identityNumber = ExcelService.GetCellValue(filePath, sheetName, "D10");
+            string email = ExcelService.GetCellValue(filePath, sheetName, "E10");
+            string phoneNumber = ExcelService.GetCellValue(filePath, sheetName, "F10");
 
             if (String.IsNullOrEmpty(name))
             {
