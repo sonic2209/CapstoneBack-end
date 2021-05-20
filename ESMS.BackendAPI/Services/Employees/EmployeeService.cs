@@ -2283,50 +2283,58 @@ namespace ESMS.BackendAPI.Services.Employees
             }
             return new ApiErrorResult<bool>("Change password failed" + errorMessage);
         }
-        public async Task<string> HandleFile(IFormFile file, string productId)
-        {
-            //if (file.Length > MaxFileSize)
-            //{
-            //    throw new Exception("File size too large. File name: " + file.FileName);
-            //}
+        //public async Task<string> HandleFile(IFormFile file, string productId)
+        //{
+        //    //if (file.Length > MaxFileSize)
+        //    //{
+        //    //    throw new Exception("File size too large. File name: " + file.FileName);
+        //    //}
 
-            string fileType = "image/jpeg";
-            if (file.ContentType != null && !string.IsNullOrEmpty(file.ContentType))
-            {
-                fileType = file.ContentType;
-            }
+        //    string fileType = "image/jpeg";
+        //    if (file.ContentType != null && !string.IsNullOrEmpty(file.ContentType))
+        //    {
+        //        fileType = file.ContentType;
+        //    }
 
-            //var image = new ProductImage()
-            //{
-            //    ProductId = productId,
-            //    FileExtension = Path.GetExtension(file.FileName),
-            //    FileType = fileType
-            //};
+        //    //var image = new ProductImage()
+        //    //{
+        //    //    ProductId = productId,
+        //    //    FileExtension = Path.GetExtension(file.FileName),
+        //    //    FileType = fileType
+        //    //};
 
-            //_dbContext.ProductImages.Add(image);
+        //    //_dbContext.ProductImages.Add(image);
 
-            var pictureName = $"{productId}{Path.GetExtension(file.FileName)}";
+        //    var pictureName = $"{productId}{Path.GetExtension(file.FileName)}";
 
-            using (var fileStream = new FileStream(Path.Combine(FILE_LOCATION, pictureName), FileMode.Create))
-            {
-                await file.CopyToAsync(fileStream);
-                fileStream.Flush();
-                fileStream.Close();
-            }
-            return productId;
-        }
+        //    using (var fileStream = new FileStream(Path.Combine(FILE_LOCATION, pictureName), FileMode.Create))
+        //    {
+        //        await file.CopyToAsync(fileStream);
+        //        fileStream.Flush();
+        //        fileStream.Close();
+        //    }
+        //    return productId;
+        //}
 
-        public FileModel GetEmpTemplate()
+        public async Task<FileModel> GetEmpTemplate(string empId)
         {
             var result = new FileModel();
-            //var productImage = _dbContext.ProductImages.FirstOrDefault(e => e.Id == fileId);
+            var user = await _userManager.FindByIdAsync(empId.ToString());
+            if (user == null)
+            {
+                throw new Exception("Invalid Id");
+            }
+            var excelPath = Path.Combine(FILE_LOCATION, "EmpTemplateTemp.xlsx");
+            File.Copy(Path.Combine(FILE_LOCATION, "EmpTemplate.xlsx"), excelPath, true);
 
+            ExcelService.InsertTextExistingExcel(excelPath, user.Name, "E", 4);
+            ExcelService.InsertTextExistingExcel(excelPath, DateTime.Today.ToString("dd/MM/yyyy"), "E", 5);
             //if (productImage == null)
             //{
             //    throw new Exception("Invalid Id");
             //}
 
-            var data = File.ReadAllBytes(FILE_LOCATION + "/" + "EmpTemplate.xlsx");
+            var data = File.ReadAllBytes(excelPath);
 
             result.FileName = "Template";
             result.Id = "Template";

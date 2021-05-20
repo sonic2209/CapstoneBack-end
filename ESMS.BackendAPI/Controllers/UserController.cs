@@ -166,11 +166,18 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(result);
         }
 
-        [HttpGet("template")]
-        public IActionResult GetEmpTemplate()
+        [HttpGet("template/{userId}")]
+        public async Task<IActionResult> GetEmpTemplate(string userId)
         {
-            var rs = _userService.GetEmpTemplate();
+            try
+            {
+                var rs = await _userService.GetEmpTemplate(userId);
             return File(rs.Data, rs.FileType, rs.FileName + ".xlsx");
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, e.Message);
+            }
         }
         [HttpPut("Import")]
         [Consumes("multipart/form-data")]
