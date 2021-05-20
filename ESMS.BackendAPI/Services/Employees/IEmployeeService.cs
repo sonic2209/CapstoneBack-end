@@ -3,6 +3,7 @@ using ESMS.BackendAPI.ViewModels.Employees;
 using ESMS.BackendAPI.ViewModels.Employees.Suggestion;
 using ESMS.BackendAPI.ViewModels.Employees.Suggestion.SingleCandidate;
 using ESMS.BackendAPI.ViewModels.Project;
+using ESMS.Data.Entities;
 using ESMS.ViewModels.System.Employees;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -44,6 +45,6 @@ namespace ESMS.BackendAPI.Services.Employees
         Task<string> HandleFile(IFormFile file, string productId);
 
         Task<FileModel> ExportEmployeeInfo(string id);
-        Task<ApiResult<bool>> ImportEmployeeInfo(IFormFile file);
+        Task<ApiResult<Employee>> ImportEmployeeInfo(IFormFile file);
     }
 }
