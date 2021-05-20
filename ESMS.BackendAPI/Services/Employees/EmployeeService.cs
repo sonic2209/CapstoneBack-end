@@ -2380,8 +2380,9 @@ namespace ESMS.BackendAPI.Services.Employees
             return result;
         }
 
-        public async Task<ApiResult<bool>> ImportEmployeeInfo(IFormFile file)
+        public async Task<ApiResult<Employee>> ImportEmployeeInfo(IFormFile file)
         {
+            Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var fileName = "importTemp"+ Path.GetExtension(file.FileName);
             var filePath = Path.Combine(FILE_LOCATION, fileName);
 
@@ -2390,15 +2391,57 @@ namespace ESMS.BackendAPI.Services.Employees
                 await file.CopyToAsync(fileStream);
                 fileStream.Flush();
                 fileStream.Close();
-            } 
+            }
+            var sheetName = ExcelService.GetFirstWorksheetsName(filePath);
+            string username = sheetName;
+            string name = ExcelService.GetCellValue(filePath, "Sheet1", "B10");
+            string address = ExcelService.GetCellValue(filePath, "Sheet1", "C10");
+            string identityNumber = ExcelService.GetCellValue(filePath, "Sheet1", "D10");
+            string email = ExcelService.GetCellValue(filePath, "Sheet1", "E10");
+            string phoneNumber = ExcelService.GetCellValue(filePath, "Sheet1", "F10");
+
+            if (String.IsNullOrEmpty(name))
+            {
+                UltilitiesService.AddOrUpdateError(errors, "Name", "Name can not be empty");
+            }
+            if (String.IsNullOrEmpty(address))
+            {
+                UltilitiesService.AddOrUpdateError(errors, "Address", "Address can not be empty");
+            }
+            if (String.IsNullOrEmpty(identityNumber))
+            {
+                UltilitiesService.AddOrUpdateError(errors, "IdentityNumber", "Identity number can not be empty");
+            }
+            if (String.IsNullOrEmpty(email))
+            {
+                UltilitiesService.AddOrUpdateError(errors, "Email", "Email can not be empty");
+            }
+            if (String.IsNullOrEmpty(phoneNumber))
+            {
+                UltilitiesService.AddOrUpdateError(errors, "PhoneNumber", "Phone Number can not be empty");
+            }           
+            if (await _userManager.FindByNameAsync(username) != null)
+            {
+                UltilitiesService.AddOrUpdateError(errors, "UserName", "This username alreadys exists");
+            }
+            if (await _userManager.FindByEmailAsync(email) != null)
+            {
+                UltilitiesService.AddOrUpdateError(errors, "Email", "This email already exists");               
+            }
+
+            if (errors.Count > 0)
+            {
+                return new ApiErrorResult<Employee>(errors);
+            }
+
             var user = new Employee()
             {
-                UserName = "test",
-                Name = ExcelService.GetCellValue(filePath, "Sheet1", "B10"),
-                Address = ExcelService.GetCellValue(filePath, "Sheet1", "C10"),
-                IdentityNumber = ExcelService.GetCellValue(filePath, "Sheet1", "D10"),
-                Email = ExcelService.GetCellValue(filePath, "Sheet1", "E10"),
-                PhoneNumber = ExcelService.GetCellValue(filePath, "Sheet1", "F10"),
+                UserName = username,
+                Name = name,
+                Address = address,
+                IdentityNumber = identityNumber,
+                Email = email,
+                PhoneNumber = phoneNumber,
                 DateCreated = DateTime.Now,
             };
             string password = "Abcd1234";
@@ -2415,16 +2458,16 @@ namespace ESMS.BackendAPI.Services.Employees
                         {
                             errorMessage += error.Description + Environment.NewLine;
                         }
-                        return new ApiErrorResult<bool>("Register failed: " + errorMessage);
+                        return new ApiErrorResult<Employee>("Register failed: " + errorMessage);
                     }
                 }
-                return new ApiSuccessResult<bool>();
+                return new ApiSuccessResult<Employee>(user);
             }
             foreach (var error in result.Errors)
             {
                 errorMessage += error.Description + Environment.NewLine;
             }
-            return new ApiErrorResult<bool>("Register failed: " + errorMessage);
+            return new ApiErrorResult<Employee>("Register failed: " + errorMessage);
         }
 
     }

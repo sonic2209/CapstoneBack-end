@@ -270,17 +270,18 @@ namespace ESMS.BackendAPI.Ultilities
         // The Sheets class contains a collection of 
         // OpenXmlElement objects, each representing one of 
         // the sheets.
-        public static Sheets GetAllWorksheets(string fileName)
+        public static string GetFirstWorksheetsName(string fileName)
         {
             Sheets theSheets = null;
-
+            string name = null;
             using (SpreadsheetDocument document =
                 SpreadsheetDocument.Open(fileName, false))
             {
                 WorkbookPart wbPart = document.WorkbookPart;
                 theSheets = wbPart.Workbook.Sheets;
+                name = theSheets.GetFirstChild<Sheet>().Name;
             }
-            return theSheets;
+            return name;
         }
     }
 }
