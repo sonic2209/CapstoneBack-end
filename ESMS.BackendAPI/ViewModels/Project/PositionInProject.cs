@@ -9,6 +9,7 @@ namespace ESMS.BackendAPI.ViewModels.Project
     {
         public int PosID { get; set; }
         public string PosName { get; set; }
+        public bool IsMissEmp { get; set; }
         public List<RequirementDetail> Requirements { get; set; }
     }
 }

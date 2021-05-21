@@ -435,6 +435,7 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     PosID = x.po.PosID,
                     PosName = x.po.Name,
+                    IsMissEmp = false
                 }).ToListAsync();
             var positionInProject = positions.GroupBy(x => new { x.PosID, x.PosName }).Select(x => x.FirstOrDefault()).ToList();
             var empQuery = from ep in _context.EmpPositionInProjects
@@ -451,6 +452,10 @@ namespace ESMS.BackendAPI.Services.Projects
                 }).ToListAsync();
                 foreach (var requirePos in pos.Requirements)
                 {
+                    if (requirePos.MissingEmployee > 0)
+                    {
+                        pos.IsMissEmp = true;
+                    }
                     requirePos.Employees = await empQuery.Where(x => x.ep.RequiredPositionID.Equals(requirePos.RequiredPosID)
                     && x.ep.Status != ConfirmStatus.Reject)
                         .Select(x => new EmpInProject()
