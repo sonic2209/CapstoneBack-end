@@ -29,7 +29,7 @@ namespace ESMS.BackendAPI.Services.Certifications
                     .Select(x => x.EmpID).ToListAsync();
                 if (empCertification.Count() != 0)
                 {
-                    return new ApiErrorResult<bool>("This certificate is assigned to some employees");
+                    return new ApiErrorResult<bool>("Can not change status, this certificate is assigned to some employees");
                 }
                 certification.Status = false;
             }

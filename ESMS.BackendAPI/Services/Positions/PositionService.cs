@@ -33,7 +33,7 @@ namespace ESMS.BackendAPI.Services.Positions
                     .Select(x => x.rp.ID).ToListAsync();
                 if (requiredPosition.Count() != 0)
                 {
-                    return new ApiErrorResult<bool>("This position is in project's requirement");
+                    return new ApiErrorResult<bool>("Can not change status, this position is in project's requirement");
                 }
                 position.Status = false;
             }

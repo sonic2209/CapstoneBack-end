@@ -30,7 +30,7 @@ namespace ESMS.BackendAPI.Controllers
 
         //http://localhost/api/certification/paging?pageIndex=1&pageSize=10&keyword=
         [HttpGet("paging")]
-        public async Task<IActionResult> GetPositionPaging([FromQuery] GetSkillPagingRequest request)
+        public async Task<IActionResult> GetSkillPaging([FromQuery] GetSkillPagingRequest request)
         {
             var skills = await _skillService.GetSkillPaging(request);
             return Ok(skills);

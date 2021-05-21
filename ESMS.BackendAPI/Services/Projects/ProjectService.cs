@@ -17,6 +17,7 @@ namespace ESMS.BackendAPI.Services.Projects
     public class ProjectService : IProjectService
     {
         private readonly ESMSDbContext _context;
+        private TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
         public ProjectService(ESMSDbContext context)
         {
@@ -289,7 +290,6 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     return new ApiErrorResult<int>(errors);
                 }
-                TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
                 project = new Project()
                 {
                     ProjectName = request.ProjectName,
@@ -877,7 +877,6 @@ namespace ESMS.BackendAPI.Services.Projects
                 UltilitiesService.AddOrUpdateError(errors, "RequiredPositions", message);
                 return new ApiErrorResult<List<RequiredPositionDetail>>(errors);
             }
-            TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
             foreach (var position in request.RequiredPositions)
             {
                 var requiredPosition = new RequiredPosition()
@@ -959,9 +958,7 @@ namespace ESMS.BackendAPI.Services.Projects
         {
             var project = await _context.Projects.FindAsync(projectID);
             if (project == null) return new ApiErrorResult<int>("Project does not exist");
-
             project.Status = ProjectStatus.Finished;
-            TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
             project.DateEnd = TimeZoneInfo.ConvertTime(DateTime.Now, tzi);
             _context.Projects.Update(project);
             var empQuery = from ep in _context.EmpPositionInProjects
@@ -1207,7 +1204,6 @@ namespace ESMS.BackendAPI.Services.Projects
                 if (pos == null) return new ApiErrorResult<List<string>>("Position not found");
                 if (pos.Status == false) return new ApiErrorResult<List<string>>("Position:" + pos.Name + " is disable");
                 var requiredPos = await _context.RequiredPositions.FindAsync(position.RequiredPosID);
-                TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
                 foreach (var id in position.EmpIDs)
                 {
                     var employee = await _context.Employees.FindAsync(id.EmpID);
@@ -1380,7 +1376,15 @@ namespace ESMS.BackendAPI.Services.Projects
                 requiredPos.Status = RequirementStatus.Finished;
                 _context.RequiredPositions.Update(requiredPos);
             }
-            project.Status = ProjectStatus.Confirmed;
+            DateTime today = TimeZoneInfo.ConvertTime(DateTime.Today, tzi);
+            if (DateTime.Compare(project.DateBegin, today) <= 0)
+            {
+                project.Status = ProjectStatus.OnGoing;
+            }
+            else
+            {
+                project.Status = ProjectStatus.Confirmed;
+            }
             _context.Projects.Update(project);
             var result = await _context.SaveChangesAsync();
             if (result == 0)
@@ -1640,9 +1644,10 @@ namespace ESMS.BackendAPI.Services.Projects
                 }).ToListAsync();
             if (projects.Count() != 0)
             {
+                DateTime today = TimeZoneInfo.ConvertTime(DateTime.Today, tzi);
                 foreach (var p in projects)
                 {
-                    if (DateTime.Compare(p.DateBegin.Date, DateTime.Today) == 0)
+                    if (DateTime.Compare(p.DateBegin.Date, today.Date) <= 0)
                     {
                         p.Status = ProjectStatus.OnGoing;
                         _context.Projects.Update(p);

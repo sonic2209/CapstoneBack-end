@@ -38,13 +38,13 @@ namespace ESMS.BackendAPI.Services.Skills
                     .Select(x => x.EmpID).ToListAsync();
                 if (empSkill.Count() != 0)
                 {
-                    return new ApiErrorResult<bool>("This skill is assigned to some employees");
+                    return new ApiErrorResult<bool>("Can not change status, this skill is assigned to some employees");
                 }
                 var requiredSkill = await skillQuery.Where(x => x.rs.SkillID.Equals(skillID) && x.p.Status != ProjectStatus.Finished)
                     .Select(x => x.s.SkillID).ToListAsync();
                 if (requiredSkill.Count() != 0)
                 {
-                    return new ApiErrorResult<bool>("This skill is in project's requirement");
+                    return new ApiErrorResult<bool>("Can not change status, this skill is in project's requirement");
                 }
                 skill.Status = false;
             }
