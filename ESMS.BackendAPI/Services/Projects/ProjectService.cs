@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using ESMS.BackendAPI.ViewModels.Common;
 using ESMS.BackendAPI.ViewModels.Project;
 using ESMS.BackendAPI.ViewModels.Position;
-using ESMS.BackendAPI.ViewModels.Project.Statistics;
 using ESMS.BackendAPI.Ultilities;
 
 namespace ESMS.BackendAPI.Services.Projects
@@ -443,16 +442,16 @@ namespace ESMS.BackendAPI.Services.Projects
                            select new { ep, e };
             foreach (var pos in positionInProject)
             {
-                pos.Employees = new List<EmpInProject>();
-                var listRequirePos = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectID)
-                && x.PositionID.Equals(pos.PosID)).Select(x => new RequiredPosition()
+                pos.Requirements = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectID)
+                && x.PositionID.Equals(pos.PosID)).Select(x => new RequirementDetail()
                 {
-                    ID = x.ID,
-                    CandidateNeeded = x.CandidateNeeded
+                    RequiredPosID = x.ID,
+                    CandidateNeeded = x.CandidateNeeded,
+                    MissingEmployee = x.MissingEmployee
                 }).ToListAsync();
-                foreach (var requirePos in listRequirePos)
+                foreach (var requirePos in pos.Requirements)
                 {
-                    var employees = await empQuery.Where(x => x.ep.RequiredPositionID.Equals(requirePos.ID)
+                    requirePos.Employees = await empQuery.Where(x => x.ep.RequiredPositionID.Equals(requirePos.RequiredPosID)
                     && x.ep.Status != ConfirmStatus.Reject)
                         .Select(x => new EmpInProject()
                         {
@@ -463,17 +462,19 @@ namespace ESMS.BackendAPI.Services.Projects
                             Status = x.ep.Status,
                             DateIn = x.ep.DateIn
                         }).ToListAsync();
-                    if (employees.Count() != 0)
+                    if (requirePos.Employees.Count() != 0)
                     {
-                        foreach (var emp in employees)
+                        var projectQuery = from p in _context.Projects
+                                           join rp in _context.RequiredPositions on p.ProjectID equals rp.ProjectID
+                                           join ep in _context.EmpPositionInProjects on rp.ID equals ep.RequiredPositionID
+                                           select new { p, rp, ep };
+                        foreach (var emp in requirePos.Employees)
                         {
-                            pos.Employees.Add(emp);
+                            var projects = projectQuery.Where(x => x.ep.EmpID.Equals(emp.EmpID) && x.rp.ProjectID != projectID)
+                                .Select(x => x.p.ProjectID).Distinct().ToList();
+                            emp.NumberOfProject = projects.Count();
                         }
                     }
-                    var listEmp = await _context.EmpPositionInProjects.Where(x => x.RequiredPositionID.Equals(requirePos.ID)
-                    && x.DateIn != null).Select(x => x.EmpID).ToListAsync();
-                    pos.Noe += listEmp.Count();
-                    pos.CandidateNeeded += requirePos.CandidateNeeded;
                 }
             }
             return new ApiSuccessResult<List<PositionInProject>>(positionInProject);
@@ -1758,9 +1759,10 @@ namespace ESMS.BackendAPI.Services.Projects
                 var empQuery = from ep in _context.EmpPositionInProjects
                                join rp in _context.RequiredPositions on ep.RequiredPositionID equals rp.ID
                                select new { ep, rp };
+                DateTime today = TimeZoneInfo.ConvertTime(DateTime.Today, tzi);
                 foreach (var p in projects)
                 {
-                    if (DateTime.Compare(p.DateBegin.Date, DateTime.Today) == 0)
+                    if (DateTime.Compare(p.DateBegin.Date, today.Date) == 0)
                     {
                         var employees = empQuery.Where(x => x.rp.ProjectID.Equals(p.ProjectID)).Select(x => x.ep.EmpID);
                         if (employees.Count() == 0)

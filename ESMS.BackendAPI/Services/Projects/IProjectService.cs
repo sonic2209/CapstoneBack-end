@@ -1,7 +1,6 @@
 ﻿using ESMS.BackendAPI.ViewModels.Common;
 using ESMS.BackendAPI.ViewModels.Position;
 using ESMS.BackendAPI.ViewModels.Project;
-using ESMS.BackendAPI.ViewModels.Project.Statistics;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
