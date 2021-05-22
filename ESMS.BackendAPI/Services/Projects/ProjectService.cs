@@ -435,7 +435,8 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     PosID = x.po.PosID,
                     PosName = x.po.Name,
-                    IsMissEmp = false
+                    IsMissEmp = false,
+                    IsNeedConfirm = false
                 }).ToListAsync();
             var positionInProject = positions.GroupBy(x => new { x.PosID, x.PosName }).Select(x => x.FirstOrDefault()).ToList();
             var empQuery = from ep in _context.EmpPositionInProjects
@@ -475,6 +476,10 @@ namespace ESMS.BackendAPI.Services.Projects
                                            select new { p, rp, ep };
                         foreach (var emp in requirePos.Employees)
                         {
+                            if (emp.DateIn == null)
+                            {
+                                pos.IsNeedConfirm = true;
+                            }
                             var projects = projectQuery.Where(x => x.ep.EmpID.Equals(emp.EmpID) && x.rp.ProjectID != projectID)
                                 .Select(x => x.p.ProjectID).Distinct().ToList();
                             emp.NumberOfProject = projects.Count();
