@@ -57,5 +57,7 @@ namespace ESMS.BackendAPI.Services.Projects
         Task<ApiResult<List<EmpInProject>>> GetEmpByRequiredID(int requiredID);
 
         Task<ApiResult<List<string>>> CheckCandidate(int projectID, AddCandidateRequest request);
+
+        Task<ApiResult<RequiredPositionVM>> GetRequirementByID(int requiredPosID);
     }
 }

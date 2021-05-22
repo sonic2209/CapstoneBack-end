@@ -90,9 +90,16 @@ namespace ESMS.BackendAPI.Controllers
         }
 
         [HttpGet("getRequiredPosByID/{projectID}&&{posID}")]
-        public async Task<IActionResult> GetRequiredPositions(int projectID, int posID)
+        public async Task<IActionResult> GetRequiredPosByID(int projectID, int posID)
         {
             var result = await _projectService.GetRequiredPosByID(projectID, posID);
+            return Ok(result);
+        }
+
+        [HttpGet("getRequirementByID/{requiredPosID}")]
+        public async Task<IActionResult> GetRequirementByID(int requiredPosID)
+        {
+            var result = await _projectService.GetRequirementByID(requiredPosID);
             return Ok(result);
         }
 
