@@ -668,10 +668,6 @@ namespace ESMS.BackendAPI.Services.Projects
             if (project == null) return new ApiErrorResult<bool>("Project does not exist");
 
             DateTime dateEstimatedEnd = DateTime.Parse(request.DateEstimatedEnd);
-            if (request.Description.All(char.IsDigit))
-            {
-                UltilitiesService.AddOrUpdateError(errors, "Description", "Description can not be digits only");
-            }
 
             if (DateTime.Compare(project.DateEstimatedEnd.Date, dateEstimatedEnd.Date) != 0)
             {
