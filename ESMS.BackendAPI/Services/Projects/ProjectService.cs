@@ -442,24 +442,23 @@ namespace ESMS.BackendAPI.Services.Projects
             var empQuery = from ep in _context.EmpPositionInProjects
                            join e in _context.Employees on ep.EmpID equals e.Id
                            select new { ep, e };
+            var skillQuery = from rs in _context.RequiredSkills
+                             join s in _context.Skills on rs.SkillID equals s.SkillID
+                             select new { rs, s };
             foreach (var pos in positionInProject)
             {
-                pos.Requirements = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectID)
-                && x.PositionID.Equals(pos.PosID)).Select(x => new RequirementDetail()
+                pos.Requirements = new List<RequirementDetail>();
+                var listRequirement = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectID)
+                && x.PositionID.Equals(pos.PosID)).OrderBy(x => x.DateCreated).Select(x => new RequirementDetail()
                 {
                     RequiredPosID = x.ID,
                     CandidateNeeded = x.CandidateNeeded,
                     MissingEmployee = x.MissingEmployee
                 }).ToListAsync();
-                foreach (var requirePos in pos.Requirements)
+                foreach (var require in listRequirement)
                 {
-                    if (requirePos.MissingEmployee > 0)
-                    {
-                        pos.IsMissEmp = true;
-                    }
-                    requirePos.Employees = await empQuery.Where(x => x.ep.RequiredPositionID.Equals(requirePos.RequiredPosID)
-                    && x.ep.Status != ConfirmStatus.Reject)
-                        .Select(x => new EmpInProject()
+                    require.Employees = await empQuery.Where(x => x.ep.RequiredPositionID.Equals(require.RequiredPosID)
+                        && x.ep.Status != ConfirmStatus.Reject).Select(x => new EmpInProject()
                         {
                             EmpID = x.e.Id,
                             Name = x.e.Name,
@@ -468,6 +467,122 @@ namespace ESMS.BackendAPI.Services.Projects
                             Status = x.ep.Status,
                             DateIn = x.ep.DateIn
                         }).ToListAsync();
+                    if (require.RequiredPosID == listRequirement[0].RequiredPosID)
+                    {
+                        pos.Requirements.Add(require);
+                    }
+                    else
+                    {
+                        var requireHardSkill = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(require.RequiredPosID)
+                        && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => new RequiredSkill()
+                        {
+                            SkillID = x.rs.SkillID,
+                            SkillLevel = x.rs.SkillLevel,
+                            CertificationLevel = x.rs.CertificationLevel,
+                            Priority = x.rs.Priority
+                        }).ToListAsync();
+                        var requireLanguage = await _context.RequiredLanguages.Where(x => x.RequiredPositionID.Equals(require.RequiredPosID))
+                            .Select(x => new RequiredLanguage()
+                            {
+                                LangID = x.LangID,
+                                Priority = x.Priority
+                            }).ToListAsync();
+                        var requireSoftSkill = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(require.RequiredPosID)
+                        && x.s.SkillType.Equals(SkillType.SoftSkill)).Select(x => x.rs.SkillID).ToListAsync();
+                        var isNew = true;
+                        foreach (var requirePos in pos.Requirements)
+                        {
+                            var checkHardSkill = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(requirePos.RequiredPosID)
+                             && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => new RequiredSkill()
+                             {
+                                 SkillID = x.rs.SkillID,
+                                 SkillLevel = x.rs.SkillLevel,
+                                 CertificationLevel = x.rs.CertificationLevel,
+                                 Priority = x.rs.Priority
+                             }).ToListAsync();
+                            var checkLanguage = await _context.RequiredLanguages.Where(x => x.RequiredPositionID.Equals(requirePos.RequiredPosID))
+                                .Select(x => new RequiredLanguage()
+                                {
+                                    LangID = x.LangID,
+                                    Priority = x.Priority
+                                }).ToListAsync();
+                            var checkSoftSkill = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(requirePos.RequiredPosID)
+                            && x.s.SkillType.Equals(SkillType.SoftSkill)).Select(x => x.rs.SkillID).ToListAsync();
+                            if (requireHardSkill.Count() == checkHardSkill.Count() &&
+                               requireLanguage.Count() == checkLanguage.Count() &&
+                               requireSoftSkill.Count() == checkSoftSkill.Count())
+                            {
+                                int countHardSkill = 0;
+                                int countLanguage = 0;
+                                int countSoftSkill = 0;
+                                foreach (var hardSkill in requireHardSkill)
+                                {
+                                    foreach (var check in checkHardSkill)
+                                    {
+                                        if (hardSkill.SkillID == check.SkillID)
+                                        {
+                                            countHardSkill++;
+                                        }
+                                    }
+                                }
+                                if (countHardSkill != checkHardSkill.Count())
+                                {
+                                    continue;
+                                }
+                                foreach (var language in requireLanguage)
+                                {
+                                    foreach (var check in checkLanguage)
+                                    {
+                                        if (language.LangID == check.LangID)
+                                        {
+                                            countLanguage++;
+                                        }
+                                    }
+                                }
+                                if (countLanguage != checkLanguage.Count())
+                                {
+                                    continue;
+                                }
+                                foreach (var softSkill in requireSoftSkill)
+                                {
+                                    foreach (var check in checkSoftSkill)
+                                    {
+                                        if (softSkill == check)
+                                        {
+                                            countSoftSkill++;
+                                        }
+                                    }
+                                }
+                                if (countSoftSkill != checkSoftSkill.Count())
+                                {
+                                    continue;
+                                }
+                                isNew = false;
+                                requirePos.CandidateNeeded += require.CandidateNeeded;
+                                requirePos.MissingEmployee += require.MissingEmployee;
+                                if (require.Employees.Count() != 0)
+                                {
+                                    foreach (var emp in require.Employees)
+                                    {
+                                        requirePos.Employees.Add(emp);
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        if (isNew == true)
+                        {
+                            pos.Requirements.Add(require);
+                        }
+                    }
+                }
+
+                foreach (var requirePos in pos.Requirements)
+                {
+                    if (requirePos.MissingEmployee > 0)
+                    {
+                        pos.IsMissEmp = true;
+                    }
                     if (requirePos.Employees.Count() != 0)
                     {
                         var projectQuery = from p in _context.Projects
