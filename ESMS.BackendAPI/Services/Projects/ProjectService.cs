@@ -445,6 +445,9 @@ namespace ESMS.BackendAPI.Services.Projects
             var skillQuery = from rs in _context.RequiredSkills
                              join s in _context.Skills on rs.SkillID equals s.SkillID
                              select new { rs, s };
+            var languageQuery = from l in _context.Languages
+                                join rl in _context.RequiredLanguages on l.LangID equals rl.LangID
+                                select new { l, rl };
             foreach (var pos in positionInProject)
             {
                 pos.Requirements = new List<RequirementDetail>();
@@ -467,71 +470,63 @@ namespace ESMS.BackendAPI.Services.Projects
                             Status = x.ep.Status,
                             DateIn = x.ep.DateIn
                         }).ToListAsync();
+                    require.Language = await languageQuery.Where(x => x.rl.RequiredPositionID.Equals(require.RequiredPosID))
+                    .Select(x => new RequiredLanguageVM()
+                    {
+                        LangID = x.rl.LangID,
+                        LangName = x.l.LangName,
+                        Priority = x.rl.Priority
+                    }).ToListAsync();
+
+                    require.SoftSkillIDs = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(require.RequiredPosID)
+                    && x.s.SkillType.Equals(SkillType.SoftSkill)).Select(x => new RequiredSoftSkillVM()
+                    {
+                        SoftSkillID = x.rs.SkillID,
+                        SoftSkillName = x.s.SkillName
+                    }).ToListAsync();
+
+                    require.HardSkills = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(require.RequiredPosID)
+                    && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => new RequiredHardSkillVM()
+                    {
+                        HardSkillID = x.rs.SkillID,
+                        HardSkillName = x.s.SkillName,
+                        SkillLevel = (int)x.rs.SkillLevel,
+                        CertificationLevel = (int)x.rs.CertificationLevel,
+                        Priority = (int)x.rs.Priority
+                    }).ToListAsync();
                     if (require.RequiredPosID == listRequirement[0].RequiredPosID)
                     {
                         pos.Requirements.Add(require);
                     }
                     else
                     {
-                        var requireHardSkill = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(require.RequiredPosID)
-                        && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => new RequiredSkill()
-                        {
-                            SkillID = x.rs.SkillID,
-                            SkillLevel = x.rs.SkillLevel,
-                            CertificationLevel = x.rs.CertificationLevel,
-                            Priority = x.rs.Priority
-                        }).ToListAsync();
-                        var requireLanguage = await _context.RequiredLanguages.Where(x => x.RequiredPositionID.Equals(require.RequiredPosID))
-                            .Select(x => new RequiredLanguage()
-                            {
-                                LangID = x.LangID,
-                                Priority = x.Priority
-                            }).ToListAsync();
-                        var requireSoftSkill = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(require.RequiredPosID)
-                        && x.s.SkillType.Equals(SkillType.SoftSkill)).Select(x => x.rs.SkillID).ToListAsync();
-                        var isNew = true;
+                        bool isNew = true;
                         foreach (var requirePos in pos.Requirements)
                         {
-                            var checkHardSkill = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(requirePos.RequiredPosID)
-                             && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => new RequiredSkill()
-                             {
-                                 SkillID = x.rs.SkillID,
-                                 SkillLevel = x.rs.SkillLevel,
-                                 CertificationLevel = x.rs.CertificationLevel,
-                                 Priority = x.rs.Priority
-                             }).ToListAsync();
-                            var checkLanguage = await _context.RequiredLanguages.Where(x => x.RequiredPositionID.Equals(requirePos.RequiredPosID))
-                                .Select(x => new RequiredLanguage()
-                                {
-                                    LangID = x.LangID,
-                                    Priority = x.Priority
-                                }).ToListAsync();
-                            var checkSoftSkill = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(requirePos.RequiredPosID)
-                            && x.s.SkillType.Equals(SkillType.SoftSkill)).Select(x => x.rs.SkillID).ToListAsync();
-                            if (requireHardSkill.Count() == checkHardSkill.Count() &&
-                               requireLanguage.Count() == checkLanguage.Count() &&
-                               requireSoftSkill.Count() == checkSoftSkill.Count())
+                            if (require.HardSkills.Count() == requirePos.HardSkills.Count() &&
+                               require.Language.Count() == requirePos.Language.Count() &&
+                               require.SoftSkillIDs.Count() == requirePos.SoftSkillIDs.Count())
                             {
                                 int countHardSkill = 0;
                                 int countLanguage = 0;
                                 int countSoftSkill = 0;
-                                foreach (var hardSkill in requireHardSkill)
+                                foreach (var hardSkill in require.HardSkills)
                                 {
-                                    foreach (var check in checkHardSkill)
+                                    foreach (var check in requirePos.HardSkills)
                                     {
-                                        if (hardSkill.SkillID == check.SkillID)
+                                        if (hardSkill.HardSkillID == check.HardSkillID)
                                         {
                                             countHardSkill++;
                                         }
                                     }
                                 }
-                                if (countHardSkill != checkHardSkill.Count())
+                                if (countHardSkill != requirePos.HardSkills.Count())
                                 {
                                     continue;
                                 }
-                                foreach (var language in requireLanguage)
+                                foreach (var language in require.Language)
                                 {
-                                    foreach (var check in checkLanguage)
+                                    foreach (var check in requirePos.Language)
                                     {
                                         if (language.LangID == check.LangID)
                                         {
@@ -539,27 +534,31 @@ namespace ESMS.BackendAPI.Services.Projects
                                         }
                                     }
                                 }
-                                if (countLanguage != checkLanguage.Count())
+                                if (countLanguage != requirePos.Language.Count())
                                 {
                                     continue;
                                 }
-                                foreach (var softSkill in requireSoftSkill)
+                                foreach (var softSkill in require.SoftSkillIDs)
                                 {
-                                    foreach (var check in checkSoftSkill)
+                                    foreach (var check in requirePos.SoftSkillIDs)
                                     {
-                                        if (softSkill == check)
+                                        if (softSkill.SoftSkillID == check.SoftSkillID)
                                         {
                                             countSoftSkill++;
                                         }
                                     }
                                 }
-                                if (countSoftSkill != checkSoftSkill.Count())
+                                if (countSoftSkill != requirePos.SoftSkillIDs.Count())
                                 {
                                     continue;
                                 }
                                 isNew = false;
+                                requirePos.RequiredPosID = require.RequiredPosID;
                                 requirePos.CandidateNeeded += require.CandidateNeeded;
                                 requirePos.MissingEmployee += require.MissingEmployee;
+                                requirePos.HardSkills = require.HardSkills;
+                                requirePos.Language = require.Language;
+                                requirePos.SoftSkillIDs = require.SoftSkillIDs;
                                 if (require.Employees.Count() != 0)
                                 {
                                     foreach (var emp in require.Employees)
