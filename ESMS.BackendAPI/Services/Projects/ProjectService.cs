@@ -482,14 +482,14 @@ namespace ESMS.BackendAPI.Services.Projects
                     }).ToListAsync();
 
                     require.SoftSkillIDs = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(require.RequiredPosID)
-                    && x.s.SkillType.Equals(SkillType.SoftSkill)).Select(x => new RequiredSoftSkillVM()
+                    && x.s.SkillType.Equals(EnumSkillType.SoftSkill)).Select(x => new RequiredSoftSkillVM()
                     {
                         SoftSkillID = x.rs.SkillID,
                         SoftSkillName = x.s.SkillName
                     }).ToListAsync();
 
                     require.HardSkills = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(require.RequiredPosID)
-                    && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => new RequiredHardSkillVM()
+                    && x.s.SkillType.Equals(EnumSkillType.HardSkill)).Select(x => new RequiredHardSkillVM()
                     {
                         HardSkillID = x.rs.SkillID,
                         HardSkillName = x.s.SkillName,
@@ -2178,14 +2178,14 @@ namespace ESMS.BackendAPI.Services.Projects
                     }).ToListAsync();
 
             requiredPos.SoftSkillIDs = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(requiredPos.RequiredPosID)
-            && x.s.SkillType.Equals(SkillType.SoftSkill)).Select(x => new RequiredSoftSkillVM()
+            && x.s.SkillType.Equals(EnumSkillType.SoftSkill)).Select(x => new RequiredSoftSkillVM()
             {
                 SoftSkillID = x.rs.SkillID,
                 SoftSkillName = x.s.SkillName
             }).ToListAsync();
 
             requiredPos.HardSkills = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(requiredPos.RequiredPosID)
-            && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => new RequiredHardSkillVM()
+            && x.s.SkillType.Equals(EnumSkillType.HardSkill)).Select(x => new RequiredHardSkillVM()
             {
                 HardSkillID = x.rs.SkillID,
                 HardSkillName = x.s.SkillName,
