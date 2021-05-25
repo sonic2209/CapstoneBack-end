@@ -9,6 +9,6 @@ namespace ESMS.BackendAPI.ViewModels.Skill
     public class GetSkillPagingRequest : PagingRequestBase
     {
         public string Keyword { get; set; }
-        public SkillType SkillType { get; set; }
+        public EnumSkillType SkillType { get; set; }
     }
 }

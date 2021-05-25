@@ -194,11 +194,11 @@ namespace ESMS.BackendAPI.Services.Employees
                             }
                             //return new ApiErrorResult<bool>("Please select level for skill " + skill.SkillName);
                         }
-                        if (hardSkill.SkillLevel != (int)SkillLevel.BasicKnowledge
-                           && hardSkill.SkillLevel != (int)SkillLevel.LimitedExperience
-                           && hardSkill.SkillLevel != (int)SkillLevel.Practical
-                           && hardSkill.SkillLevel != (int)SkillLevel.AppliedTheory
-                           && hardSkill.SkillLevel != (int)SkillLevel.RecognizedAuthority)
+                        if (hardSkill.SkillLevel != (int)EnumSkillLevel.BasicKnowledge
+                           && hardSkill.SkillLevel != (int)EnumSkillLevel.LimitedExperience
+                           && hardSkill.SkillLevel != (int)EnumSkillLevel.Practical
+                           && hardSkill.SkillLevel != (int)EnumSkillLevel.AppliedTheory
+                           && hardSkill.SkillLevel != (int)EnumSkillLevel.RecognizedAuthority)
                         {
                             if (checkHardSkill == false)
                             {
@@ -211,7 +211,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         {
                             EmpID = empID,
                             SkillID = hardSkill.SkillID,
-                            SkillLevel = (SkillLevel)hardSkill.SkillLevel,
+                            SkillLevel = (EnumSkillLevel)hardSkill.SkillLevel,
                             DateStart = DateTime.Now
                         };
                         _context.EmpSkills.Add(empHardSkill);
@@ -645,7 +645,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             var listEmpSkillquery = from es in _context.EmpSkills
                                                     join s in _context.Skills on es.SkillID equals s.SkillID
                                                     select new { es, s };
-                            var listEmpSoftSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.SoftSkill && x.es.EmpID.Equals(emp.EmpId));
+                            var listEmpSoftSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == EnumSkillType.SoftSkill && x.es.EmpID.Equals(emp.EmpId));
                             var listEmpSoftSkill = await listEmpSoftSkillquery.Select(x => x.es.SkillID).ToListAsync();
                             foreach (int softskillId in requiredPosition.SoftSkillIDs)
                             {
@@ -659,7 +659,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 //match += Math.Round(Softskillmatch, 2);
                             }
                             //add match vao hardskill
-                            var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.HardSkill && x.es.DateEnd == null && x.es.EmpID.Equals(emp.EmpId));
+                            var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == EnumSkillType.HardSkill && x.es.DateEnd == null && x.es.EmpID.Equals(emp.EmpId));
                             var listEmpHardSkill = await listEmpHardSkillquery.Select(x => new EmpInHardSkill()
                             {
                                 EmpID = emp.EmpId,
@@ -935,7 +935,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             var listEmpSkillquery = from es in _context.EmpSkills
                                                     join s in _context.Skills on es.SkillID equals s.SkillID
                                                     select new { es, s };
-                            var listEmpSoftSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.SoftSkill && x.es.EmpID.Equals(emp.EmpId));
+                            var listEmpSoftSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == EnumSkillType.SoftSkill && x.es.EmpID.Equals(emp.EmpId));
                             var listEmpSoftSkill = await listEmpSoftSkillquery.Select(x => x.es.SkillID).ToListAsync();
                             foreach (int softskillId in requiredPosition.SoftSkillIDs)
                             {
@@ -949,7 +949,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 //match += Math.Round(Softskillmatch, 2);
                             }
                             //add match vao hardskill
-                            var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.HardSkill && x.es.EmpID.Equals(emp.EmpId));
+                            var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == EnumSkillType.HardSkill && x.es.EmpID.Equals(emp.EmpId));
                             var listEmpHardSkill = await listEmpHardSkillquery.Select(x => new EmpInHardSkill()
                             {
                                 EmpID = emp.EmpId,
@@ -1248,7 +1248,7 @@ namespace ESMS.BackendAPI.Services.Employees
                     var listEmpSkillquery = from es in _context.EmpSkills
                                             join s in _context.Skills on es.SkillID equals s.SkillID
                                             select new { es, s };
-                    var listEmpSoftSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.SoftSkill && x.es.EmpID.Equals(empID));
+                    var listEmpSoftSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == EnumSkillType.SoftSkill && x.es.EmpID.Equals(empID));
                     var listEmpSoftSkill = await listEmpSoftSkillquery.Select(x => x.es.SkillID).ToListAsync();
                     foreach (int softskillId in requiredPosition.SoftSkillIDs)
                     {
@@ -1261,7 +1261,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         }
                     }
                     //add match vao hardskill
-                    var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == SkillType.HardSkill && x.es.DateEnd == null && x.es.EmpID.Equals(empID));
+                    var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == EnumSkillType.HardSkill && x.es.DateEnd == null && x.es.EmpID.Equals(empID));
                     var listEmpHardSkill = await listEmpHardSkillquery.Select(x => new EmpInHardSkill()
                     {
                         EmpID = empID,
@@ -1617,7 +1617,7 @@ namespace ESMS.BackendAPI.Services.Employees
             foreach (var s in listSkill)
             {
                 var skill = await _context.Skills.FindAsync(s.SkillID);
-                if (skill.SkillType == SkillType.SoftSkill)
+                if (skill.SkillType == EnumSkillType.SoftSkill)
                 {
                     var softSkill = new SoftSkillInfo()
                     {
@@ -1657,7 +1657,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         join s in _context.Skills on es.SkillID equals s.SkillID
                         select new { es, s };
             //Update HardSkill
-            var listHardSkill = await query.Where(x => x.es.EmpID.Equals(empID) && x.s.SkillType.Equals(SkillType.HardSkill))
+            var listHardSkill = await query.Where(x => x.es.EmpID.Equals(empID) && x.s.SkillType.Equals(EnumSkillType.HardSkill))
                 .Select(x => new EmpSkill()
                 {
                     EmpID = x.es.EmpID,
@@ -1737,11 +1737,11 @@ namespace ESMS.BackendAPI.Services.Employees
                             }
                             //return new ApiErrorResult<bool>("Please select level for skill " + skill.SkillName);
                         }
-                        if (hardSkill.SkillLevel != (int)SkillLevel.BasicKnowledge
-                           && hardSkill.SkillLevel != (int)SkillLevel.LimitedExperience
-                           && hardSkill.SkillLevel != (int)SkillLevel.Practical
-                           && hardSkill.SkillLevel != (int)SkillLevel.AppliedTheory
-                           && hardSkill.SkillLevel != (int)SkillLevel.RecognizedAuthority)
+                        if (hardSkill.SkillLevel != (int)EnumSkillLevel.BasicKnowledge
+                           && hardSkill.SkillLevel != (int)EnumSkillLevel.LimitedExperience
+                           && hardSkill.SkillLevel != (int)EnumSkillLevel.Practical
+                           && hardSkill.SkillLevel != (int)EnumSkillLevel.AppliedTheory
+                           && hardSkill.SkillLevel != (int)EnumSkillLevel.RecognizedAuthority)
                         {
                             if (checkHardSkill == false)
                             {
@@ -1757,7 +1757,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             {
                                 EmpID = empID,
                                 SkillID = hardSkill.SkillID,
-                                SkillLevel = (SkillLevel)hardSkill.SkillLevel,
+                                SkillLevel = (EnumSkillLevel)hardSkill.SkillLevel,
                                 DateStart = DateTime.Now
                             };
                             _context.EmpSkills.Add(empSkill);
@@ -1768,7 +1768,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             {
                                 checkEmpSkill.DateEnd = null;
                             }
-                            checkEmpSkill.SkillLevel = (SkillLevel)hardSkill.SkillLevel;
+                            checkEmpSkill.SkillLevel = (EnumSkillLevel)hardSkill.SkillLevel;
                             _context.EmpSkills.Update(checkEmpSkill);
                         }
                         //Update Certification for that skill
@@ -2089,7 +2089,7 @@ namespace ESMS.BackendAPI.Services.Employees
             }
 
             // Update SoftSkill
-            var listSoftSkill = await query.Where(x => x.es.EmpID.Equals(empID) && x.s.SkillType.Equals(SkillType.SoftSkill))
+            var listSoftSkill = await query.Where(x => x.es.EmpID.Equals(empID) && x.s.SkillType.Equals(EnumSkillType.SoftSkill))
                 .Select(x => new EmpSkill()
                 {
                     EmpID = x.es.EmpID,
@@ -2212,7 +2212,7 @@ namespace ESMS.BackendAPI.Services.Employees
             foreach (var s in listSkill)
             {
                 var skill = await _context.Skills.FindAsync(s.SkillID);
-                if (skill.SkillType == SkillType.SoftSkill)
+                if (skill.SkillType == EnumSkillType.SoftSkill)
                 {
                     info.SoftSkills.Add(s.SkillID);
                 }

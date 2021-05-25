@@ -9,7 +9,7 @@ namespace ESMS.BackendAPI.ViewModels.Skill
     {
         public int SkillID { get; set; }
         public string SkillName { get; set; }
-        public SkillType SkillType { get; set; }
+        public EnumSkillType SkillType { get; set; }
         public bool Status { get; set; }
     }
 }

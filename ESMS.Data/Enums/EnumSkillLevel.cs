@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ESMS.Data.Enums
 {
-    public enum SkillLevel
+    public enum EnumSkillLevel
     {
         BasicKnowledge = 1,
         LimitedExperience = 2,

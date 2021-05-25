@@ -801,10 +801,6 @@ namespace ESMS.BackendAPI.Services.Projects
             if (project == null) return new ApiErrorResult<bool>("Project does not exist");
 
             DateTime dateEstimatedEnd = DateTime.Parse(request.DateEstimatedEnd);
-            if (request.Description.All(char.IsDigit))
-            {
-                UltilitiesService.AddOrUpdateError(errors, "Description", "Description can not be digits only");
-            }
 
             if (DateTime.Compare(project.DateEstimatedEnd.Date, dateEstimatedEnd.Date) != 0)
             {
@@ -1071,7 +1067,7 @@ namespace ESMS.BackendAPI.Services.Projects
                             RequiredPositionID = requiredPosition.ID,
                             SkillID = hardSkill.HardSkillID,
                             Priority = hardSkill.Priority,
-                            SkillLevel = (SkillLevel)hardSkill.SkillLevel,
+                            SkillLevel = (EnumSkillLevel)hardSkill.SkillLevel,
                             CertificationLevel = hardSkill.CertificationLevel
                         };
                         _context.RequiredSkills.Add(requiredSkill);
@@ -1669,14 +1665,14 @@ namespace ESMS.BackendAPI.Services.Projects
                     }).ToListAsync();
 
                 p.SoftSkillIDs = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(p.RequiredPosID)
-                && x.s.SkillType.Equals(SkillType.SoftSkill)).Select(x => new RequiredSoftSkillVM()
+                && x.s.SkillType.Equals(EnumSkillType.SoftSkill)).Select(x => new RequiredSoftSkillVM()
                 {
                     SoftSkillID = x.rs.SkillID,
                     SoftSkillName = x.s.SkillName
                 }).ToListAsync();
 
                 p.HardSkills = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(p.RequiredPosID)
-                && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => new RequiredHardSkillVM()
+                && x.s.SkillType.Equals(EnumSkillType.HardSkill)).Select(x => new RequiredHardSkillVM()
                 {
                     HardSkillID = x.rs.SkillID,
                     HardSkillName = x.s.SkillName,
@@ -1737,14 +1733,14 @@ namespace ESMS.BackendAPI.Services.Projects
                     }).ToListAsync();
 
             requiredPos.SoftSkillIDs = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(requiredPos.RequiredPosID)
-            && x.s.SkillType.Equals(SkillType.SoftSkill)).Select(x => new RequiredSoftSkillVM()
+            && x.s.SkillType.Equals(EnumSkillType.SoftSkill)).Select(x => new RequiredSoftSkillVM()
             {
                 SoftSkillID = x.rs.SkillID,
                 SoftSkillName = x.s.SkillName
             }).ToListAsync();
 
             requiredPos.HardSkills = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(requiredPos.RequiredPosID)
-            && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => new RequiredHardSkillVM()
+            && x.s.SkillType.Equals(EnumSkillType.HardSkill)).Select(x => new RequiredHardSkillVM()
             {
                 HardSkillID = x.rs.SkillID,
                 HardSkillName = x.s.SkillName,
@@ -1839,9 +1835,9 @@ namespace ESMS.BackendAPI.Services.Projects
                                         Priority = x.Priority
                                     }).ToList();
                                 pos.SoftSkillIDs = skillQuery.Where(x => x.rs.RequiredPositionID.Equals(pos.RequiredPosID)
-                                && x.s.SkillType.Equals(SkillType.SoftSkill)).Select(x => x.rs.SkillID).ToList();
+                                && x.s.SkillType.Equals(EnumSkillType.SoftSkill)).Select(x => x.rs.SkillID).ToList();
                                 pos.HardSkills = skillQuery.Where(x => x.rs.RequiredPositionID.Equals(pos.RequiredPosID)
-                                && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => new HardSkillDetail()
+                                && x.s.SkillType.Equals(EnumSkillType.HardSkill)).Select(x => new HardSkillDetail()
                                 {
                                     HardSkillID = x.rs.SkillID,
                                     SkillLevel = (int)x.rs.SkillLevel,
@@ -2007,7 +2003,7 @@ namespace ESMS.BackendAPI.Services.Projects
                 foreach (var rp in listRequirePos)
                 {
                     var listRequireSkill = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(rp)
-                    && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => x.s.SkillName).ToListAsync();
+                    && x.s.SkillType.Equals(EnumSkillType.HardSkill)).Select(x => x.s.SkillName).ToListAsync();
                     if (listRequireSkill.Count() != 0)
                     {
                         foreach (var rs in listRequireSkill)
@@ -2046,7 +2042,7 @@ namespace ESMS.BackendAPI.Services.Projects
                     foreach (var rp in listRequirePos)
                     {
                         var listRequireSkill = await skillQuery.Where(x => x.rs.RequiredPositionID.Equals(rp)
-                        && x.s.SkillType.Equals(SkillType.HardSkill)).Select(x => x.s.SkillName).ToListAsync();
+                        && x.s.SkillType.Equals(EnumSkillType.HardSkill)).Select(x => x.s.SkillName).ToListAsync();
                         if (listRequireSkill.Count() != 0)
                         {
                             foreach (var rs in listRequireSkill)
