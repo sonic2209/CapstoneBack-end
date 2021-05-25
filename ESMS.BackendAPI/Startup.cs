@@ -225,7 +225,7 @@ namespace ESMS.BackendAPI
                        Thread.CurrentThread.IsBackground = true;
                        /* run your code here */
                        //   Console.WriteLine("Hello, world");
-                       var check = await projectService.CheckProject();
+                       //var check = await projectService.CheckProject();
                        var listDeletedProject = await projectService.CheckNoEmpProject();
                        if (listDeletedProject.Count() > 0)
                        {

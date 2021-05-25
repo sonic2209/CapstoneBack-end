@@ -14,6 +14,11 @@ namespace ESMS.Data.Configurations
         {
             builder.ToTable("Employees");
             builder.Property(x => x.Name).HasMaxLength(50).IsRequired();
+            builder.Property(x => x.Email).HasMaxLength(50).IsRequired();
+            builder.Property(x => x.NormalizedEmail).HasMaxLength(50).IsRequired();
+            builder.Property(x => x.PhoneNumber).HasMaxLength(10);
+            builder.Property(x => x.UserName).HasMaxLength(20).IsRequired();
+            builder.Property(x => x.NormalizedUserName).HasMaxLength(20).IsRequired();
             builder.Property(x => x.Address).HasMaxLength(100).IsRequired();
             builder.Property(x => x.IdentityNumber).HasMaxLength(12).IsRequired();
             builder.Property(x => x.Status).HasDefaultValue(EmployeeStatus.OnGoing);

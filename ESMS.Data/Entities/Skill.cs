@@ -9,7 +9,7 @@ namespace ESMS.Data.Entities
     {
         public int SkillID { get; set; }
         public string SkillName { get; set; }
-        public SkillType SkillType { get; set; }
+        public EnumSkillType SkillType { get; set; }
         public bool Status { get; set; }
         public List<Certification> Certifications { get; set; }
         public List<EmpSkill> EmpSkills { get; set; }

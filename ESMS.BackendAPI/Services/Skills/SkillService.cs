@@ -75,7 +75,7 @@ namespace ESMS.BackendAPI.Services.Skills
             //{
             //    UltilitiesService.AddOrUpdateError(errors, "SkillType", "Please select hard skill or soft skill only");
             //}
-            if (request.SkillType.Equals((int)SkillType.HardSkill))
+            if (request.SkillType.Equals((int)EnumSkillType.HardSkill))
             {
                 if (request.HardSkillOption.Count() != 0)
                 {
@@ -106,7 +106,7 @@ namespace ESMS.BackendAPI.Services.Skills
             var skill = new Skill()
             {
                 SkillName = request.SkillName,
-                SkillType = (SkillType)request.SkillType
+                SkillType = (EnumSkillType)request.SkillType
             };
             _context.Skills.Add(skill);
             var result = await _context.SaveChangesAsync();
@@ -114,7 +114,7 @@ namespace ESMS.BackendAPI.Services.Skills
             {
                 return new ApiErrorResult<bool>("Create skill failed");
             }
-            if (request.SkillType.Equals((int)SkillType.HardSkill))
+            if (request.SkillType.Equals((int)EnumSkillType.HardSkill))
             {
                 if (request.HardSkillOption.Count() != 0)
                 {
@@ -142,7 +142,7 @@ namespace ESMS.BackendAPI.Services.Skills
                     }
                 }
             }
-            if (request.SkillType.Equals((int)SkillType.SoftSkill))
+            if (request.SkillType.Equals((int)EnumSkillType.SoftSkill))
             {
                 if (request.SoftSkillOption.Count() != 0)
                 {
@@ -179,7 +179,7 @@ namespace ESMS.BackendAPI.Services.Skills
             skillVM.SkillType = (int)skill.SkillType;
             skillVM.HardSkillOption = new List<HardSkillOption>();
             skillVM.SoftSkillOption = new List<int>();
-            if (skill.SkillType.Equals(SkillType.HardSkill))
+            if (skill.SkillType.Equals(EnumSkillType.HardSkill))
             {
                 skillVM.HardSkillOption = await _context.MinPosInProjects.Where(x => x.SkillID.Equals(skillID))
                     .Select(x => new HardSkillOption()
@@ -192,7 +192,7 @@ namespace ESMS.BackendAPI.Services.Skills
                     && x.TypeID.Equals(type.ProjectType)).Select(x => x.PosID).ToListAsync();
                 }
             }
-            if (skill.SkillType.Equals(SkillType.SoftSkill))
+            if (skill.SkillType.Equals(EnumSkillType.SoftSkill))
             {
                 skillVM.SoftSkillOption = await _context.SkillInProjectFields.Where(x => x.SkillID.Equals(skillID))
                     .Select(x => x.FieldID).ToListAsync();
@@ -263,7 +263,7 @@ namespace ESMS.BackendAPI.Services.Skills
 
         public async Task<ApiResult<List<ListSkillViewModel>>> GetSkills(int skillType)
         {
-            var skills = await _context.Skills.Where(x => x.SkillType.Equals((SkillType)skillType) && x.Status.Equals(true)).Select(x => new ListSkillViewModel()
+            var skills = await _context.Skills.Where(x => x.SkillType.Equals((EnumSkillType)skillType) && x.Status.Equals(true)).Select(x => new ListSkillViewModel()
             {
                 SkillID = x.SkillID,
                 SkillName = x.SkillName
@@ -304,16 +304,16 @@ namespace ESMS.BackendAPI.Services.Skills
                     //return new ApiErrorResult<bool>("This skill name already exist");
                 }
             }
-            else if (!skill.SkillType.Equals((SkillType)request.SkillType))
+            else if (!skill.SkillType.Equals((EnumSkillType)request.SkillType))
             {
-                if (skill.SkillType.Equals(SkillType.HardSkill))
+                if (skill.SkillType.Equals(EnumSkillType.HardSkill))
                 {
                     if (request.HardSkillOption.Count() != 0)
                     {
                         UltilitiesService.AddOrUpdateError(errors, "SkillType", "Can not change type, please remove all this previous type(hard skill)'s option");
                     }
                 }
-                else if (skill.SkillType.Equals(SkillType.SoftSkill))
+                else if (skill.SkillType.Equals(EnumSkillType.SoftSkill))
                 {
                     if (request.SoftSkillOption.Count() != 0)
                     {
@@ -321,7 +321,7 @@ namespace ESMS.BackendAPI.Services.Skills
                     }
                 }
             }
-            if (request.SkillType.Equals((int)SkillType.HardSkill))
+            if (request.SkillType.Equals((int)EnumSkillType.HardSkill))
             {
                 if (request.HardSkillOption.Count() != 0)
                 {
@@ -350,7 +350,7 @@ namespace ESMS.BackendAPI.Services.Skills
                 return new ApiErrorResult<bool>(errors);
             }
             skill.SkillName = request.SkillName;
-            skill.SkillType = (SkillType)request.SkillType;
+            skill.SkillType = (EnumSkillType)request.SkillType;
             _context.Skills.Update(skill);
             var result = await _context.SaveChangesAsync();
             if (result == 0)
@@ -371,7 +371,7 @@ namespace ESMS.BackendAPI.Services.Skills
                         FieldID = x.FieldID
                     }).ToListAsync();
 
-            if (request.SkillType.Equals((int)SkillType.HardSkill))
+            if (request.SkillType.Equals((int)EnumSkillType.HardSkill))
             {
                 if (skillInFields.Count() != 0)
                 {
@@ -447,7 +447,7 @@ namespace ESMS.BackendAPI.Services.Skills
                     }
                 }
             }
-            if (request.SkillType.Equals((int)SkillType.SoftSkill))
+            if (request.SkillType.Equals((int)EnumSkillType.SoftSkill))
             {
                 if (listMinPos.Count() != 0)
                 {

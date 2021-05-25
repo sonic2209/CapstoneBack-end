@@ -4,10 +4,9 @@ using System.Text;
 
 namespace ESMS.Data.Enums
 {
-    public enum SkillType
+    public enum EnumSkillType
     {
         HardSkill,
         SoftSkill
-        
     }
 }
