@@ -460,6 +460,8 @@ namespace ESMS.BackendAPI.Services.Projects
                 }).ToListAsync();
                 foreach (var require in listRequirement)
                 {
+                    var requirementDate = await _context.RequiredPositions.Where(x => x.ID.Equals(require.RequiredPosID))
+                        .Select(x => x.DateCreated).FirstOrDefaultAsync();
                     require.Employees = await empQuery.Where(x => x.ep.RequiredPositionID.Equals(require.RequiredPosID)
                         && x.ep.Status != ConfirmStatus.Reject).Select(x => new EmpInProject()
                         {
@@ -468,7 +470,8 @@ namespace ESMS.BackendAPI.Services.Projects
                             Email = x.e.Email,
                             PhoneNumber = x.e.PhoneNumber,
                             Status = x.ep.Status,
-                            DateIn = x.ep.DateIn
+                            DateIn = x.ep.DateIn,
+                            RequirementDate = requirementDate
                         }).ToListAsync();
                     require.Language = await languageQuery.Where(x => x.rl.RequiredPositionID.Equals(require.RequiredPosID))
                     .Select(x => new RequiredLanguageVM()
@@ -514,7 +517,10 @@ namespace ESMS.BackendAPI.Services.Projects
                                 {
                                     foreach (var check in requirePos.HardSkills)
                                     {
-                                        if (hardSkill.HardSkillID == check.HardSkillID)
+                                        if (hardSkill.HardSkillID == check.HardSkillID &&
+                                            hardSkill.SkillLevel == check.SkillLevel &&
+                                            hardSkill.CertificationLevel == check.CertificationLevel &&
+                                            hardSkill.Priority == check.Priority)
                                         {
                                             countHardSkill++;
                                         }
@@ -528,7 +534,8 @@ namespace ESMS.BackendAPI.Services.Projects
                                 {
                                     foreach (var check in requirePos.Language)
                                     {
-                                        if (language.LangID == check.LangID)
+                                        if (language.LangID == check.LangID &&
+                                            language.Priority == check.Priority)
                                         {
                                             countLanguage++;
                                         }

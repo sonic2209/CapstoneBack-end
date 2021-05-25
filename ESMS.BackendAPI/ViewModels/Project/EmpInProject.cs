@@ -15,5 +15,6 @@ namespace ESMS.BackendAPI.ViewModels.Project
         public DateTime? DateIn { get; set; }
         public ConfirmStatus Status { get; set; }
         public string RejectReason { get; set; }
+        public DateTime RequirementDate { get; set; }
     }
 }
