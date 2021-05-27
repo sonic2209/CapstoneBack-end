@@ -636,7 +636,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 {
                                     foreach (EmpInLang empl in ListEmpInLang)
                                     {
-                                        Languagematch += (double)((empl.LangLevel * language.Priority * 0.1) / requiredPosition.Language.Count);
+                                        Languagematch += (double)((empl.LangLevel * language.Priority * 0.1) / (double)requiredPosition.Language.Count);
                                     }
                                     //match += Math.Round(Languagematch, 2);
                                 }
@@ -653,7 +653,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 {
                                     if (softSkill.Equals(softskillId))
                                     {
-                                        Softskillmatch += (double)(10 / (requiredPosition.SoftSkillIDs.Count));
+                                        Softskillmatch += (double)(10 / (double)(requiredPosition.SoftSkillIDs.Count));
                                     }
                                 }
                                 //match += Math.Round(Softskillmatch, 2);
@@ -688,7 +688,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                         };
                                         //if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
                                         //{
-                                        Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)+1) + ((int)emphs.SkillLevel - hardskill.SkillLevel)+1) * hardskill.Priority / (21 * requiredPosition.HardSkills.Count);
+                                        Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)+1) + ((int)emphs.SkillLevel - hardskill.SkillLevel)+1) * hardskill.Priority / (21 * (double)requiredPosition.HardSkills.Count);
                                         //match += Math.Round(Hardskillmatch, 2);
                                         //}
                                         //else
@@ -822,7 +822,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             }
                             match = Math.Round(Languagematch + Softskillmatch + Hardskillmatch + ProjectTypeMatch + ProjectFieldMatch, 2);
                             //Loc nhung nhan vien khong du diem toi thieu
-                            if (Hardskillmatch <= 0 || match <= 0)
+                            if (Softskillmatch <= 0 ||Hardskillmatch <= 0 || match <= 0)
                             {
                                 continue;
                             }
@@ -870,229 +870,6 @@ namespace ESMS.BackendAPI.Services.Employees
             return new ApiSuccessResult<List<CandidateViewModel>>(result);
         }
 
-        public async Task<ApiResult<List<CandidateViewModel>>> SuggestCandidateWithoutMinimumPoint(int projectID, SuggestCadidateRequest request)
-        {
-            List<CandidateViewModel> result = new List<CandidateViewModel>();
-            int ProjectTypeID = request.ProjectTypeID;
-            int ProjectFieldID = request.ProjectFieldID;
-            foreach (RequiredPositionDetail requiredPosition in request.RequiredPositions)
-            {
-                var dicCandidate = new Dictionary<string, double>();
-                {
-                    List<MatchViewModel> listMatchDetail = new List<MatchViewModel>();
-                    var Position = _context.Positions.Where(x => x.PosID == requiredPosition.PosID).Select(x => x.Name).FirstOrDefault();
-                    var PosId = _context.Positions.Where(x => x.PosID == requiredPosition.PosID).Select(x => x.PosID).FirstOrDefault();
-
-                    var ListEmpInPos = await _context.Employees.Select(x => new EmpInPos()
-                    {
-                        EmpId = x.Id,
-                        EmpName = x.Name,
-                    }).ToListAsync();
-                    if (ListEmpInPos.Count > 0)
-                    {
-                        foreach (EmpInPos emp in ListEmpInPos)
-                        {
-                            var user = await _userManager.FindByIdAsync(emp.EmpId.ToString());
-                            var roles = await _userManager.GetRolesAsync(user);
-                            string currentRole = null;
-                            if (roles.Count > 0)
-                            {
-                                currentRole = roles[0];
-                                if (!currentRole.Equals("Employee"))
-                                {
-                                    continue;
-                                }
-                            }
-                            else
-                                continue;
-                            double match = 0;
-                            double Languagematch = 0;
-                            double Softskillmatch = 0;
-                            double Hardskillmatch = 0;
-                            double ProjectTypeMatch = 0;
-                            double ProjectFieldMatch = 0;
-                            MatchViewModel matchDetail = new MatchViewModel();
-
-                            //add match theo ngon ngu
-                            foreach (LanguageDetail language in requiredPosition.Language)
-                            {
-                                var ListEmpInLang = await _context.EmpLanguages.Where(x => x.EmpID.Equals(emp.EmpId) && x.LangID == language.LangID).Select(x => new EmpInLang()
-                                {
-                                    EmpId = x.EmpID,
-                                    LangLevel = x.LangLevel,
-                                }).ToListAsync();
-
-                                if (ListEmpInLang.Count > 0)
-                                {
-                                    foreach (EmpInLang empl in ListEmpInLang)
-                                    {
-                                        Languagematch += (empl.LangLevel * language.Priority * 0.1) / requiredPosition.Language.Count;
-                                    }
-                                    //match += Math.Round(Languagematch, 2);
-                                }
-                            }
-                            //Add theo softskill
-                            var listEmpSkillquery = from es in _context.EmpSkills
-                                                    join s in _context.Skills on es.SkillID equals s.SkillID
-                                                    select new { es, s };
-                            var listEmpSoftSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == EnumSkillType.SoftSkill && x.es.EmpID.Equals(emp.EmpId));
-                            var listEmpSoftSkill = await listEmpSoftSkillquery.Select(x => x.es.SkillID).ToListAsync();
-                            foreach (int softskillId in requiredPosition.SoftSkillIDs)
-                            {
-                                foreach (var softSkill in listEmpSoftSkill)
-                                {
-                                    if (softSkill.Equals(softskillId))
-                                    {
-                                        Softskillmatch += 10 / (requiredPosition.SoftSkillIDs.Count);
-                                    }
-                                }
-                                //match += Math.Round(Softskillmatch, 2);
-                            }
-                            //add match vao hardskill
-                            var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == EnumSkillType.HardSkill && x.es.EmpID.Equals(emp.EmpId));
-                            var listEmpHardSkill = await listEmpHardSkillquery.Select(x => new EmpInHardSkill()
-                            {
-                                EmpID = emp.EmpId,
-                                SkillID = x.s.SkillID,
-                                SkillLevel = x.es.SkillLevel,
-                            }).ToListAsync();
-                            foreach (HardSkillDetail hardskill in requiredPosition.HardSkills)
-                            {
-                                foreach (EmpInHardSkill emphs in listEmpHardSkill)
-                                {
-                                    if (emphs.SkillID.Equals(hardskill.HardSkillID))
-                                    {
-                                        var certiquery = from c in _context.Certifications
-                                                         join ec in _context.EmpCertifications on c.CertificationID equals ec.CertificationID
-                                                         select new { c, ec };
-                                        var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID && x.ec.DateEnd > DateTime.Now).Select(x => new CertiInSkill
-                                        {
-                                            CertiID = x.c.CertificationID,
-                                            SkillID = x.c.SkillID,
-                                            CertiLevel = x.c.CertiLevel
-                                        }).ToListAsync();
-                                        var HighestCerti = new EmpHighestCerti()
-                                        {
-                                            EmpID = emphs.EmpID,
-                                            HighestCertiLevel = listCertiSkill.Any() ? listCertiSkill.Max(x => x.CertiLevel) : 0,
-                                        };
-                                        //if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
-                                        //{
-                                        Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)) + ((int)emphs.SkillLevel - hardskill.SkillLevel)) * hardskill.Priority / (18 * requiredPosition.HardSkills.Count);
-                                        //match += Math.Round(Hardskillmatch, 2);
-                                        //}
-                                        //else
-                                        //{
-                                        //    Hardskillmatch = (((int)emphs.SkillLevel * 2 * 0.5)) * hardskill.Priority / 10 * requiredPosition.HardSkills.Count;
-                                        //    match += Math.Round(Hardskillmatch, 2);
-                                        //}
-                                    }
-                                }
-                            }
-
-                            //Merge code mới
-                            //Loc nhung nhan vien ko available dua theo thoi gian ket thuc du an dang tien hanh
-                            var projectquery = from p in _context.Projects
-                                               join rp in _context.RequiredPositions on p.ProjectID equals rp.ProjectID
-                                               join epip in _context.EmpPositionInProjects on rp.ID equals epip.RequiredPositionID
-                                               select new { rp, p, epip };
-
-                            var currentProjectBeginDate = await _context.Projects.Where(x => x.ProjectID == projectID).Select(x => x.DateBegin).FirstOrDefaultAsync();
-                            var listProjectCurrentlyIn = await projectquery.Where(x => x.p.Status != ProjectStatus.Finished && x.epip.EmpID.Equals(emp.EmpId) && x.epip.Status != ConfirmStatus.Reject)
-                                .Select(x => x.p.DateEstimatedEnd).ToListAsync();
-                            //var projectOnGoingDateEnd = await projectquery.Where(x => (x.p.Status == ProjectStatus.OnGoing || x.p.Status == ProjectStatus.Confirmed) && x.epip.EmpID.Equals(emp.EmpId)).Select(x => x.p.DateEstimatedEnd).ToListAsync();
-                            bool checkProjectDate = false;
-                            if (listProjectCurrentlyIn.Count > 0)
-                            {
-                                foreach (var dateEnd in listProjectCurrentlyIn)
-                                {
-                                    if (dateEnd > currentProjectBeginDate)
-                                    {
-                                        checkProjectDate = true;
-                                        break;
-                                    }
-                                }
-                                if (checkProjectDate == true)
-                                {
-                                    continue;
-                                }
-                            }
-                            //Add match theo projecttype
-                            var listProjectWithType = await projectquery.Where(x => x.p.ProjectTypeID == ProjectTypeID && x.epip.EmpID.Equals(emp.EmpId) && x.epip.Status == ConfirmStatus.Accept).Select(x => x.p.ProjectID).ToListAsync();
-                            var numberOfProjectWithType = listProjectWithType.Count();
-                            if (numberOfProjectWithType == 0)
-                            {
-                                ProjectTypeMatch = 0;
-                            }
-                            if (numberOfProjectWithType > 2 && numberOfProjectWithType < 5)
-                            {
-                                ProjectTypeMatch = 3;
-                                //match += ProjectTypeMatch;
-                            }
-                            if (numberOfProjectWithType > 5 && numberOfProjectWithType < 10)
-                            {
-                                ProjectTypeMatch = 6;
-                                //match += ProjectTypeMatch;
-                            }
-                            if (numberOfProjectWithType > 9)
-                            {
-                                ProjectTypeMatch = 10;
-                                //match += ProjectTypeMatch;
-                            }
-
-                            //Add match theo projectfield
-                            var listProjectWithField = await projectquery.Where(x => x.p.ProjectFieldID == ProjectFieldID && x.epip.EmpID.Equals(emp.EmpId) && x.epip.Status == ConfirmStatus.Accept).Select(x => x.p.ProjectID).ToListAsync();
-                            var numberOfProjectWithField = listProjectWithField.Count();
-                            if (numberOfProjectWithField == 0)
-                            {
-                                ProjectFieldMatch = 0;
-                            }
-                            if (numberOfProjectWithField > 2 && numberOfProjectWithField < 5)
-                            {
-                                ProjectFieldMatch = 3;
-                                //match += ProjectFieldMatch;
-                            }
-                            if (numberOfProjectWithField > 5 && numberOfProjectWithField < 10)
-                            {
-                                ProjectFieldMatch = 6;
-                                //match += ProjectFieldMatch;
-                            }
-                            if (numberOfProjectWithField > 9)
-                            {
-                                ProjectFieldMatch = 10;
-                                //match += ProjectFieldMatch;
-                            }
-                            match = Math.Round(Languagematch + Softskillmatch + Hardskillmatch + ProjectTypeMatch + ProjectFieldMatch, 2);
-                            //Loc nhung nhan vien khong du diem toi thieu
-                            //if (Hardskillmatch <= 0 || match <= 0)
-                            //{
-                            //    continue;
-                            //}
-                            matchDetail = new MatchViewModel()
-                            {
-                                EmpID = emp.EmpId,
-                                EmpName = emp.EmpName,
-                                LanguageMatch = Languagematch,
-                                SoftSkillMatch = Softskillmatch,
-                                HardSkillMatch = Math.Round(Hardskillmatch, 2),
-                                ProjectTypeMatch = ProjectTypeMatch,
-                                ProjectFieldMatch = ProjectFieldMatch,
-                                OverallMatch = match,
-                            };
-                            listMatchDetail.Add(matchDetail);
-                        }
-                    }
-                    //}
-                    result.Add(new CandidateViewModel()
-                    {
-                        Position = Position,
-                        PosId = PosId,
-                        MatchDetail = listMatchDetail,
-                    });
-                }
-            }
-            return new ApiSuccessResult<List<CandidateViewModel>>(result);
-        }
 
         public async Task<ApiResult<List<ProjectVM>>> SingleCandidateSuggest(string empID)
         {
@@ -1240,7 +1017,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         {
                             foreach (EmpInLang empl in ListEmpInLang)
                             {
-                                Languagematch += (double)((empl.LangLevel * language.Priority * 0.1) / requiredPosition.Language.Count);
+                                Languagematch += (double)((empl.LangLevel * language.Priority * 0.1) / (double)requiredPosition.Language.Count);
                             }
                         }
                     }
@@ -1256,7 +1033,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         {
                             if (softSkill.Equals(softskillId))
                             {
-                                Softskillmatch += (double)(10 / (requiredPosition.SoftSkillIDs.Count));
+                                Softskillmatch += (double)(10 / (double)(requiredPosition.SoftSkillIDs.Count));
                             }
                         }
                     }
@@ -1290,7 +1067,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 };
                                 //if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
                                 //{
-                                Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)+1) + ((int)emphs.SkillLevel - hardskill.SkillLevel)+1) * hardskill.Priority / (21 * requiredPosition.HardSkills.Count);
+                                Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)+1) + ((int)emphs.SkillLevel - hardskill.SkillLevel)+1) * hardskill.Priority / (21 * (double)requiredPosition.HardSkills.Count);
 
                                 //}
                                 //else
@@ -1341,7 +1118,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         ProjectFieldMatch = 10;
                     }
                     match = Math.Round(Languagematch + Softskillmatch + Hardskillmatch + ProjectTypeMatch + ProjectFieldMatch, 2);
-                    if (Hardskillmatch <= 0 || match <= 0)
+                    if (Softskillmatch <= 0 ||Hardskillmatch <= 0 || match <= 0)
                     {
                         continue;
                     }

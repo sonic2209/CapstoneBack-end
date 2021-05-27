@@ -87,13 +87,6 @@ namespace ESMS.BackendAPI.Controllers
             return Ok(candidates);
         }
 
-        [HttpPost("candidate/nomin/{projectID}")]
-        public async Task<IActionResult> SuggestCandidateWithoutMinumumPoint(int projectID, [FromBody] SuggestCadidateRequest request)
-        {
-            var candidates = await _userService.SuggestCandidateWithoutMinimumPoint(projectID, request);
-            return Ok(candidates);
-        }
-
         [HttpGet("candidate/{empID}")]
         public async Task<IActionResult> SuggestSingleCandidate(string empID)
         {
