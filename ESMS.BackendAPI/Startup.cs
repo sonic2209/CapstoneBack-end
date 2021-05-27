@@ -160,6 +160,7 @@ namespace ESMS.BackendAPI
             //var userService = app.ApplicationServices.GetService<IEmployeeService>();
             var scope = app.ApplicationServices.CreateScope();
             var notiService = scope.ServiceProvider.GetService<INotificationService>();
+            var employeeService = scope.ServiceProvider.GetService<IEmployeeService>();
             var projectService = scope.ServiceProvider.GetService<IProjectService>();
             var emailService = scope.ServiceProvider.GetService<IEmailService>();
             FirebaseApp.Create(new AppOptions()
@@ -205,18 +206,6 @@ namespace ESMS.BackendAPI
             {
                 endpoints.MapControllers();
             });
-            //EmpCreateRequest emp = new EmpCreateRequest()
-            //{
-            //    Address = "test",
-            //    ConfirmPassword = "Abcd1234$",
-            //    Email = "nguoitest123@gmail.com",
-            //    IdentityNumber = "123456789",
-            //    Name = "nguoi test",
-            //    Password = "Abcd1234$",
-            //    PhoneNumber = "1234567890",
-            //    RoleName = "Employee",
-            //    UserName = "nguoitest123"
-            //};
 
             new Thread(async () =>
                {
@@ -240,6 +229,7 @@ namespace ESMS.BackendAPI
                                await notiService.SendMessage(topic, noti);
                            }
                        }
+                       await employeeService.RemoveExpiredCertificate();
                        //var result = userService.GetById("064535f6-61c5-4968-93a3-fc22172640a3");
                        /* */
                        Thread.Sleep(TimeSpan.FromMinutes(30));
