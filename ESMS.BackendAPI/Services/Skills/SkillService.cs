@@ -261,7 +261,67 @@ namespace ESMS.BackendAPI.Services.Skills
             return new ApiSuccessResult<PagedResult<SkillViewModel>>(pagedResult);
         }
 
-        public async Task<ApiResult<List<ListSkillViewModel>>> GetSkills(int skillType)
+        public async Task<ApiResult<ListSkillVM>> GetSkills(GetSkillRequest request)
+        {
+            ListSkillVM list = new ListSkillVM()
+            {
+                HardSkill = new ListHardSkillVM()
+                {
+                    MinumumSkill = new List<HardSkillVM>(),
+                    OptionalSkill = new List<HardSkillVM>()
+                },
+                SoftSkill = new ListSoftSkillVM()
+                {
+                    MinumumSkill = new List<ListSkillViewModel>(),
+                    OptionalSkill = new List<ListSkillViewModel>()
+                }
+            };
+            foreach (var skillID in request.HardSkill)
+            {
+                var skill = await _context.Skills.Where(x => x.SkillID.Equals(skillID)).Select(x => new HardSkillVM()
+                {
+                    SkillID = x.SkillID,
+                    SkillName = x.SkillName
+                }).FirstOrDefaultAsync();
+                skill.Certifications = await _context.Certifications.Where(x => x.SkillID.Equals(skill.SkillID))
+                        .OrderBy(x => x.CertiLevel).Select(x => new ListCertificationViewModel()
+                        {
+                            CertificationID = x.CertificationID,
+                            CertificationName = x.CertificationName,
+                            CertiLevel = x.CertiLevel
+                        }).ToListAsync();
+                var minPos = await _context.MinPosInProjects.FindAsync(request.TypeID, request.PosID, skillID);
+                if (minPos != null)
+                {
+                    list.HardSkill.MinumumSkill.Add(skill);
+                }
+                else
+                {
+                    list.HardSkill.OptionalSkill.Add(skill);
+                }
+            }
+            foreach (var skillID in request.SoftSkill)
+            {
+                var skill = await _context.Skills.Where(x => x.SkillID.Equals(skillID))
+                    .Select(x => new ListSkillViewModel()
+                    {
+                        SkillID = x.SkillID,
+                        SkillName = x.SkillName
+                    }).FirstOrDefaultAsync();
+                var skillField = await _context.SkillInProjectFields.FindAsync(request.FieldID, skillID);
+                if (skillField != null)
+                {
+                    list.SoftSkill.MinumumSkill.Add(skill);
+                }
+                else
+                {
+                    list.SoftSkill.OptionalSkill.Add(skill);
+                }
+            }
+            return new ApiSuccessResult<ListSkillVM>(list);
+        }
+
+        public async Task<ApiResult<List<ListSkillViewModel>>> GetSkillsByType(int skillType)
         {
             var skills = await _context.Skills.Where(x => x.SkillType.Equals((EnumSkillType)skillType) && x.Status.Equals(true)).Select(x => new ListSkillViewModel()
             {

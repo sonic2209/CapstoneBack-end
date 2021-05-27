@@ -85,9 +85,9 @@ namespace ESMS.BackendAPI.Controllers
 
         //Get:http://localhost/api/skill/getSkills/skillType
         [HttpGet("getSkills/{skillType}")]
-        public async Task<IActionResult> GetSkills(int skillType)
+        public async Task<IActionResult> GetSkillsByType(int skillType)
         {
-            var skills = await _skillService.GetSkills(skillType);
+            var skills = await _skillService.GetSkillsByType(skillType);
             return Ok(skills);
         }
 
@@ -104,6 +104,13 @@ namespace ESMS.BackendAPI.Controllers
         public async Task<IActionResult> GetSoftSkills(int fieldID)
         {
             var skills = await _skillService.GetSoftSkills(fieldID);
+            return Ok(skills);
+        }
+
+        [HttpPost("getSkills")]
+        public async Task<IActionResult> GetSkills([FromBody] GetSkillRequest request)
+        {
+            var skills = await _skillService.GetSkills(request);
             return Ok(skills);
         }
     }

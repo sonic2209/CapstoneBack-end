@@ -13,6 +13,8 @@ namespace ESMS.Data.Configurations
         public void Configure(EntityTypeBuilder<Employee> builder)
         {
             builder.ToTable("Employees");
+            builder.HasIndex(x => x.Email).IsUnique();
+            builder.HasIndex(x => x.UserName).IsUnique();
             builder.Property(x => x.Name).HasMaxLength(50).IsRequired();
             builder.Property(x => x.Email).HasMaxLength(50).IsRequired();
             builder.Property(x => x.NormalizedEmail).HasMaxLength(50).IsRequired();

@@ -15,7 +15,7 @@ namespace ESMS.BackendAPI.Services.Skills
 
         public Task<ApiResult<bool>> ChangeStatus(int skillID);
 
-        public Task<ApiResult<List<ListSkillViewModel>>> GetSkills(int skillType);
+        public Task<ApiResult<List<ListSkillViewModel>>> GetSkillsByType(int skillType);
 
         public Task<ApiResult<List<HardSkillVM>>> GetHardSkills(int typeID, int posID);
 
@@ -24,5 +24,7 @@ namespace ESMS.BackendAPI.Services.Skills
         public Task<ApiResult<PagedResult<SkillViewModel>>> GetSkillPaging(GetSkillPagingRequest request);
 
         public Task<ApiResult<SkillDetailVM>> GetByID(int skillID);
+
+        public Task<ApiResult<ListSkillVM>> GetSkills(GetSkillRequest request);
     }
 }
