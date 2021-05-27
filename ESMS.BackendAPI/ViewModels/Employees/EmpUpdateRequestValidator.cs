@@ -31,7 +31,8 @@ namespace ESMS.BackendAPI.ViewModels.Employees
 
             RuleFor(x => x.Address).NotEmpty().WithMessage("Address can not be empty");
             RuleFor(x => x.Address).MaximumLength(100).WithMessage("Address can not exceed 100 characters")
-           .When(x => !String.IsNullOrWhiteSpace(x.Address));
+            .MinimumLength(3).WithMessage("Address must contain at least 3 characters")
+                .When(x => !String.IsNullOrWhiteSpace(x.Address));
         }
     }
 }
