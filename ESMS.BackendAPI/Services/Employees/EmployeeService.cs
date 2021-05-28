@@ -636,7 +636,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 {
                                     foreach (EmpInLang empl in ListEmpInLang)
                                     {
-                                        Languagematch += (double)((empl.LangLevel * language.Priority * 0.1) / (int.Parse(_config["KCoefficient:SoftSkillK"]) * (double)requiredPosition.Language.Count));
+                                        Languagematch += (double)((empl.LangLevel * language.Priority * 0.1) / (int.Parse(_config["KCoefficient:LanguageK"]) * (double)requiredPosition.Language.Count));
                                     }
                                     //match += Math.Round(Languagematch, 2);
                                 }
@@ -653,7 +653,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 {
                                     if (softSkill.Equals(softskillId))
                                     {
-                                        Softskillmatch += (double)(int.Parse(_config["KCoefficient:SoftSkilK"]) / (double)(requiredPosition.SoftSkillIDs.Count));
+                                        Softskillmatch += (double)(int.Parse(_config["KCoefficient:SoftSkillK"]) / (double)(requiredPosition.SoftSkillIDs.Count));
                                     }
                                 }
                                 //match += Math.Round(Softskillmatch, 2);
@@ -693,16 +693,9 @@ namespace ESMS.BackendAPI.Services.Employees
                                             Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)+1) + ((int)emphs.SkillLevel - hardskill.SkillLevel)+1) * hardskill.Priority / (int.Parse(_config["KCoefficient:HardSkillK"]) * (double)requiredPosition.HardSkills.Count);
                                         }
                                         }
-                                        //else
-                                        //{
-                                        //    Hardskillmatch = (((int)emphs.SkillLevel * 2 * 0.5)) * hardskill.Priority / 10 * requiredPosition.HardSkills.Count;
-                                        //    match += Math.Round(Hardskillmatch, 2);
-                                        //}
                                     }
                                 }
                             }
-
-                            //Merge code mới
                             //Loc nhung nhan vien ko available dua theo thoi gian ket thuc du an dang tien hanh
                             var projectquery = from p in _context.Projects
                                                join rp in _context.RequiredPositions on p.ProjectID equals rp.ProjectID
@@ -1013,7 +1006,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         {
                             foreach (EmpInLang empl in ListEmpInLang)
                             {
-                                Languagematch += (double)((empl.LangLevel * language.Priority) / (int.Parse(_config["KCoefficient:SoftSkillK"]) * (double)requiredPosition.Language.Count));
+                                Languagematch += (double)((empl.LangLevel * language.Priority) / (int.Parse(_config["KCoefficient:LanguageK"]) * (double)requiredPosition.Language.Count));
                             }
                         }
                     }
