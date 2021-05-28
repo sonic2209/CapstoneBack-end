@@ -2006,8 +2006,10 @@ namespace ESMS.BackendAPI.Services.Employees
                 {
                     throw new Exception("Invalid Id");
                 }
-                var excelName = "tempEmpTemplate.xlsx";
+            var excelName = "tempEmpTemplate.xlsx";
             var excelPath = Path.Combine(FILE_LOCATION, excelName);
+            File.Copy(Path.Combine(FILE_LOCATION, "EmpTemplate.xlsx"), excelPath, true);
+
 
             ExcelService.InsertTextExistingExcel(excelPath, user.Name, "B", 10);
             ExcelService.InsertTextExistingExcel(excelPath, user.Address, "C", 10);
