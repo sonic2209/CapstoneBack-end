@@ -22,6 +22,5 @@ namespace ESMS.Data.Entities
         public ProjectType ProjectType { get; set; }
         public ProjectField ProjectField { get; set; }
         public List<RequiredPosition> RequiredPositions { get; set; }
-        public bool EmailStatus { get; set; }
     }
 }

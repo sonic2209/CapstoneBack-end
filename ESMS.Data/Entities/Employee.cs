@@ -12,7 +12,6 @@ namespace ESMS.Data.Entities
         public string Address { get; set; }
         public string IdentityNumber { get; set; }
         public DateTime? DateCreated { get; set; }
-        public EmployeeStatus Status { get; set; }
         public DateTime? DateEnd { get; set; }
         public List<Project> Projects { get; set; }
         public List<EmpPositionInProject> EmpPosInProjects { get; set; }

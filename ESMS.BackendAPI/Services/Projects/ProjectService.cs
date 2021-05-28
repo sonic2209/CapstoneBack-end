@@ -1768,8 +1768,7 @@ namespace ESMS.BackendAPI.Services.Projects
                     DateCreated = x.DateCreated,
                     ProjectFieldID = x.ProjectFieldID,
                     ProjectTypeID = x.ProjectTypeID,
-                    ProjectManagerID = x.ProjectManagerID,
-                    EmailStatus = x.EmailStatus
+                    ProjectManagerID = x.ProjectManagerID
                 }).ToListAsync();
             if (projects.Count() != 0)
             {
@@ -1879,8 +1878,7 @@ namespace ESMS.BackendAPI.Services.Projects
                     DateCreated = x.DateCreated,
                     ProjectFieldID = x.ProjectFieldID,
                     ProjectTypeID = x.ProjectTypeID,
-                    ProjectManagerID = x.ProjectManagerID,
-                    EmailStatus = x.EmailStatus
+                    ProjectManagerID = x.ProjectManagerID
                 }).ToListAsync();
             if (projects.Count() != 0)
             {

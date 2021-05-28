@@ -15,6 +15,8 @@ namespace ESMS.Data.Configurations
             builder.ToTable("Employees");
             builder.HasIndex(x => x.Email).IsUnique();
             builder.HasIndex(x => x.UserName).IsUnique();
+            builder.HasIndex(x => x.NormalizedEmail).IsUnique();
+            builder.HasIndex(x => x.NormalizedUserName).IsUnique();
             builder.Property(x => x.Name).HasMaxLength(50).IsRequired();
             builder.Property(x => x.Email).HasMaxLength(50).IsRequired();
             builder.Property(x => x.NormalizedEmail).HasMaxLength(50).IsRequired();
@@ -23,7 +25,6 @@ namespace ESMS.Data.Configurations
             builder.Property(x => x.NormalizedUserName).HasMaxLength(20).IsRequired();
             builder.Property(x => x.Address).HasMaxLength(100).IsRequired();
             builder.Property(x => x.IdentityNumber).HasMaxLength(12).IsRequired();
-            builder.Property(x => x.Status).HasDefaultValue(EmployeeStatus.OnGoing);
             builder.Property(x => x.Id).ValueGeneratedOnAdd();
         }
     }

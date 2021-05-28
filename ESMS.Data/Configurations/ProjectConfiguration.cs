@@ -21,7 +21,6 @@ namespace ESMS.Data.Configurations
             builder.Property(x => x.Status).HasDefaultValue(ProjectStatus.Pending);
             builder.Property(x => x.DateBegin).HasColumnType("date");
             builder.Property(x => x.DateEstimatedEnd).HasColumnType("date");
-            builder.Property(x => x.EmailStatus).HasDefaultValue(false);
             builder.HasOne(x => x.Employee).WithMany(x => x.Projects).HasForeignKey(x => x.ProjectManagerID);
             builder.HasOne(x => x.ProjectType).WithMany(x => x.Projects).HasForeignKey(x => x.ProjectTypeID);
             builder.HasOne(x => x.ProjectField).WithMany(x => x.Projects).HasForeignKey(x => x.ProjectFieldID);
