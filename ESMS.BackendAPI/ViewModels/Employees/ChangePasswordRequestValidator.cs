@@ -10,7 +10,7 @@ namespace ESMS.BackendAPI.ViewModels.Employees
     {
         public ChangePasswordRequestValidator()
         {
-            RuleFor(x => x.NewPassword).Matches("^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{6,8}$").WithMessage("Password must be betwween 6-8 characters and contain at least one uppercase letter, one lowercase letter and one digit");
+            RuleFor(x => x.NewPassword).Matches("^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{6,8}$").WithMessage("Password must be between 6-8 characters and contain at least one uppercase letter, one lowercase letter and one digit");
             
 
             RuleFor(x => x).Custom((request, context) =>
