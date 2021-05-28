@@ -1543,6 +1543,7 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     ProjectID = x.p.ProjectID,
                     ProjectName = x.p.ProjectName,
+                    Status = x.p.Status,
                     DateBegin = x.p.DateBegin,
                     DateEstimatedEnd = x.p.DateEstimatedEnd,
                     DateEnd = x.p.DateEnd,
