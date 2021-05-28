@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ESMS.Data.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace ESMS.BackendAPI.ViewModels.Project
         public string ProjectName { get; set; }
         public DateTime DateBegin { get; set; }
         public DateTime DateEstimatedEnd { get; set; }
+        public ProjectStatus Status { get; set; }
         public DateTime? DateEnd { get; set; }
         public string PosName { get; set; }
         public DateTime? DateIn { get; set; }
