@@ -672,6 +672,8 @@ namespace ESMS.BackendAPI.Services.Employees
                                 {
                                     if (emphs.SkillID.Equals(hardskill.HardSkillID))
                                     {
+                                        if ((int)emphs.SkillLevel >= hardskill.SkillLevel) 
+                                        { 
                                         var certiquery = from c in _context.Certifications
                                                          join ec in _context.EmpCertifications on c.CertificationID equals ec.CertificationID
                                                          select new { c, ec };
@@ -686,11 +688,11 @@ namespace ESMS.BackendAPI.Services.Employees
                                             EmpID = emphs.EmpID,
                                             HighestCertiLevel = listCertiSkill.Any() ? listCertiSkill.Max(x => x.CertiLevel) : 0,
                                         };
-                                        //if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
-                                        //{
-                                        Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)+1) + ((int)emphs.SkillLevel - hardskill.SkillLevel)+1) * hardskill.Priority / (int.Parse(_config["KCoefficient:HardSkillK"]) * (double)requiredPosition.HardSkills.Count);
-                                        //match += Math.Round(Hardskillmatch, 2);
-                                        //}
+                                        if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
+                                        {
+                                            Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)+1) + ((int)emphs.SkillLevel - hardskill.SkillLevel)+1) * hardskill.Priority / (int.Parse(_config["KCoefficient:HardSkillK"]) * (double)requiredPosition.HardSkills.Count);
+                                        }
+                                        }
                                         //else
                                         //{
                                         //    Hardskillmatch = (((int)emphs.SkillLevel * 2 * 0.5)) * hardskill.Priority / 10 * requiredPosition.HardSkills.Count;
@@ -1045,7 +1047,9 @@ namespace ESMS.BackendAPI.Services.Employees
                         {
                             if (emphs.SkillID.Equals(hardskill.HardSkillID))
                             {
-                                var certiquery = from c in _context.Certifications
+                                if ((int)emphs.SkillLevel >= hardskill.SkillLevel) 
+                                { 
+                                    var certiquery = from c in _context.Certifications
                                                  join ec in _context.EmpCertifications on c.CertificationID equals ec.CertificationID
                                                  select new { c, ec };
                                 var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID && (x.ec.DateEnd > DateTime.Now || x.ec.DateEnd == null)).Select(x => new CertiInSkill
@@ -1063,6 +1067,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 {
                                 Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)+1) + ((int)emphs.SkillLevel - hardskill.SkillLevel)+1) * hardskill.Priority / (int.Parse(_config["KCoefficient:HardSkillK"]) * (double)requiredPosition.HardSkills.Count);
 
+                                }
                                 }
                                 //else
                                 //{
