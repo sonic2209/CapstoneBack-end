@@ -24,6 +24,7 @@ namespace ESMS.BackendAPI.Services.Emails
             {
                 builder.HtmlBody = SourceReader.ReadToEnd();
                 builder.HtmlBody = builder.HtmlBody.Replace("Current Password", password);
+                SourceReader.Close();
             }
             var email = new MimeMessage();
             email.From.Add(MailboxAddress.Parse(from));
@@ -39,6 +40,7 @@ namespace ESMS.BackendAPI.Services.Emails
             smtp.Authenticate(_config["Emails:SmtpUser"], _config["Emails:SmtpPass"]);
             smtp.Send(email);
             smtp.Disconnect(true);
+            
         }
     }
 }
