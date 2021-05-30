@@ -21,18 +21,18 @@ namespace ESMS.BackendAPI.Services.Emails
         public void Send(string from, string to, string password)
         {
             var builder = new BodyBuilder();
-            //using (StreamReader SourceReader = System.IO.File.OpenText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "email-inlined.html")))
-            //{
-            //    builder.HtmlBody = SourceReader.ReadToEnd();
-            //    builder.HtmlBody = builder.HtmlBody.Replace("Current Password", password);
-            //    SourceReader.Close();
-            //}
+            using (StreamReader SourceReader = System.IO.File.OpenText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "email-inlined.html")))
+            {
+                builder.HtmlBody = SourceReader.ReadToEnd();
+                builder.HtmlBody = builder.HtmlBody.Replace("Current Password", password);
+                SourceReader.Close();
+            }
             var email = new MimeMessage();
             email.From.Add(MailboxAddress.Parse(from));
             email.To.Add(MailboxAddress.Parse(to));
             email.Subject = "Welcome to ESMS";
-            //email.Body = builder.ToMessageBody();
-            email.Body = new TextPart(TextFormat.Html) { Text = "<h1>Example HTML Message Body</h1>" };
+            email.Body = builder.ToMessageBody();
+            
 
             // send email
             using var smtp = new SmtpClient();

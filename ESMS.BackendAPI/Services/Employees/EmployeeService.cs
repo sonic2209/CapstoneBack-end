@@ -139,7 +139,14 @@ namespace ESMS.BackendAPI.Services.Employees
                 }
                 user = await _userManager.FindByNameAsync(request.UserName);
                 string empID = user.Id;
-                //_emailService.Send(_config["Emails:SmtpUser"], user.Email, password);
+                try
+                {
+                    _emailService.Send(_config["Emails:SmtpUser"], user.Email, password);
+                }
+                catch (Exception e)
+                {
+                    File.WriteAllText(Path.Combine(ROOT_PATH, "error.txt"), e.Message);
+                }
                 return new ApiSuccessResult<string>(empID);
             }
 
@@ -2113,7 +2120,6 @@ namespace ESMS.BackendAPI.Services.Employees
                         return new ApiErrorResult<Employee>("Register failed: " + errorMessage);
                     }
                 }
-                var builder = new BodyBuilder();
                 try
                 {
                     _emailService.Send(_config["Emails:SmtpUser"], user.Email, password);
