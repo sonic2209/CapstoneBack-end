@@ -216,7 +216,7 @@ namespace ESMS.BackendAPI
                        /* run your code here */
                        //   Console.WriteLine("Hello, world");
                        //var check = await projectService.CheckProject();
-                       //emailService.Send("dinhbinh599@gmail.com", "gigalesky@gmail.com", "123");
+                       emailService.Send("dinhbinh599@gmail.com", "gigalesky@gmail.com", "123");
                        var listDeletedProject = await projectService.CheckNoEmpProject();
                        if (listDeletedProject.Count() > 0)
                        {
