@@ -138,7 +138,7 @@ namespace ESMS.BackendAPI.Services.Employees
                 }
                 user = await _userManager.FindByNameAsync(request.UserName);
                 string empID = user.Id;
-                _emailService.Send(_config["Emails:SmtpUser"], user.Email, password);
+                //_emailService.Send(_config["Emails:SmtpUser"], user.Email, password);
                 return new ApiSuccessResult<string>(empID);
             }
 
