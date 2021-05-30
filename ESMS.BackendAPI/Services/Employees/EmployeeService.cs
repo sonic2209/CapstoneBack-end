@@ -2121,7 +2121,7 @@ namespace ESMS.BackendAPI.Services.Employees
                     builder.HtmlBody = builder.HtmlBody.Replace("Current Password", password);
                     SourceReader.Close();
                 }
-                //_emailService.Send(_config["Emails:SmtpUser"], user.Email, password);
+                _emailService.Send(_config["Emails:SmtpUser"], user.Email, password);
                 return new ApiSuccessResult<Employee>(user);
             }
             foreach (var error in result.Errors)
