@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using MimeKit;
 using PasswordGenerator;
 using System;
 using System.Collections.Generic;
@@ -2113,7 +2114,14 @@ namespace ESMS.BackendAPI.Services.Employees
                         return new ApiErrorResult<Employee>("Register failed: " + errorMessage);
                     }
                 }
-                _emailService.Send(_config["Emails:SmtpUser"], user.Email, password);
+                var builder = new BodyBuilder();
+                using (StreamReader SourceReader = System.IO.File.OpenText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "email-inlined.html")))
+                {
+                    builder.HtmlBody = SourceReader.ReadToEnd();
+                    builder.HtmlBody = builder.HtmlBody.Replace("Current Password", password);
+                    SourceReader.Close();
+                }
+                //_emailService.Send(_config["Emails:SmtpUser"], user.Email, password);
                 return new ApiSuccessResult<Employee>(user);
             }
             foreach (var error in result.Errors)
