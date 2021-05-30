@@ -211,6 +211,7 @@ namespace ESMS.BackendAPI
                {
                    while (true)
                    {
+                       
                        Thread.CurrentThread.IsBackground = true;
                        /* run your code here */
                        //   Console.WriteLine("Hello, world");

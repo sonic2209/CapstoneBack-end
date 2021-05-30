@@ -7,6 +7,6 @@ namespace ESMS.BackendAPI.Services.Emails
 {
     public interface IEmailService
     {
-        public void Send(string from, string to, string subject);
+        public void Send(string from, string to, string password);
     }
 }

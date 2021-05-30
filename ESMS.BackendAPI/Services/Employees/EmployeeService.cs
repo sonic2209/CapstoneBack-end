@@ -1,4 +1,5 @@
-﻿using ESMS.BackendAPI.Services.Projects;
+﻿using ESMS.BackendAPI.Services.Emails;
+using ESMS.BackendAPI.Services.Projects;
 using ESMS.BackendAPI.Ultilities;
 using ESMS.BackendAPI.ViewModels.Certification;
 using ESMS.BackendAPI.ViewModels.Common;
@@ -36,11 +37,13 @@ namespace ESMS.BackendAPI.Services.Employees
         private readonly IConfiguration _config;
         private readonly ESMSDbContext _context;
         private readonly IProjectService _projectService;
+        private readonly IEmailService _emailService;
         private static string ROOT_PATH = AppDomain.CurrentDomain.BaseDirectory;
         private readonly string FILE_LOCATION = Path.Combine(ROOT_PATH,"Excel");
 
         public EmployeeService(UserManager<Employee> userManager, SignInManager<Employee> signInManager,
-            RoleManager<Role> roleManager, IConfiguration config, ESMSDbContext context, IProjectService projectService)
+            RoleManager<Role> roleManager, IConfiguration config, ESMSDbContext context, IProjectService projectService,
+            IEmailService emailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -48,6 +51,7 @@ namespace ESMS.BackendAPI.Services.Employees
             _config = config;
             _context = context;
             _projectService = projectService;
+            _emailService = emailService;
         }
 
         public async Task<ApiResult<string>> Authenticate(LoginRequest request)
@@ -113,8 +117,8 @@ namespace ESMS.BackendAPI.Services.Employees
                 PhoneNumber = request.PhoneNumber,
             };
             var pwd = new Password().IncludeLowercase().IncludeUppercase().IncludeNumeric().LengthRequired(8);
-            var presult = pwd.Next();
-            string password = "Abcd1234";
+            var password = pwd.Next();
+            //string password = "Abcd1234";
 
             string errorMessage = null;
             var result = await _userManager.CreateAsync(user, password);
@@ -134,6 +138,7 @@ namespace ESMS.BackendAPI.Services.Employees
                 }
                 user = await _userManager.FindByNameAsync(request.UserName);
                 string empID = user.Id;
+                _emailService.Send(_config["Emails:SmtpUser"], user.Email, password);
                 return new ApiSuccessResult<string>(empID);
             }
 
@@ -2090,7 +2095,8 @@ namespace ESMS.BackendAPI.Services.Employees
                 PhoneNumber = phoneNumber,
                 DateCreated = DateTime.Now,
             };
-            string password = "Abcd1234";
+            var pwd = new Password().IncludeLowercase().IncludeUppercase().IncludeNumeric().LengthRequired(8);
+            var password = pwd.Next();
             string errorMessage = null;
             var result = await _userManager.CreateAsync(user, password);
             if (result.Succeeded)
@@ -2107,6 +2113,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         return new ApiErrorResult<Employee>("Register failed: " + errorMessage);
                     }
                 }
+                _emailService.Send(_config["Emails:SmtpUser"], user.Email, password);
                 return new ApiSuccessResult<Employee>(user);
             }
             foreach (var error in result.Errors)

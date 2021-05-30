@@ -17,26 +17,26 @@ namespace ESMS.BackendAPI.Services.Emails
         {
             _config = config;
         }
-        public void Send(string from, string to, string subject)
+        public void Send(string from, string to, string password)
         {
             var builder = new BodyBuilder();
-            using (StreamReader SourceReader = System.IO.File.OpenText(@"D:\Study\Capstone\email-inlined.html"))
+            using (StreamReader SourceReader = System.IO.File.OpenText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "email-inlined.html")))
             {
                 builder.HtmlBody = SourceReader.ReadToEnd();
-                builder.HtmlBody = builder.HtmlBody.Replace("Sometimes you just want to send a simple HTML email", "Sometimes you just want to send a simple ESMS email");
+                builder.HtmlBody = builder.HtmlBody.Replace("Current Password", password);
             }
             var email = new MimeMessage();
             email.From.Add(MailboxAddress.Parse(from));
             email.To.Add(MailboxAddress.Parse(to));
-            email.Subject = subject;
+            email.Subject = "Welcome to ESMS";
             email.Body = builder.ToMessageBody();
 
             // send email
             using var smtp = new SmtpClient();
-            smtp.Connect("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-            smtp.Authenticate("dinhbinh599@gmail.com", "thongtinroi");
-            //smtp.Connect(_config["Emails:SmtpHost"], int.Parse(_config["Emails:SmtpPort"]), SecureSocketOptions.StartTls);
-            //smtp.Authenticate(_config["Emails:SmtpUser"], _config["Emails:SmtpPass"]);
+            //smtp.Connect("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+            //smtp.Authenticate("dinhbinh599@gmail.com", "thongtinroi");
+            smtp.Connect(_config["Emails:SmtpHost"], int.Parse(_config["Emails:SmtpPort"]), SecureSocketOptions.StartTls);
+            smtp.Authenticate(_config["Emails:SmtpUser"], _config["Emails:SmtpPass"]);
             smtp.Send(email);
             smtp.Disconnect(true);
         }
