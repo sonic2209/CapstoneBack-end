@@ -2120,13 +2120,13 @@ namespace ESMS.BackendAPI.Services.Employees
                         return new ApiErrorResult<Employee>("Register failed: " + errorMessage);
                     }
                 }
-                try
-                {
+                //try
+                //{
                     _emailService.Send(_config["Emails:SmtpUser"], user.Email, password);
-                } catch (Exception e)
-                {
-                    File.WriteAllText(Path.Combine(ROOT_PATH,"error.txt"),e.Message);
-                }
+                //} catch (Exception e)
+                //{
+                //    File.WriteAllText(Path.Combine(ROOT_PATH,"error.txt"),e.Message);
+                //}
                 return new ApiSuccessResult<Employee>(user);
             }
             foreach (var error in result.Errors)
