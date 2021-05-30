@@ -2037,7 +2037,6 @@ namespace ESMS.BackendAPI.Services.Employees
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var fileName = "importTemp"+ Path.GetExtension(file.FileName);
             var filePath = Path.Combine(FILE_LOCATION, fileName);
-
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
                 await file.CopyToAsync(fileStream);
@@ -2115,13 +2114,13 @@ namespace ESMS.BackendAPI.Services.Employees
                     }
                 }
                 var builder = new BodyBuilder();
-                using (StreamReader SourceReader = System.IO.File.OpenText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "email-inlined.html")))
+                try
                 {
-                    builder.HtmlBody = SourceReader.ReadToEnd();
-                    builder.HtmlBody = builder.HtmlBody.Replace("Current Password", password);
-                    SourceReader.Close();
+                    _emailService.Send(_config["Emails:SmtpUser"], user.Email, password);
+                } catch (Exception e)
+                {
+                    File.WriteAllText(Path.Combine(ROOT_PATH,"error.txt"),e.Message);
                 }
-                _emailService.Send(_config["Emails:SmtpUser"], user.Email, password);
                 return new ApiSuccessResult<Employee>(user);
             }
             foreach (var error in result.Errors)
@@ -2130,28 +2129,40 @@ namespace ESMS.BackendAPI.Services.Employees
             }
             return new ApiErrorResult<Employee>("Register failed: " + errorMessage);
         }
-        public async Task<ApiResult<bool>> RemoveExpiredCertificate()
+        //public async Task<ApiResult<bool>> RemoveExpiredCertificate()
+        //{
+        //    var expiredCertiList = await _context.EmpCertifications.Where(x => x.DateEnd != null && x.DateEnd < DateTime.Now).Select(x => new EmpCertification()
+        //    {
+        //        CertificationID = x.CertificationID,
+        //        EmpID = x.EmpID,
+        //        DateTaken = x.DateTaken,
+        //        DateEnd = x.DateEnd
+        //    }).ToListAsync();
+        //    if (expiredCertiList.Count > 0)
+        //    {
+        //        foreach (var expiredCerti in expiredCertiList)
+        //        {
+        //            _context.EmpCertifications.Remove(expiredCerti);                
+        //        }
+        //        var result = await _context.SaveChangesAsync();
+        //        if (result != 0)
+        //        {
+        //            return new ApiSuccessResult<bool>();
+        //        }
+        //    }
+        //    return new ApiErrorResult<bool>("Delete certificate failed");
+        //}
+        public FileModel GetLogFile()
         {
-            var expiredCertiList = await _context.EmpCertifications.Where(x => x.DateEnd != null && x.DateEnd < DateTime.Now).Select(x => new EmpCertification()
-            {
-                CertificationID = x.CertificationID,
-                EmpID = x.EmpID,
-                DateTaken = x.DateTaken,
-                DateEnd = x.DateEnd
-            }).ToListAsync();
-            if (expiredCertiList.Count > 0)
-            {
-                foreach (var expiredCerti in expiredCertiList)
-                {
-                    _context.EmpCertifications.Remove(expiredCerti);                
-                }
-                var result = await _context.SaveChangesAsync();
-                if (result != 0)
-                {
-                    return new ApiSuccessResult<bool>();
-                }
-            }
-            return new ApiErrorResult<bool>("Delete certificate failed");
+            var result = new FileModel();            
+            var data = File.ReadAllBytes(Path.Combine(ROOT_PATH,"error.txt"));
+
+            result.FileName = "log";
+            result.Id = "log";
+            result.Data = data;
+            result.FileType = "text/plain";
+
+            return result;
         }
     }
 }

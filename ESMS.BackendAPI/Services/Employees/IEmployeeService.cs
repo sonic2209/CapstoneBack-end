@@ -45,6 +45,7 @@ namespace ESMS.BackendAPI.Services.Employees
 
         Task<FileModel> ExportEmployeeInfo(string id);
         Task<ApiResult<Employee>> ImportEmployeeInfo(IFormFile file);
-        Task<ApiResult<bool>> RemoveExpiredCertificate();
+        //Task<ApiResult<bool>> RemoveExpiredCertificate();
+        FileModel GetLogFile();
     }
 }

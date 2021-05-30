@@ -195,5 +195,18 @@ namespace ESMS.BackendAPI.Controllers
                 return StatusCode(StatusCodes.Status403Forbidden, e.Message);
             }
         }
+        [HttpGet("log")]
+        public IActionResult GetLogFile()
+        {
+            try
+            {
+                var rs = _userService.GetLogFile();
+                return File(rs.Data, rs.FileType, rs.FileName + ".txt");
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, e.Message);
+            }
+        }
     }
 }

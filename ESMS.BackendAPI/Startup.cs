@@ -231,7 +231,7 @@ namespace ESMS.BackendAPI
                                await notiService.SendMessage(topic, noti);
                            }
                        }
-                       await employeeService.RemoveExpiredCertificate();
+                       //await employeeService.RemoveExpiredCertificate();
                        //var result = userService.GetById("064535f6-61c5-4968-93a3-fc22172640a3");
                        /* */
                        Thread.Sleep(TimeSpan.FromMinutes(30));
