@@ -9,8 +9,9 @@ namespace ESMS.BackendAPI.Services.Notifications
 {
     public interface INotificationService
     {
-        Task<string> SendMessage(string topic, NotificationContent noti);
+        //Task<string> SendMessage(string topic, NotificationContent noti);
         Task<TopicManagementResponse> Subscribe(string token, string topic);
         Task<TopicManagementResponse> Unsubscribe(string token, string topic);
+        void SendMessage(NotificationContent noti);
     }
 }

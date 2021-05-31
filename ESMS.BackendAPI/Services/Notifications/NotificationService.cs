@@ -1,5 +1,9 @@
 ﻿using ESMS.BackendAPI.ViewModels.Notifications;
 using FirebaseAdmin.Messaging;
+using FireSharp.Config;
+using FireSharp.Interfaces;
+using FireSharp.Response;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,20 +13,38 @@ namespace ESMS.BackendAPI.Services.Notifications
 {
     public class NotificationService : INotificationService
     {
-        public async Task<string> SendMessage(string topic, NotificationContent noti)
+        private readonly IConfiguration _config;
+        public NotificationService (IConfiguration config)
         {
-            var message = new Message()
+            _config = config;
+        }
+        
+        IFirebaseClient client;
+        //public async Task<string> SendMessage(string topic, NotificationContent noti)
+        //{
+        //    var message = new Message()
+        //    {
+        //        Notification = new Notification
+        //        {
+        //            Title = noti.title,
+        //            Body = noti.body
+        //        },
+        //        Topic = topic
+        //    };
+        //    // Send a message to the devices subscribed to the provided topic.
+        //    var result = await FirebaseMessaging.DefaultInstance.SendAsync(message);
+        //    return result;
+        //}
+
+        public void SendMessage(NotificationContent noti)
+        {
+            IFirebaseConfig config = new FirebaseConfig
             {
-                Notification = new Notification
-                {
-                    Title = noti.Title,
-                    Body = noti.Body
-                },
-                Topic = topic
+                AuthSecret = _config["Firebase:AuthSecret"],
+                BasePath = _config["Firebase:BasePath"]
             };
-            // Send a message to the devices subscribed to the provided topic.
-            var result = await FirebaseMessaging.DefaultInstance.SendAsync(message);
-            return result;
+            client = new FireSharp.FirebaseClient(config);
+            PushResponse response = client.Push("fir-4d2be-default-rtdb/", noti);
         }
 
         public async Task<TopicManagementResponse> Subscribe(string token, string topic)

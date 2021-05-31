@@ -215,20 +215,23 @@ namespace ESMS.BackendAPI
                        Thread.CurrentThread.IsBackground = true;
                        /* run your code here */
                        //   Console.WriteLine("Hello, world");
-                       //var check = await projectService.CheckProject();
+                       var check = await projectService.CheckProject();
                        //emailService.Send("dinhbinh599@gmail.com", "gigalesky@gmail.com", "123");
+
                        var listDeletedProject = await projectService.CheckNoEmpProject();
                        if (listDeletedProject.Count() > 0)
-                       {
+                        {
                            foreach (var deletedProject in listDeletedProject)
                            {
                                string topic = deletedProject.ProjectManagerID;
                                NotificationContent noti = new NotificationContent()
                                {
-                                   Title = "A project of yours has been deleted",
-                                   Body = "We've deleted project named \"" + deletedProject.ProjectName + "\" due to the lack of employees in it",
+                                   title = "A project of yours has been deleted",
+                                   body = "We've deleted project named \"" + deletedProject.ProjectName + "\" due to the lack of employees in it",
+                                   topic = deletedProject.ProjectManagerID,
+                                   dateCreate = DateTime.Now
                                };
-                               await notiService.SendMessage(topic, noti);
+                               notiService.SendMessage(noti);
                            }
                        }
                        //await employeeService.RemoveExpiredCertificate();
