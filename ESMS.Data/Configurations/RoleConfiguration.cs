@@ -12,7 +12,9 @@ namespace ESMS.Data.Configurations
         public void Configure(EntityTypeBuilder<Role> builder)
         {
             builder.ToTable("Roles");
+            builder.Property(x => x.Name).HasMaxLength(20).IsRequired();
             builder.Property(x => x.Description).HasMaxLength(200).IsRequired();
+            builder.Property(x => x.NormalizedName).HasMaxLength(20).IsRequired();
         }
     }
 }

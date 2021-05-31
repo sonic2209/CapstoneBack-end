@@ -38,7 +38,7 @@ namespace ESMS.Data.Extensions
                 Email = "resker123@gmail.com",
                 NormalizedEmail = "resker123@gmail.com",
                 EmailConfirmed = true,
-                PasswordHash = hasher.HashPassword(null, "Abcd1234$"),
+                PasswordHash = hasher.HashPassword(null, "Tuan123"),
                 SecurityStamp = string.Empty,
                 Name = "Pham Tuan",
                 DateCreated = DateTime.Now
