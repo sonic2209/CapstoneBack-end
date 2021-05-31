@@ -18,7 +18,7 @@ namespace ESMS.BackendAPI.Services.Emails
         {
             _config = config;
         }
-        public void Send(string from, string to, string password)
+        public void Send(string from, string to, string password, string name)
         {
             var builder = new BodyBuilder();
             using (StreamReader SourceReader = System.IO.File.OpenText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "email-inlined.html")))
@@ -30,7 +30,7 @@ namespace ESMS.BackendAPI.Services.Emails
             var email = new MimeMessage();
             email.From.Add(MailboxAddress.Parse(from));
             email.To.Add(MailboxAddress.Parse(to));
-            email.Subject = "Welcome to ESMS";
+            email.Subject = "Welcome to ESMS, " + name;
             email.Body = builder.ToMessageBody();
             
 
