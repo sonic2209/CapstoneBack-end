@@ -861,7 +861,7 @@ namespace ESMS.BackendAPI.Services.Projects
             return new ApiSuccessResult<bool>();
         }
 
-        private string CheckStatus(AddRequiredPositionRequest request)
+        private string CheckRequirement(int projectID, AddRequiredPositionRequest request)
         {
             string message = "";
             foreach (var pos in request.RequiredPositions)
@@ -990,6 +990,95 @@ namespace ESMS.BackendAPI.Services.Projects
                 }
                 else
                 {
+                    var listRequirement = _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectID)
+                    && x.PositionID.Equals(pos.PosID) && x.MissingEmployee > 0).Select(x => x.ID).ToList();
+                    var skillQuery = from rs in _context.RequiredSkills
+                                     join s in _context.Skills on rs.SkillID equals s.SkillID
+                                     select new { rs, s };
+                    var checkEqual = false;
+                    if (listRequirement.Count() > 0)
+                    {
+                        foreach (var id in listRequirement)
+                        {
+                            var listHardSkill = skillQuery.Where(x => x.rs.RequiredPositionID.Equals(id)
+                            && x.s.SkillType.Equals(EnumSkillType.HardSkill)).Select(x => new RequiredSkill()
+                            {
+                                SkillID = x.rs.SkillID,
+                                SkillLevel = x.rs.SkillLevel,
+                                CertificationLevel = x.rs.CertificationLevel,
+                                Priority = x.rs.Priority
+                            }).ToList();
+                            var listLanguage = _context.RequiredLanguages.Where(x => x.RequiredPositionID.Equals(id))
+                                .Select(x => new RequiredLanguage()
+                                {
+                                    LangID = x.LangID,
+                                    Priority = x.Priority
+                                }).ToList();
+                            var listSoftSkill = skillQuery.Where(x => x.rs.RequiredPositionID.Equals(id)
+                            && x.s.SkillType.Equals(EnumSkillType.SoftSkill)).Select(x => x.rs.SkillID).ToList();
+                            if (pos.HardSkills.Count() == listHardSkill.Count() &&
+                               pos.Language.Count() == listLanguage.Count() &&
+                               pos.SoftSkillIDs.Count() == listSoftSkill.Count())
+                            {
+                                int countHardSkill = 0;
+                                int countLanguage = 0;
+                                int countSoftSkill = 0;
+                                foreach (var hardSkill in pos.HardSkills)
+                                {
+                                    foreach (var check in listHardSkill)
+                                    {
+                                        if (hardSkill.HardSkillID == check.SkillID &&
+                                            hardSkill.SkillLevel == (int)check.SkillLevel &&
+                                            hardSkill.CertificationLevel == check.CertificationLevel &&
+                                            hardSkill.Priority == check.Priority)
+                                        {
+                                            countHardSkill++;
+                                        }
+                                    }
+                                }
+                                if (countHardSkill != listHardSkill.Count())
+                                {
+                                    continue;
+                                }
+                                foreach (var language in pos.Language)
+                                {
+                                    foreach (var check in listLanguage)
+                                    {
+                                        if (language.LangID == check.LangID &&
+                                            language.Priority == check.Priority)
+                                        {
+                                            countLanguage++;
+                                        }
+                                    }
+                                }
+                                if (countLanguage != listLanguage.Count())
+                                {
+                                    continue;
+                                }
+                                foreach (var softSkill in pos.SoftSkillIDs)
+                                {
+                                    foreach (var check in listSoftSkill)
+                                    {
+                                        if (softSkill == check)
+                                        {
+                                            countSoftSkill++;
+                                        }
+                                    }
+                                }
+                                if (countSoftSkill != listSoftSkill.Count())
+                                {
+                                    continue;
+                                }
+                                checkEqual = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (checkEqual == true)
+                    {
+                        message += "This requirement is the same as one of the requirements which are still missing employee";
+                        break;
+                    }
                     message = "";
                 }
             }
@@ -999,7 +1088,7 @@ namespace ESMS.BackendAPI.Services.Projects
         public async Task<ApiResult<List<RequiredPositionDetail>>> AddRequiredPosition(int projectID, AddRequiredPositionRequest request)
         {
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
-            string message = CheckStatus(request);
+            string message = CheckRequirement(projectID, request);
             if (!message.Equals(""))
             {
                 UltilitiesService.AddOrUpdateError(errors, "RequiredPositions", message);
@@ -2022,16 +2111,18 @@ namespace ESMS.BackendAPI.Services.Projects
 
         public async Task<ApiResult<List<SkillInAllPos>>> GetSkillInAllPos()
         {
-            var posQuery = from po in _context.Positions
-                           join rp in _context.RequiredPositions on po.PosID equals rp.PositionID
-                           select new { po, rp };
+            var posQuery = from rp in _context.RequiredPositions
+                           join p in _context.Projects on rp.ProjectID equals p.ProjectID
+                           select new { rp, p };
             var result = new List<SkillInAllPos>();
-            var listPos = await posQuery.Where(x => x.rp.MissingEmployee > 0).Select(x => x.po.PosID).Distinct().ToListAsync();
+            var listPos = await posQuery.Where(x => x.rp.MissingEmployee > 0 && x.p.Status != ProjectStatus.Finished)
+                .Select(x => x.rp.PositionID).Distinct().ToListAsync();
             foreach (var pos in listPos)
             {
                 var list = new List<SkillInPos>();
-                var listRequirePos = await _context.RequiredPositions.Where(x => x.PositionID.Equals(pos) && x.MissingEmployee > 0)
-                    .Select(x => x.ID).ToListAsync();
+                var listRequirePos = await posQuery.Where(x => x.rp.PositionID.Equals(pos)
+                && x.rp.MissingEmployee > 0 && x.p.Status != ProjectStatus.Finished)
+                    .Select(x => x.rp.ID).ToListAsync();
                 if (listRequirePos.Count() != 0)
                 {
                     var skillQuery = from rs in _context.RequiredSkills
