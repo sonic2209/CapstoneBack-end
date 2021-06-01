@@ -64,7 +64,8 @@ namespace ESMS.BackendAPI.Services.Skills
         public async Task<ApiResult<bool>> Create(SkillCreateRequest request)
         {
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
-            var checkName = await _context.Skills.Where(x => x.SkillName.Equals(request.SkillName))
+            string name = request.SkillName.Trim();
+            var checkName = await _context.Skills.Where(x => x.SkillName.Equals(name))
                 .Select(x => new Skill()).FirstOrDefaultAsync();
             if (checkName != null)
             {
@@ -105,7 +106,7 @@ namespace ESMS.BackendAPI.Services.Skills
             }
             var skill = new Skill()
             {
-                SkillName = request.SkillName,
+                SkillName = name,
                 SkillType = (EnumSkillType)request.SkillType
             };
             _context.Skills.Add(skill);
@@ -354,9 +355,10 @@ namespace ESMS.BackendAPI.Services.Skills
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var skill = _context.Skills.Find(skillID);
             if (skill == null) return new ApiErrorResult<bool>("Skill does not exist");
-            if (!skill.SkillName.Equals(request.SkillName))
+            string name = request.SkillName.Trim();
+            if (!skill.SkillName.Equals(name))
             {
-                var checkName = await _context.Skills.Where(x => x.SkillName.Equals(request.SkillName))
+                var checkName = await _context.Skills.Where(x => x.SkillName.Equals(name))
                 .Select(x => new Skill()).FirstOrDefaultAsync();
                 if (checkName != null)
                 {
@@ -409,7 +411,7 @@ namespace ESMS.BackendAPI.Services.Skills
             {
                 return new ApiErrorResult<bool>(errors);
             }
-            skill.SkillName = request.SkillName;
+            skill.SkillName = name;
             skill.SkillType = (EnumSkillType)request.SkillType;
             _context.Skills.Update(skill);
             var result = await _context.SaveChangesAsync();
