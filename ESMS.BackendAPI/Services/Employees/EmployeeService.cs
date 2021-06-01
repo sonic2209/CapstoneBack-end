@@ -2015,7 +2015,7 @@ namespace ESMS.BackendAPI.Services.Employees
             return empVm;
         }
 
-        public async Task<FileModel> ExportEmployeeInfo(string id)
+        public async Task<FileModel> ExportEmployeeInfo(string id, string HRId)
         {
             var result = new FileModel();
 
@@ -2024,10 +2024,20 @@ namespace ESMS.BackendAPI.Services.Employees
             {
                 throw new Exception("Invalid Id");
             }
+            var HR = await _userManager.FindByIdAsync(HRId.ToString());
+            if (HR == null)
+            {
+                throw new Exception("Invalid Id");
+            }
             var excelName = "tempEmpTemplate.xlsx";
             var excelPath = Path.Combine(FILE_LOCATION, excelName);
             File.Copy(Path.Combine(FILE_LOCATION, "EmpTemplate.xlsx"), excelPath, true);
 
+            ExcelService.RenameWorksheet(excelPath, user.UserName);
+            ExcelService.InsertTextExistingExcel(excelPath, HR.Name, "E", 4);
+            ExcelService.InsertTextExistingExcel(excelPath, DateTime.Today.ToString("dd/MM/yyyy"), "E", 5);
+
+            
             ExcelService.InsertTextExistingExcel(excelPath, user.Name, "B", 10);
             ExcelService.InsertTextExistingExcel(excelPath, user.Address, "C", 10);
             ExcelService.InsertTextExistingExcel(excelPath, user.IdentityNumber, "D", 10);

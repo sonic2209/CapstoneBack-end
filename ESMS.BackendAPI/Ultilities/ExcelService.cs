@@ -180,9 +180,7 @@ namespace ESMS.BackendAPI.Ultilities
 
         // Retrieve the value of a cell, given a file name, sheet name, 
         // and address name.
-        public static string GetCellValue(string fileName,
-            string sheetName,
-            string addressName)
+        public static string GetCellValue(string fileName, string sheetName, string addressName)
         {
             string value = null;
 
@@ -279,9 +277,22 @@ namespace ESMS.BackendAPI.Ultilities
             {
                 WorkbookPart wbPart = document.WorkbookPart;
                 theSheets = wbPart.Workbook.Sheets;
-                name = theSheets.GetFirstChild<Sheet>().Name;
+                name = theSheets.GetFirstChild<Sheet>().Name;             
             }
             return name;
+        }
+
+        public static void RenameWorksheet(string fileName, string name)
+        {
+            Sheet theSheets = null;
+            using (SpreadsheetDocument document =
+                SpreadsheetDocument.Open(fileName, true))
+            {
+                WorkbookPart wbPart = document.WorkbookPart;
+                theSheets = wbPart.Workbook.Descendants<Sheet>().FirstOrDefault();
+                theSheets.Name = name;
+                wbPart.Workbook.Save();
+            }
         }
     }
 }

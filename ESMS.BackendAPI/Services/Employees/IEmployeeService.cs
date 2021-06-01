@@ -43,7 +43,7 @@ namespace ESMS.BackendAPI.Services.Employees
         Task<FileModel> GetEmpTemplate(string empId);
         //Task<string> HandleFile(IFormFile file, string productId);
 
-        Task<FileModel> ExportEmployeeInfo(string id);
+        Task<FileModel> ExportEmployeeInfo(string id, string HRId);
         Task<ApiResult<Employee>> ImportEmployeeInfo(IFormFile file);
         //Task<ApiResult<bool>> RemoveExpiredCertificate();
         FileModel GetLogFile();
