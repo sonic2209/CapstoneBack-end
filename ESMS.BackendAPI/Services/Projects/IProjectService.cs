@@ -44,6 +44,8 @@ namespace ESMS.BackendAPI.Services.Projects
 
         Task<ApiResult<bool>> CheckProject();
 
+        Task<ApiResult<bool>> CheckOnGoingProject();
+
         List<ProjectVM> GetMissEmpProjects(string empID);
 
         Task<List<DeletedProject>> CheckNoEmpProject();

@@ -1190,16 +1190,19 @@ namespace ESMS.BackendAPI.Services.Projects
                 Status = x.ep.Status,
                 Note = x.ep.Note
             }).ToListAsync();
-            foreach (var emp in empInProject)
+            if (empInProject.Count() > 0)
             {
-                if (emp.DateIn != null)
+                foreach (var emp in empInProject)
                 {
-                    emp.DateOut = TimeZoneInfo.ConvertTime(DateTime.Now, tzi);
-                    _context.EmpPositionInProjects.Update(emp);
-                }
-                else
-                {
-                    _context.EmpPositionInProjects.Remove(emp);
+                    if (emp.DateIn != null)
+                    {
+                        emp.DateOut = TimeZoneInfo.ConvertTime(DateTime.Now, tzi);
+                        _context.EmpPositionInProjects.Update(emp);
+                    }
+                    else
+                    {
+                        _context.EmpPositionInProjects.Remove(emp);
+                    }
                 }
             }
             var result = await _context.SaveChangesAsync();
@@ -2285,6 +2288,37 @@ namespace ESMS.BackendAPI.Services.Projects
             }).ToListAsync();
 
             return new ApiSuccessResult<RequiredPositionVM>(requiredPos);
+        }
+
+        public async Task<ApiResult<bool>> CheckOnGoingProject()
+        {
+            var projects = await _context.Projects.Where(x => x.Status.Equals(ProjectStatus.OnGoing))
+                .Select(x => new Project()
+                {
+                    ProjectID = x.ProjectID,
+                    ProjectName = x.ProjectName,
+                    Description = x.Description,
+                    DateBegin = x.DateBegin,
+                    DateEstimatedEnd = x.DateEstimatedEnd,
+                    Status = x.Status,
+                    DateEnd = x.DateEnd,
+                    DateCreated = x.DateCreated,
+                    ProjectFieldID = x.ProjectFieldID,
+                    ProjectTypeID = x.ProjectTypeID,
+                    ProjectManagerID = x.ProjectManagerID
+                }).ToListAsync();
+            if (projects.Count() != 0)
+            {
+                DateTime today = TimeZoneInfo.ConvertTime(DateTime.Today, tzi);
+                foreach (var p in projects)
+                {
+                    if (DateTime.Compare(p.DateEstimatedEnd.Date, today.Date) == 0)
+                    {
+                        await ChangeStatus(p.ProjectID);
+                    }
+                }
+            }
+            return new ApiSuccessResult<bool>();
         }
     }
 }

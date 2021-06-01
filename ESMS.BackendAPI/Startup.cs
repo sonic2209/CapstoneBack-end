@@ -211,16 +211,16 @@ namespace ESMS.BackendAPI
                {
                    while (true)
                    {
-                       
                        Thread.CurrentThread.IsBackground = true;
                        /* run your code here */
                        //   Console.WriteLine("Hello, world");
                        var check = await projectService.CheckProject();
+                       var checkOnOnGoing = await projectService.CheckOnGoingProject();
                        //emailService.Send("dinhbinh599@gmail.com", "gigalesky@gmail.com", "123");
 
                        var listDeletedProject = await projectService.CheckNoEmpProject();
                        if (listDeletedProject.Count() > 0)
-                        {
+                       {
                            foreach (var deletedProject in listDeletedProject)
                            {
                                string topic = deletedProject.ProjectManagerID;

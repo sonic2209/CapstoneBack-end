@@ -40,7 +40,8 @@ namespace ESMS.BackendAPI.Services.Employees
         private readonly IProjectService _projectService;
         private readonly IEmailService _emailService;
         private static string ROOT_PATH = AppDomain.CurrentDomain.BaseDirectory;
-        private readonly string FILE_LOCATION = Path.Combine(ROOT_PATH,"Excel");
+        private readonly string FILE_LOCATION = Path.Combine(ROOT_PATH, "Excel");
+        private TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
         public EmployeeService(UserManager<Employee> userManager, SignInManager<Employee> signInManager,
             RoleManager<Role> roleManager, IConfiguration config, ESMSDbContext context, IProjectService projectService,
@@ -84,8 +85,8 @@ namespace ESMS.BackendAPI.Services.Employees
                 expires: DateTime.Now.AddHours(3),
                 signingCredentials: creds);
 
-            return new ApiSuccessResult<string>(           
-                new JwtSecurityTokenHandler().WriteToken(token)           
+            return new ApiSuccessResult<string>(
+                new JwtSecurityTokenHandler().WriteToken(token)
             );
         }
 
@@ -107,10 +108,11 @@ namespace ESMS.BackendAPI.Services.Employees
             {
                 return new ApiErrorResult<string>(errors);
             }
+            DateTime now = TimeZoneInfo.ConvertTime(DateTime.Now, tzi);
             user = new Employee()
             {
                 Name = request.Name,
-                DateCreated = DateTime.Now,
+                DateCreated = now,
                 IdentityNumber = request.IdentityNumber,
                 Address = request.Address,
                 Email = request.Email,
@@ -685,26 +687,26 @@ namespace ESMS.BackendAPI.Services.Employees
                                 {
                                     if (emphs.SkillID.Equals(hardskill.HardSkillID))
                                     {
-                                        if ((int)emphs.SkillLevel >= hardskill.SkillLevel) 
-                                        { 
-                                        var certiquery = from c in _context.Certifications
-                                                         join ec in _context.EmpCertifications on c.CertificationID equals ec.CertificationID
-                                                         select new { c, ec };
-                                        var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID && (x.ec.DateEnd > DateTime.Now || x.ec.DateEnd == null)).Select(x => new CertiInSkill
+                                        if ((int)emphs.SkillLevel >= hardskill.SkillLevel)
                                         {
-                                            CertiID = x.c.CertificationID,
-                                            SkillID = x.c.SkillID,
-                                            CertiLevel = x.c.CertiLevel
-                                        }).ToListAsync();
-                                        var HighestCerti = new EmpHighestCerti()
-                                        {
-                                            EmpID = emphs.EmpID,
-                                            HighestCertiLevel = listCertiSkill.Any() ? listCertiSkill.Max(x => x.CertiLevel) : 0,
-                                        };
-                                        if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
-                                        {
-                                            Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)+1) + ((int)emphs.SkillLevel - hardskill.SkillLevel)+1) * hardskill.Priority / (int.Parse(_config["KCoefficient:HardSkillK"]) * (double)requiredPosition.HardSkills.Count);
-                                        }
+                                            var certiquery = from c in _context.Certifications
+                                                             join ec in _context.EmpCertifications on c.CertificationID equals ec.CertificationID
+                                                             select new { c, ec };
+                                            var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID && (x.ec.DateEnd > DateTime.Now || x.ec.DateEnd == null)).Select(x => new CertiInSkill
+                                            {
+                                                CertiID = x.c.CertificationID,
+                                                SkillID = x.c.SkillID,
+                                                CertiLevel = x.c.CertiLevel
+                                            }).ToListAsync();
+                                            var HighestCerti = new EmpHighestCerti()
+                                            {
+                                                EmpID = emphs.EmpID,
+                                                HighestCertiLevel = listCertiSkill.Any() ? listCertiSkill.Max(x => x.CertiLevel) : 0,
+                                            };
+                                            if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
+                                            {
+                                                Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel) + 1) + ((int)emphs.SkillLevel - hardskill.SkillLevel) + 1) * hardskill.Priority / (int.Parse(_config["KCoefficient:HardSkillK"]) * (double)requiredPosition.HardSkills.Count);
+                                            }
                                         }
                                     }
                                 }
@@ -830,7 +832,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             }
                             match = Math.Round(Languagematch + Softskillmatch + Hardskillmatch + ProjectTypeMatch + ProjectFieldMatch, 2);
                             //Loc nhung nhan vien khong du diem toi thieu
-                            if (Languagematch <= 0 ||Softskillmatch <= 0 ||Hardskillmatch <= 0 || match <= 0)
+                            if (Languagematch <= 0 || Softskillmatch <= 0 || Hardskillmatch <= 0 || match <= 0)
                             {
                                 continue;
                             }
@@ -877,7 +879,6 @@ namespace ESMS.BackendAPI.Services.Employees
             }
             return new ApiSuccessResult<List<CandidateViewModel>>(result);
         }
-
 
         public async Task<ApiResult<List<ProjectVM>>> SingleCandidateSuggest(string empID)
         {
@@ -1053,27 +1054,26 @@ namespace ESMS.BackendAPI.Services.Employees
                         {
                             if (emphs.SkillID.Equals(hardskill.HardSkillID))
                             {
-                                if ((int)emphs.SkillLevel >= hardskill.SkillLevel) 
-                                { 
+                                if ((int)emphs.SkillLevel >= hardskill.SkillLevel)
+                                {
                                     var certiquery = from c in _context.Certifications
-                                                 join ec in _context.EmpCertifications on c.CertificationID equals ec.CertificationID
-                                                 select new { c, ec };
-                                var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID && (x.ec.DateEnd > DateTime.Now || x.ec.DateEnd == null)).Select(x => new CertiInSkill
-                                {
-                                    CertiID = x.c.CertificationID,
-                                    SkillID = x.c.SkillID,
-                                    CertiLevel = x.c.CertiLevel
-                                }).ToListAsync();
-                                var HighestCerti = new EmpHighestCerti()
-                                {
-                                    EmpID = emphs.EmpID,
-                                    HighestCertiLevel = listCertiSkill.Any() ? listCertiSkill.Max(x => x.CertiLevel) : 0,
-                                };
-                                if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
-                                {
-                                Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel)+1) + ((int)emphs.SkillLevel - hardskill.SkillLevel)+1) * hardskill.Priority / (int.Parse(_config["KCoefficient:HardSkillK"]) * (double)requiredPosition.HardSkills.Count);
-
-                                }
+                                                     join ec in _context.EmpCertifications on c.CertificationID equals ec.CertificationID
+                                                     select new { c, ec };
+                                    var listCertiSkill = await certiquery.Where(x => x.ec.EmpID.Equals(emphs.EmpID) && x.c.SkillID == emphs.SkillID && (x.ec.DateEnd > DateTime.Now || x.ec.DateEnd == null)).Select(x => new CertiInSkill
+                                    {
+                                        CertiID = x.c.CertificationID,
+                                        SkillID = x.c.SkillID,
+                                        CertiLevel = x.c.CertiLevel
+                                    }).ToListAsync();
+                                    var HighestCerti = new EmpHighestCerti()
+                                    {
+                                        EmpID = emphs.EmpID,
+                                        HighestCertiLevel = listCertiSkill.Any() ? listCertiSkill.Max(x => x.CertiLevel) : 0,
+                                    };
+                                    if (HighestCerti.HighestCertiLevel >= hardskill.CertificationLevel)
+                                    {
+                                        Hardskillmatch += (double)(((HighestCerti.HighestCertiLevel - hardskill.CertificationLevel) + 1) + ((int)emphs.SkillLevel - hardskill.SkillLevel) + 1) * hardskill.Priority / (int.Parse(_config["KCoefficient:HardSkillK"]) * (double)requiredPosition.HardSkills.Count);
+                                    }
                                 }
                                 //else
                                 //{
@@ -1123,7 +1123,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         ProjectFieldMatch = 10;
                     }
                     match = Math.Round(Languagematch + Softskillmatch + Hardskillmatch + ProjectTypeMatch + ProjectFieldMatch, 2);
-                    if (Languagematch <= 0 ||Softskillmatch <= 0 ||Hardskillmatch <= 0 || match <= 0)
+                    if (Languagematch <= 0 || Softskillmatch <= 0 || Hardskillmatch <= 0 || match <= 0)
                     {
                         continue;
                     }
@@ -1176,8 +1176,6 @@ namespace ESMS.BackendAPI.Services.Employees
             //}
             return new ApiSuccessResult<List<ProjectVM>>(listResult);
         }
-
-      
 
         public async Task<ApiResult<bool>> Update(string id, EmpUpdateRequest request)
         {
@@ -1277,7 +1275,9 @@ namespace ESMS.BackendAPI.Services.Employees
                 }
                 else
                 {
-                    var empCerti = certiQuery.Where(x => x.ec.EmpID.Equals(empID) && x.c.SkillID.Equals(s.SkillID))
+                    DateTime today = TimeZoneInfo.ConvertTime(DateTime.Today, tzi);
+                    var empCerti = certiQuery.Where(x => x.ec.EmpID.Equals(empID) && x.c.SkillID.Equals(s.SkillID)
+                    && (x.ec.DateEnd == null || x.ec.DateEnd > today.Date))
                         .Select(x => new CertiInfo()
                         {
                             CertiID = x.ec.CertificationID,
@@ -1867,7 +1867,9 @@ namespace ESMS.BackendAPI.Services.Employees
                 }
                 else
                 {
-                    var empCerti = certiQuery.Where(x => x.ec.EmpID.Equals(empID) && x.c.SkillID.Equals(s.SkillID))
+                    DateTime today = TimeZoneInfo.ConvertTime(DateTime.Today, tzi);
+                    var empCerti = certiQuery.Where(x => x.ec.EmpID.Equals(empID) && x.c.SkillID.Equals(s.SkillID)
+                    && (x.ec.DateEnd == null || x.ec.DateEnd > today.Date))
                         .Select(x => new EmpCertificationDetail()
                         {
                             CertiID = x.ec.CertificationID,
@@ -1932,6 +1934,7 @@ namespace ESMS.BackendAPI.Services.Employees
             }
             return new ApiErrorResult<bool>("Change password failed" + errorMessage);
         }
+
         //public async Task<string> HandleFile(IFormFile file, string productId)
         //{
         //    //if (file.Length > MaxFileSize)
@@ -1992,6 +1995,7 @@ namespace ESMS.BackendAPI.Services.Employees
 
             return result;
         }
+
         private async Task<EmpVm> GetEmpById(string id)
         {
             var user = await _userManager.FindByIdAsync(id.ToString());
@@ -2010,19 +2014,19 @@ namespace ESMS.BackendAPI.Services.Employees
             };
             return empVm;
         }
+
         public async Task<FileModel> ExportEmployeeInfo(string id)
         {
             var result = new FileModel();
-            
+
             var user = await GetEmpById(id);
-                if (user == null)
-                {
-                    throw new Exception("Invalid Id");
-                }
+            if (user == null)
+            {
+                throw new Exception("Invalid Id");
+            }
             var excelName = "tempEmpTemplate.xlsx";
             var excelPath = Path.Combine(FILE_LOCATION, excelName);
             File.Copy(Path.Combine(FILE_LOCATION, "EmpTemplate.xlsx"), excelPath, true);
-
 
             ExcelService.InsertTextExistingExcel(excelPath, user.Name, "B", 10);
             ExcelService.InsertTextExistingExcel(excelPath, user.Address, "C", 10);
@@ -2042,7 +2046,7 @@ namespace ESMS.BackendAPI.Services.Employees
         public async Task<ApiResult<Employee>> ImportEmployeeInfo(IFormFile file)
         {
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
-            var fileName = "importTemp"+ Path.GetExtension(file.FileName);
+            var fileName = "importTemp" + Path.GetExtension(file.FileName);
             var filePath = Path.Combine(FILE_LOCATION, fileName);
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
@@ -2077,14 +2081,14 @@ namespace ESMS.BackendAPI.Services.Employees
             if (String.IsNullOrEmpty(phoneNumber))
             {
                 UltilitiesService.AddOrUpdateError(errors, "PhoneNumber", "Phone Number can not be empty");
-            }           
+            }
             if (await _userManager.FindByNameAsync(username) != null)
             {
                 UltilitiesService.AddOrUpdateError(errors, "UserName", "This username alreadys exists");
             }
             if (await _userManager.FindByEmailAsync(email) != null)
             {
-                UltilitiesService.AddOrUpdateError(errors, "Email", "This email already exists");               
+                UltilitiesService.AddOrUpdateError(errors, "Email", "This email already exists");
             }
 
             if (errors.Count > 0)
@@ -2120,13 +2124,14 @@ namespace ESMS.BackendAPI.Services.Employees
                         return new ApiErrorResult<Employee>("Register failed: " + errorMessage);
                     }
                 }
-                  try
-                  {
+                try
+                {
                     _emailService.Send(_config["Emails:SmtpUser"], user.Email, password, user.Name);
-                  } catch (Exception e)
-                  {
-                      File.WriteAllText(Path.Combine(ROOT_PATH,"error.txt"),e.Message);
-                  }
+                }
+                catch (Exception e)
+                {
+                    File.WriteAllText(Path.Combine(ROOT_PATH, "error.txt"), e.Message);
+                }
                 return new ApiSuccessResult<Employee>(user);
             }
             foreach (var error in result.Errors)
@@ -2135,6 +2140,7 @@ namespace ESMS.BackendAPI.Services.Employees
             }
             return new ApiErrorResult<Employee>("Register failed: " + errorMessage);
         }
+
         //public async Task<ApiResult<bool>> RemoveExpiredCertificate()
         //{
         //    var expiredCertiList = await _context.EmpCertifications.Where(x => x.DateEnd != null && x.DateEnd < DateTime.Now).Select(x => new EmpCertification()
@@ -2148,7 +2154,7 @@ namespace ESMS.BackendAPI.Services.Employees
         //    {
         //        foreach (var expiredCerti in expiredCertiList)
         //        {
-        //            _context.EmpCertifications.Remove(expiredCerti);                
+        //            _context.EmpCertifications.Remove(expiredCerti);
         //        }
         //        var result = await _context.SaveChangesAsync();
         //        if (result != 0)
@@ -2160,8 +2166,8 @@ namespace ESMS.BackendAPI.Services.Employees
         //}
         public FileModel GetLogFile()
         {
-            var result = new FileModel();            
-            var data = File.ReadAllBytes(Path.Combine(ROOT_PATH,"error.txt"));
+            var result = new FileModel();
+            var data = File.ReadAllBytes(Path.Combine(ROOT_PATH, "error.txt"));
 
             result.FileName = "log";
             result.Id = "log";
