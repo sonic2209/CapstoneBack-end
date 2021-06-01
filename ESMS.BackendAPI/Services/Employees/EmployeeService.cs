@@ -313,7 +313,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                         {
                                             if (checkHardSkill == false)
                                             {
-                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date end is wrong format");
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is wrong format");
                                                 checkHardSkill = true;
                                             }
                                         }
@@ -331,11 +331,11 @@ namespace ESMS.BackendAPI.Services.Employees
                                             }
                                             //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
                                         }
-                                        if (DateTime.Compare(empCertification.DateTaken.Date, dateEnd.Date) > 0)
+                                        if (DateTime.Compare(empCertification.DateTaken.AddYears(1).Date, dateEnd.Date) > 0)
                                         {
                                             if (checkHardSkill == false)
                                             {
-                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire must be after date taken at least 1 year");
                                                 checkHardSkill = true;
                                             }
                                             //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
@@ -1533,7 +1533,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                         {
                                             if (checkHardSkill == false)
                                             {
-                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date end is wrong format");
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is wrong format");
                                                 checkHardSkill = true;
                                             }
                                         }
@@ -1541,20 +1541,20 @@ namespace ESMS.BackendAPI.Services.Employees
                                         {
                                             dateEnd = DateTime.Parse(certification.DateEnd);
                                         }
-                                        if (DateTime.Compare(dateTaken.Date, dateEnd.Date) > 0)
-                                        {
-                                            if (checkHardSkill == false)
-                                            {
-                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
-                                                checkHardSkill = true;
-                                            }
-                                            //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
-                                        }
                                         if (DateTime.Compare(dateTaken.Date, dateEnd.Date) == 0)
                                         {
                                             if (checkHardSkill == false)
                                             {
                                                 UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is same as date taken");
+                                                checkHardSkill = true;
+                                            }
+                                            //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");
+                                        }
+                                        if (DateTime.Compare(dateTaken.AddYears(1).Date, dateEnd.Date) > 0)
+                                        {
+                                            if (checkHardSkill == false)
+                                            {
+                                                UltilitiesService.AddOrUpdateError(errors, "HardSkills", "Certificate " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire must be after date taken at least 1 year");
                                                 checkHardSkill = true;
                                             }
                                             //return new ApiErrorResult<bool>("Certification " + certi.CertificationName + " for skill " + skill.SkillName + " - date expire is earlier than date taken");

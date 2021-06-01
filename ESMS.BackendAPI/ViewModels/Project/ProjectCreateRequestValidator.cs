@@ -10,12 +10,16 @@ namespace ESMS.BackendAPI.ViewModels.Project
         public ProjectCreateRequestValidator()
         {
             RuleFor(x => x.ProjectName).NotEmpty().WithMessage("Name can not be empty");
-            RuleFor(x => x.ProjectName).MaximumLength(100).WithMessage("Name can not exceed 100 characters")
+            RuleFor(x => x.ProjectName)
+                .MinimumLength(3).WithMessage("Name must contain at least 3 characters")
+                .MaximumLength(100).WithMessage("Name can not exceed 100 characters")
                 .Matches(@"^(?:[^\W_]| )+$").WithMessage("Name can not contain special characters")
                 .When(x => !String.IsNullOrWhiteSpace(x.ProjectName));
 
             RuleFor(x => x.Description).NotEmpty().WithMessage("Description can not be empty");
-            RuleFor(x => x.Description).MaximumLength(1000).WithMessage("Description can not exceed 1000 characters")
+            RuleFor(x => x.Description)
+                .MinimumLength(3).WithMessage("Description must contain at least 3 characters")
+                .MaximumLength(1000).WithMessage("Description can not exceed 1000 characters")
                 .When(x => !String.IsNullOrWhiteSpace(x.Description));
 
             RuleFor(x => x.DateBegin).NotEmpty().WithMessage("Please input start date");
