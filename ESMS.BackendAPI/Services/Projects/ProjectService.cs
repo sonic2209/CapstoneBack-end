@@ -16,7 +16,7 @@ namespace ESMS.BackendAPI.Services.Projects
     public class ProjectService : IProjectService
     {
         private readonly ESMSDbContext _context;
-        private TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        //private TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
         public ProjectService(ESMSDbContext context)
         {
@@ -293,7 +293,7 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     ProjectName = request.ProjectName,
                     Description = request.Description,
-                    DateCreated = TimeZoneInfo.ConvertTime(DateTime.Now, tzi),
+                    DateCreated = DateTime.Now,
                     DateBegin = dateBegin,
                     DateEstimatedEnd = dateEstimatedEnd,
                     Status = ProjectStatus.Pending,
@@ -992,91 +992,9 @@ namespace ESMS.BackendAPI.Services.Projects
                 {
                     var listRequirement = _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectID)
                     && x.PositionID.Equals(pos.PosID) && x.MissingEmployee > 0).Select(x => x.ID).ToList();
-                    var skillQuery = from rs in _context.RequiredSkills
-                                     join s in _context.Skills on rs.SkillID equals s.SkillID
-                                     select new { rs, s };
-                    var checkEqual = false;
                     if (listRequirement.Count() > 0)
                     {
-                        foreach (var id in listRequirement)
-                        {
-                            var listHardSkill = skillQuery.Where(x => x.rs.RequiredPositionID.Equals(id)
-                            && x.s.SkillType.Equals(EnumSkillType.HardSkill)).Select(x => new RequiredSkill()
-                            {
-                                SkillID = x.rs.SkillID,
-                                SkillLevel = x.rs.SkillLevel,
-                                CertificationLevel = x.rs.CertificationLevel,
-                                Priority = x.rs.Priority
-                            }).ToList();
-                            var listLanguage = _context.RequiredLanguages.Where(x => x.RequiredPositionID.Equals(id))
-                                .Select(x => new RequiredLanguage()
-                                {
-                                    LangID = x.LangID,
-                                    Priority = x.Priority
-                                }).ToList();
-                            var listSoftSkill = skillQuery.Where(x => x.rs.RequiredPositionID.Equals(id)
-                            && x.s.SkillType.Equals(EnumSkillType.SoftSkill)).Select(x => x.rs.SkillID).ToList();
-                            if (pos.HardSkills.Count() == listHardSkill.Count() &&
-                               pos.Language.Count() == listLanguage.Count() &&
-                               pos.SoftSkillIDs.Count() == listSoftSkill.Count())
-                            {
-                                int countHardSkill = 0;
-                                int countLanguage = 0;
-                                int countSoftSkill = 0;
-                                foreach (var hardSkill in pos.HardSkills)
-                                {
-                                    foreach (var check in listHardSkill)
-                                    {
-                                        if (hardSkill.HardSkillID == check.SkillID &&
-                                            hardSkill.SkillLevel == (int)check.SkillLevel &&
-                                            hardSkill.CertificationLevel == check.CertificationLevel &&
-                                            hardSkill.Priority == check.Priority)
-                                        {
-                                            countHardSkill++;
-                                        }
-                                    }
-                                }
-                                if (countHardSkill != listHardSkill.Count())
-                                {
-                                    continue;
-                                }
-                                foreach (var language in pos.Language)
-                                {
-                                    foreach (var check in listLanguage)
-                                    {
-                                        if (language.LangID == check.LangID &&
-                                            language.Priority == check.Priority)
-                                        {
-                                            countLanguage++;
-                                        }
-                                    }
-                                }
-                                if (countLanguage != listLanguage.Count())
-                                {
-                                    continue;
-                                }
-                                foreach (var softSkill in pos.SoftSkillIDs)
-                                {
-                                    foreach (var check in listSoftSkill)
-                                    {
-                                        if (softSkill == check)
-                                        {
-                                            countSoftSkill++;
-                                        }
-                                    }
-                                }
-                                if (countSoftSkill != listSoftSkill.Count())
-                                {
-                                    continue;
-                                }
-                                checkEqual = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (checkEqual == true)
-                    {
-                        message += "This requirement is the same as one of the requirements which are still missing employee";
+                        message += "This position already have a requirement which is missing employee";
                         break;
                     }
                     message = "";
@@ -1102,7 +1020,7 @@ namespace ESMS.BackendAPI.Services.Projects
                     ProjectID = projectID,
                     CandidateNeeded = position.CandidateNeeded,
                     MissingEmployee = position.CandidateNeeded,
-                    DateCreated = TimeZoneInfo.ConvertTime(DateTime.Now, tzi)
+                    DateCreated = DateTime.Now
                 };
                 _context.RequiredPositions.Add(requiredPosition);
                 var result = await _context.SaveChangesAsync();
@@ -1176,7 +1094,7 @@ namespace ESMS.BackendAPI.Services.Projects
             var project = await _context.Projects.FindAsync(projectID);
             if (project == null) return new ApiErrorResult<int>("Project does not exist");
             project.Status = ProjectStatus.Finished;
-            project.DateEnd = TimeZoneInfo.ConvertTime(DateTime.Now, tzi);
+            project.DateEnd = DateTime.Now;
             _context.Projects.Update(project);
             var empQuery = from ep in _context.EmpPositionInProjects
                            join rp in _context.RequiredPositions on ep.RequiredPositionID equals rp.ID
@@ -1194,15 +1112,34 @@ namespace ESMS.BackendAPI.Services.Projects
             {
                 foreach (var emp in empInProject)
                 {
-                    if (emp.DateIn != null)
+                    if (emp.Status.Equals(ConfirmStatus.Accept))
                     {
-                        emp.DateOut = TimeZoneInfo.ConvertTime(DateTime.Now, tzi);
+                        emp.DateOut = DateTime.Now;
                         _context.EmpPositionInProjects.Update(emp);
                     }
-                    else
+                    if (emp.Status.Equals(ConfirmStatus.New))
                     {
                         _context.EmpPositionInProjects.Remove(emp);
                     }
+                }
+            }
+            var listRequirement = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectID)
+            && x.Status != RequirementStatus.Finished).Select(x => new RequiredPosition()
+            {
+                ID = x.ID,
+                ProjectID = x.ProjectID,
+                PositionID = x.PositionID,
+                CandidateNeeded = x.CandidateNeeded,
+                MissingEmployee = x.MissingEmployee,
+                DateCreated = x.DateCreated,
+                Status = x.Status
+            }).ToListAsync();
+            if (listRequirement.Count() > 0)
+            {
+                foreach (var requirement in listRequirement)
+                {
+                    requirement.Status = RequirementStatus.Finished;
+                    _context.RequiredPositions.Update(requirement);
                 }
             }
             var result = await _context.SaveChangesAsync();
@@ -1533,7 +1470,7 @@ namespace ESMS.BackendAPI.Services.Projects
                                     {
                                         EmpID = id.EmpID,
                                         RequiredPositionID = position.RequiredPosID,
-                                        DateIn = TimeZoneInfo.ConvertTime(DateTime.Now, tzi),
+                                        DateIn = DateTime.Now,
                                         Status = ConfirmStatus.Accept
                                     };
                                     _context.EmpPositionInProjects.Add(empInPos);
@@ -1543,7 +1480,7 @@ namespace ESMS.BackendAPI.Services.Projects
                                 {
                                     if (empInPos.Status != ConfirmStatus.Accept)
                                     {
-                                        empInPos.DateIn = TimeZoneInfo.ConvertTime(DateTime.Now, tzi);
+                                        empInPos.DateIn = DateTime.Now;
                                         requiredPos.MissingEmployee -= 1;
                                     }
                                     empInPos.Status = ConfirmStatus.Accept;
@@ -1596,8 +1533,7 @@ namespace ESMS.BackendAPI.Services.Projects
                 requiredPos.Status = RequirementStatus.Finished;
                 _context.RequiredPositions.Update(requiredPos);
             }
-            DateTime today = TimeZoneInfo.ConvertTime(DateTime.Today, tzi);
-            if (DateTime.Compare(project.DateBegin, today) <= 0)
+            if (DateTime.Compare(project.DateBegin, DateTime.Today) <= 0)
             {
                 project.Status = ProjectStatus.OnGoing;
             }
@@ -1864,10 +1800,9 @@ namespace ESMS.BackendAPI.Services.Projects
                 }).ToListAsync();
             if (projects.Count() != 0)
             {
-                DateTime today = TimeZoneInfo.ConvertTime(DateTime.Today, tzi);
                 foreach (var p in projects)
                 {
-                    if (DateTime.Compare(p.DateBegin.Date, today.Date) <= 0)
+                    if (DateTime.Compare(p.DateBegin.Date, DateTime.Today) <= 0)
                     {
                         p.Status = ProjectStatus.OnGoing;
                         _context.Projects.Update(p);
@@ -1897,7 +1832,7 @@ namespace ESMS.BackendAPI.Services.Projects
                                select new { rp, po };
                 foreach (var p in projects)
                 {
-                    var requirePos = posQuery.Where(x => x.rp.MissingEmployee > 0 && x.rp.Status != RequirementStatus.Waiting && x.rp.ProjectID.Equals(p.ProjectID))
+                    var requirePos = posQuery.Where(x => x.rp.MissingEmployee > 0 && x.rp.Status == RequirementStatus.Finished && x.rp.ProjectID.Equals(p.ProjectID))
                         .Select(x => new RequiredPosVM()
                         {
                             RequiredPosID = x.rp.ID,
@@ -1977,10 +1912,9 @@ namespace ESMS.BackendAPI.Services.Projects
                 var empQuery = from ep in _context.EmpPositionInProjects
                                join rp in _context.RequiredPositions on ep.RequiredPositionID equals rp.ID
                                select new { ep, rp };
-                DateTime today = TimeZoneInfo.ConvertTime(DateTime.Today, tzi);
                 foreach (var p in projects)
                 {
-                    if (DateTime.Compare(p.DateBegin.Date, today.Date) == 0)
+                    if (DateTime.Compare(p.DateBegin.Date, DateTime.Today) == 0)
                     {
                         var employees = empQuery.Where(x => x.rp.ProjectID.Equals(p.ProjectID)).Select(x => x.ep.EmpID);
                         if (employees.Count() == 0)
@@ -2309,10 +2243,9 @@ namespace ESMS.BackendAPI.Services.Projects
                 }).ToListAsync();
             if (projects.Count() != 0)
             {
-                DateTime today = TimeZoneInfo.ConvertTime(DateTime.Today, tzi);
                 foreach (var p in projects)
                 {
-                    if (DateTime.Compare(p.DateEstimatedEnd.Date, today.Date) == 0)
+                    if (DateTime.Compare(p.DateEstimatedEnd.Date, DateTime.Today) == 0)
                     {
                         await ChangeStatus(p.ProjectID);
                     }
