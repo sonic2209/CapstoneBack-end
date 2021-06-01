@@ -10,7 +10,9 @@ namespace ESMS.BackendAPI.ViewModels.Project
         public ProjectUpdateRequestValidator()
         {
             RuleFor(x => x.Description).NotEmpty().WithMessage("Description can not be empty");
-            RuleFor(x => x.Description).MaximumLength(1000).WithMessage("Description can not exceed 1000 characters")
+            RuleFor(x => x.Description)
+                .MinimumLength(3).WithMessage("Description must contain at least 3 characters")
+                .MaximumLength(1000).WithMessage("Description can not exceed 1000 characters")
                 .When(x => !String.IsNullOrWhiteSpace(x.Description));
 
             RuleFor(x => x.DateEstimatedEnd).NotEmpty().WithMessage("Please input estimated end date");
