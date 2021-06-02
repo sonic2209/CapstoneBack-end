@@ -1177,7 +1177,7 @@ namespace ESMS.BackendAPI.Services.Projects
                 }
             }
             var listRequirePos = await _context.RequiredPositions.Where(x => x.ProjectID.Equals(projectID)
-            && x.Status == 0).Select(x => new RequiredPosition()
+            && x.Status == RequirementStatus.New).Select(x => new RequiredPosition()
             {
                 ID = x.ID,
                 PositionID = x.PositionID,
@@ -1361,6 +1361,10 @@ namespace ESMS.BackendAPI.Services.Projects
                     }
                     else
                     {
+                        if (id.Note.Length > 88)
+                        {
+                            return new ApiErrorResult<List<string>>("Rejecting Reason can not exceed 88 characters");
+                        }
                         if (empInPos != null)
                         {
                             empInPos.Status = ConfirmStatus.Reject;
@@ -1368,10 +1372,10 @@ namespace ESMS.BackendAPI.Services.Projects
                             {
                                 empInPos.Note = "";
                             }
-                            if (!empInPos.Note.Equals(""))
-                            {
-                                empInPos.Note += ", ";
-                            }
+                            //if (!empInPos.Note.Equals(""))
+                            //{
+                            //    empInPos.Note += ", ";
+                            //}
                             empInPos.Note += id.Note + "(" + DateTime.Today.ToString("dd-MM-yyyy") + ")";
                             _context.EmpPositionInProjects.Update(empInPos);
                         }
