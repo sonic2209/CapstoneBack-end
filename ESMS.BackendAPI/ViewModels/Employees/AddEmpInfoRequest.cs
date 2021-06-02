@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ESMS.BackendAPI.ViewModels.Employees
 {
-    public class AddEmpPositionRequest
+    public class AddEmpInfoRequest
     {
         public int PosID { get; set; }
         public int PosLevel { get; set; }
