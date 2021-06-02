@@ -663,16 +663,19 @@ namespace ESMS.BackendAPI.Services.Employees
                                                     select new { es, s };
                             var listEmpSoftSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == EnumSkillType.SoftSkill && x.es.EmpID.Equals(emp.EmpId));
                             var listEmpSoftSkill = await listEmpSoftSkillquery.Select(x => x.es.SkillID).ToListAsync();
-                            foreach (int softskillId in requiredPosition.SoftSkillIDs)
+                            if (listEmpSoftSkill.Count > 0)
                             {
-                                foreach (var softSkill in listEmpSoftSkill)
+                                foreach (int softskillId in requiredPosition.SoftSkillIDs)
                                 {
-                                    if (softSkill.Equals(softskillId))
+                                    foreach (var softSkill in listEmpSoftSkill)
                                     {
-                                        Softskillmatch += (double)(int.Parse(_config["KCoefficient:SoftSkillK"]) / (double)(requiredPosition.SoftSkillIDs.Count));
+                                        if (softSkill.Equals(softskillId))
+                                        {
+                                            Softskillmatch += (double)(int.Parse(_config["KCoefficient:SoftSkillK"]) / (double)(requiredPosition.SoftSkillIDs.Count));
+                                        }
                                     }
+                                    //match += Math.Round(Softskillmatch, 2);
                                 }
-                                //match += Math.Round(Softskillmatch, 2);
                             }
                             //add match vao hardskill
                             var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == EnumSkillType.HardSkill && x.es.DateEnd == null && x.es.EmpID.Equals(emp.EmpId));
@@ -682,6 +685,8 @@ namespace ESMS.BackendAPI.Services.Employees
                                 SkillID = x.s.SkillID,
                                 SkillLevel = x.es.SkillLevel,
                             }).ToListAsync();
+                            if (listEmpHardSkill.Count > 0)
+                            {                           
                             foreach (HardSkillDetail hardskill in requiredPosition.HardSkills)
                             {
                                 foreach (EmpInHardSkill emphs in listEmpHardSkill)
@@ -711,6 +716,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                         }
                                     }
                                 }
+                            }
                             }
                             //Loc nhung nhan vien ko available dua theo thoi gian ket thuc du an dang tien hanh
                             var projectquery = from p in _context.Projects
