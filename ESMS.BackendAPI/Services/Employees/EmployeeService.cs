@@ -26,6 +26,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ESMS.BackendAPI.Services.Employees
@@ -108,11 +109,11 @@ namespace ESMS.BackendAPI.Services.Employees
             {
                 return new ApiErrorResult<string>(errors);
             }
-            DateTime now = TimeZoneInfo.ConvertTime(DateTime.Now, tzi);
+            
             user = new Employee()
             {
                 Name = request.Name,
-                DateCreated = now,
+                DateCreated = DateTime.Now,
                 IdentityNumber = request.IdentityNumber,
                 Address = request.Address,
                 Email = request.Email,
@@ -2003,6 +2004,12 @@ namespace ESMS.BackendAPI.Services.Employees
             {
                 return null;
             }
+            var roles = await _userManager.GetRolesAsync(user);
+            string currentRole = null;
+            if (roles.Count > 0)
+            {
+                currentRole = roles[0];
+            }
             var empVm = new EmpVm()
             {
                 Email = user.Email.ToLower(),
@@ -2011,6 +2018,9 @@ namespace ESMS.BackendAPI.Services.Employees
                 Address = user.Address,
                 IdentityNumber = user.IdentityNumber,
                 UserName = user.UserName,
+                Id = user.Id,
+                DateCreated = user.DateCreated,
+                RoleName = currentRole
             };
             return empVm;
         }
@@ -2053,7 +2063,7 @@ namespace ESMS.BackendAPI.Services.Employees
             return result;
         }
 
-        public async Task<ApiResult<Employee>> ImportEmployeeInfo(IFormFile file)
+        public async Task<ApiResult<EmpVm>> ImportEmployeeInfo(IFormFile file)
         {
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
             var fileName = "importTemp" + Path.GetExtension(file.FileName);
@@ -2075,22 +2085,69 @@ namespace ESMS.BackendAPI.Services.Employees
             if (String.IsNullOrEmpty(name))
             {
                 UltilitiesService.AddOrUpdateError(errors, "Name", "Name can not be empty");
+            } else
+            {
+                if (name.Length < 3)
+                {
+                    UltilitiesService.AddOrUpdateError(errors, "Name", "Name must contain at least 3 characters");
+                }
+                if (name.Length > 50)
+                {
+                    UltilitiesService.AddOrUpdateError(errors, "Name", "Name can not exceed 50 characters");
+                }
+                if (!Regex.IsMatch(name, @"^(?:[^\W\d_]| )+$"))
+                {
+                    UltilitiesService.AddOrUpdateError(errors, "Name", "Name can not contain digits or special characters");
+                }
             }
             if (String.IsNullOrEmpty(address))
             {
                 UltilitiesService.AddOrUpdateError(errors, "Address", "Address can not be empty");
             }
+            else
+            {
+                if (address.Length < 3)
+                {
+                    UltilitiesService.AddOrUpdateError(errors, "Address", "Address must contain at least 3 characters");
+                }
+                if (address.Length > 100)
+                {
+                    UltilitiesService.AddOrUpdateError(errors, "Address", "Address can not exceed 100 characters");
+                }              
+            }
             if (String.IsNullOrEmpty(identityNumber))
             {
                 UltilitiesService.AddOrUpdateError(errors, "IdentityNumber", "Identity number can not be empty");
             }
+            else
+            {               
+                if (!Regex.IsMatch(identityNumber, "^[0-9]{10,12}$"))
+                {
+                    UltilitiesService.AddOrUpdateError(errors, "IdentityNumber", "Identity number format must be from 10 to 12 digits");
+                }
+            }
+
             if (String.IsNullOrEmpty(email))
             {
                 UltilitiesService.AddOrUpdateError(errors, "Email", "Email can not be empty");
             }
+            else
+            {
+                if (!Regex.IsMatch(email, @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$"))
+                {
+                    UltilitiesService.AddOrUpdateError(errors, "Email", "Email is not in the correct format");
+                }
+            }
             if (String.IsNullOrEmpty(phoneNumber))
             {
                 UltilitiesService.AddOrUpdateError(errors, "PhoneNumber", "Phone Number can not be empty");
+            }
+            else
+            {
+                if (!Regex.IsMatch(phoneNumber, @"(0[1-9])+([0-9]{8})\b"))
+                {
+                    UltilitiesService.AddOrUpdateError(errors, "PhoneNumber", "Phone number must contain 10 digits starting off with 0 and a number from 1 to 9");
+                }
             }
             if (await _userManager.FindByNameAsync(username) != null)
             {
@@ -2103,7 +2160,7 @@ namespace ESMS.BackendAPI.Services.Employees
 
             if (errors.Count > 0)
             {
-                return new ApiErrorResult<Employee>(errors);
+                return new ApiErrorResult<EmpVm>(errors);
             }
 
             var user = new Employee()
@@ -2119,6 +2176,7 @@ namespace ESMS.BackendAPI.Services.Employees
             var pwd = new Password().IncludeLowercase().IncludeUppercase().IncludeNumeric().LengthRequired(8);
             var password = pwd.Next();
             string errorMessage = null;
+
             var result = await _userManager.CreateAsync(user, password);
             if (result.Succeeded)
             {
@@ -2131,7 +2189,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         {
                             errorMessage += error.Description + Environment.NewLine;
                         }
-                        return new ApiErrorResult<Employee>("Register failed: " + errorMessage);
+                        return new ApiErrorResult<EmpVm>("Register failed: " + errorMessage);
                     }
                 }
                 try
@@ -2142,13 +2200,18 @@ namespace ESMS.BackendAPI.Services.Employees
                 {
                     File.WriteAllText(Path.Combine(ROOT_PATH, "error.txt"), e.Message);
                 }
-                return new ApiSuccessResult<Employee>(user);
+                var finalResult = await GetEmpById(user.Id);
+                if (finalResult == null)
+                {
+                    return new ApiErrorResult<EmpVm>("Invalid Id");
+                }
+                return new ApiSuccessResult<EmpVm>(finalResult);
             }
             foreach (var error in result.Errors)
             {
                 errorMessage += error.Description + Environment.NewLine;
             }
-            return new ApiErrorResult<Employee>("Register failed: " + errorMessage);
+            return new ApiErrorResult<EmpVm>("Register failed: " + errorMessage);
         }
 
         //public async Task<ApiResult<bool>> RemoveExpiredCertificate()
