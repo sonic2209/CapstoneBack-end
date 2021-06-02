@@ -1031,6 +1031,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                             select new { es, s };
                     var listEmpSoftSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == EnumSkillType.SoftSkill && x.es.EmpID.Equals(empID));
                     var listEmpSoftSkill = await listEmpSoftSkillquery.Select(x => x.es.SkillID).ToListAsync();
+                    if (listEmpSoftSkill.Count > 0) { 
                     foreach (int softskillId in requiredPosition.SoftSkillIDs)
                     {
                         foreach (var softSkill in listEmpSoftSkill)
@@ -1041,6 +1042,7 @@ namespace ESMS.BackendAPI.Services.Employees
                             }
                         }
                     }
+                    }
                     //add match vao hardskill
                     var listEmpHardSkillquery = listEmpSkillquery.Where(x => x.s.SkillType == EnumSkillType.HardSkill && x.es.DateEnd == null && x.es.EmpID.Equals(empID));
                     var listEmpHardSkill = await listEmpHardSkillquery.Select(x => new EmpInHardSkill()
@@ -1049,6 +1051,7 @@ namespace ESMS.BackendAPI.Services.Employees
                         SkillID = x.s.SkillID,
                         SkillLevel = x.es.SkillLevel,
                     }).ToListAsync();
+                    if (listEmpHardSkill.Count > 0) { 
                     foreach (HardSkillDetail hardskill in requiredPosition.HardSkills)
                     {
                         foreach (EmpInHardSkill emphs in listEmpHardSkill)
@@ -1083,6 +1086,7 @@ namespace ESMS.BackendAPI.Services.Employees
                                 //}
                             }
                         }
+                    }
                     }
                     //Add match theo projecttype
                     var listProjectWithType = await projectquery.Where(x => x.p.ProjectTypeID == ProjectTypeID && x.p.Status == ProjectStatus.Finished && x.epip.EmpID.Equals(empID) && x.epip.Status == ConfirmStatus.Accept).Select(x => x.p.ProjectID).ToListAsync();
