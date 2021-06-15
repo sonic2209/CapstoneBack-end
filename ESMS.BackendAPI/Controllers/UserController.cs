@@ -124,9 +124,9 @@ namespace ESMS.BackendAPI.Controllers
         }
 
         [HttpPost("{empID}")]
-        public async Task<IActionResult> AddEmpPosition(string empID, [FromBody] AddEmpPositionRequest request)
+        public async Task<IActionResult> AddEmpInfo(string empID, [FromBody] AddEmpInfoRequest request)
         {
-            var result = await _userService.AddEmpPosition(empID, request);
+            var result = await _userService.AddEmpInfo(empID, request);
             if (!result.IsSuccessed)
             {
                 return StatusCode(StatusCodes.Status400BadRequest, result);
@@ -149,7 +149,7 @@ namespace ESMS.BackendAPI.Controllers
         }
 
         [HttpPost("updateEmpInfo/{empID}")]
-        public async Task<IActionResult> UpdateEmpInfo(string empID, [FromBody] AddEmpPositionRequest request)
+        public async Task<IActionResult> UpdateEmpInfo(string empID, [FromBody] AddEmpInfoRequest request)
         {
             var result = await _userService.UpdateEmpInfo(empID, request);
             if (!result.IsSuccessed)
@@ -165,13 +165,14 @@ namespace ESMS.BackendAPI.Controllers
             try
             {
                 var rs = await _userService.GetEmpTemplate(userId);
-            return File(rs.Data, rs.FileType, rs.FileName + ".xlsx");
+                return File(rs.Data, rs.FileType, rs.FileName + ".xlsx");
             }
             catch (Exception e)
             {
                 return StatusCode(StatusCodes.Status403Forbidden, e.Message);
             }
         }
+
         [HttpPut("Import")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> ImportEmployeeInfo([FromForm] IFormFile file)
@@ -183,18 +184,21 @@ namespace ESMS.BackendAPI.Controllers
             }
             return Ok(result);
         }
+
         [HttpGet("Export/{userId}/{HRId}")]
-        public async Task<IActionResult> ExportEmployeeInfo (string userId, string HRId)
+        public async Task<IActionResult> ExportEmployeeInfo(string userId, string HRId)
         {
-            try { 
-            var rs = await _userService.ExportEmployeeInfo(userId, HRId);            
-            return File(rs.Data, rs.FileType, rs.FileName + ".xlsx");
-            } 
+            try
+            {
+                var rs = await _userService.ExportEmployeeInfo(userId, HRId);
+                return File(rs.Data, rs.FileType, rs.FileName + ".xlsx");
+            }
             catch (Exception e)
             {
                 return StatusCode(StatusCodes.Status403Forbidden, e.Message);
             }
         }
+
         [HttpGet("log")]
         public IActionResult GetLogFile()
         {
