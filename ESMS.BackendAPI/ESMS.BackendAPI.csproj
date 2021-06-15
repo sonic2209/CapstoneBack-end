@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="capstone-esms-firebase-adminsdk-3z2td-a35a510cb1.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Startup.cs~RF8e58c10.TMP" />
   </ItemGroup>
 
